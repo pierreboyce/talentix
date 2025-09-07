@@ -344,7 +344,7 @@ export default function InterviewPrepPage() {
     ));
   };
 
-  if (currentView === 'categories') {
+  if ((currentView as string) === 'categories') {
     return (
       <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #fef3c7 0%, #fbbf24 50%, #f59e0b 100%)', display: 'flex' }}>
         {/* Left Sidebar - Quizlet Style */}
@@ -387,7 +387,7 @@ export default function InterviewPrepPage() {
               <div 
                 onClick={() => setCurrentView('categories')}
                 style={{
-                  backgroundColor: currentView === 'categories' ? '#374151' : 'transparent',
+                  backgroundColor: (currentView as string) === 'categories' ? '#374151' : 'transparent',
                   borderRadius: '8px',
                   padding: '12px 16px',
                   marginBottom: '8px',
@@ -397,7 +397,7 @@ export default function InterviewPrepPage() {
                   cursor: 'pointer'
                 }}
                 onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#374151'}
-                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = currentView === 'categories' ? '#374151' : 'transparent'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = (currentView as string) === 'categories' ? '#374151' : 'transparent'}
               >
                 <span style={{ fontSize: '20px' }}>📚</span>
                 <span style={{ fontWeight: '500' }}>Question Sets</span>
@@ -405,7 +405,7 @@ export default function InterviewPrepPage() {
               <div 
                 onClick={() => setCurrentView('progress')}
                 style={{
-                  backgroundColor: currentView === 'progress' ? '#374151' : 'transparent',
+                  backgroundColor: (currentView as string) === 'progress' ? '#374151' : 'transparent',
                   padding: '12px 16px',
                   marginBottom: '8px',
                   display: 'flex',
@@ -415,7 +415,7 @@ export default function InterviewPrepPage() {
                   borderRadius: '8px'
                 }}
                 onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#374151'}
-                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = currentView === 'progress' ? '#374151' : 'transparent'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = (currentView as string) === 'progress' ? '#374151' : 'transparent'}
               >
                 <span style={{ fontSize: '20px' }}>📊</span>
                 <span style={{ fontWeight: '500' }}>Progress</span>
@@ -452,7 +452,7 @@ export default function InterviewPrepPage() {
               <div 
                 onClick={() => setCurrentView('feedback')}
                 style={{
-                  backgroundColor: currentView === 'feedback' ? '#374151' : 'transparent',
+                  backgroundColor: (currentView as string) === 'feedback' ? '#374151' : 'transparent',
                   padding: '12px 16px',
                   marginBottom: '8px',
                   display: 'flex',
@@ -462,7 +462,7 @@ export default function InterviewPrepPage() {
                   borderRadius: '8px'
                 }}
                 onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#374151'}
-                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = currentView === 'feedback' ? '#374151' : 'transparent'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = (currentView as string) === 'feedback' ? '#374151' : 'transparent'}
               >
                 <span style={{ fontSize: '20px' }}>🤖</span>
                 <span style={{ fontWeight: '500' }}>AI Feedback</span>
@@ -655,7 +655,7 @@ export default function InterviewPrepPage() {
               <div 
                 onClick={() => setCurrentView('categories')}
                 style={{
-                  backgroundColor: currentView === 'categories' ? '#374151' : 'transparent',
+                  backgroundColor: (currentView as string) === 'categories' ? '#374151' : 'transparent',
                   borderRadius: '8px',
                   padding: '12px 16px',
                   marginBottom: '8px',
@@ -671,7 +671,7 @@ export default function InterviewPrepPage() {
               <div 
                 onClick={() => setCurrentView('progress')}
                 style={{
-                  backgroundColor: currentView === 'progress' ? '#374151' : 'transparent',
+                  backgroundColor: (currentView as string) === 'progress' ? '#374151' : 'transparent',
                   padding: '12px 16px',
                   marginBottom: '8px',
                   display: 'flex',
@@ -701,7 +701,7 @@ export default function InterviewPrepPage() {
               <div 
                 onClick={() => setCurrentView('feedback')}
                 style={{
-                  backgroundColor: currentView === 'feedback' ? '#374151' : 'transparent',
+                  backgroundColor: (currentView as string) === 'feedback' ? '#374151' : 'transparent',
                   padding: '12px 16px',
                   marginBottom: '8px',
                   display: 'flex',
@@ -844,7 +844,7 @@ export default function InterviewPrepPage() {
     );
   }
 
-  if (currentView === 'feedback') {
+  if ((currentView as string) === 'feedback') {
     return (
       <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #fef3c7 0%, #fbbf24 50%, #f59e0b 100%)', display: 'flex' }}>
         {/* Same Sidebar */}
@@ -885,7 +885,7 @@ export default function InterviewPrepPage() {
               <div 
                 onClick={() => setCurrentView('categories')}
                 style={{
-                  backgroundColor: currentView === 'categories' ? '#374151' : 'transparent',
+                  backgroundColor: (currentView as string) === 'categories' ? '#374151' : 'transparent',
                   borderRadius: '8px',
                   padding: '12px 16px',
                   marginBottom: '8px',
@@ -901,7 +901,7 @@ export default function InterviewPrepPage() {
               <div 
                 onClick={() => setCurrentView('progress')}
                 style={{
-                  backgroundColor: currentView === 'progress' ? '#374151' : 'transparent',
+                  backgroundColor: (currentView as string) === 'progress' ? '#374151' : 'transparent',
                   padding: '12px 16px',
                   marginBottom: '8px',
                   display: 'flex',
@@ -931,7 +931,7 @@ export default function InterviewPrepPage() {
               <div 
                 onClick={() => setCurrentView('feedback')}
                 style={{
-                  backgroundColor: currentView === 'feedback' ? '#374151' : 'transparent',
+                  backgroundColor: (currentView as string) === 'feedback' ? '#374151' : 'transparent',
                   padding: '12px 16px',
                   marginBottom: '8px',
                   display: 'flex',
@@ -1090,7 +1090,7 @@ export default function InterviewPrepPage() {
     );
   }
 
-  if (currentView === 'flashcards') {
+  if ((currentView as string) === 'flashcards') {
     const currentCategory = categories.find(c => c.id === selectedCategory);
     
     return (

@@ -488,6 +488,14 @@ export default function CVReviewer() {
       background: 'linear-gradient(135deg, #fef3c7 0%, #fbbf24 50%, #f59e0b 100%)',
       display: 'flex'
     }}>
+      <style jsx>{`
+        .cv-upload-button:hover {
+          background-color: #1d4ed8 !important;
+        }
+        .cv-analyze-button:not(:disabled):hover {
+          background-color: #15803d !important;
+        }
+      `}</style>
       {/* Left Sidebar */}
       <div style={{
         width: '280px',
@@ -737,6 +745,7 @@ export default function CVReviewer() {
 
               <button
                 onClick={() => fileInputRef.current?.click()}
+                className="cv-upload-button"
                 style={{
                   backgroundColor: '#2563eb',
                   color: '#ffffff',
@@ -748,12 +757,6 @@ export default function CVReviewer() {
                   cursor: 'pointer',
                   transition: 'all 0.2s ease',
                   marginBottom: '24px'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = '#1d4ed8';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = '#2563eb';
                 }}
               >
                 Choose File
@@ -777,6 +780,7 @@ export default function CVReviewer() {
                   <button
                     onClick={handleAnalyze}
                     disabled={isAnalyzing}
+                    className="cv-analyze-button"
                     style={{
                       backgroundColor: '#16a34a',
                       color: '#ffffff',
@@ -788,16 +792,6 @@ export default function CVReviewer() {
                       cursor: isAnalyzing ? 'not-allowed' : 'pointer',
                       transition: 'all 0.2s ease',
                       opacity: isAnalyzing ? 0.7 : 1
-                    }}
-                    onMouseEnter={(e) => {
-                      if (!isAnalyzing) {
-                        e.currentTarget.style.backgroundColor = '#15803d';
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      if (!isAnalyzing) {
-                        e.currentTarget.style.backgroundColor = '#16a34a';
-                      }
                     }}
                   >
                     {isAnalyzing ? 'Analyzing...' : 'Analyze with AI'}

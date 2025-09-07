@@ -38,10 +38,8 @@ export function PointsProvider({ children }: { children: ReactNode }) {
         setPointsState(0);
         localStorage.setItem(pointsKey, '0');
       }
-    } else {
-      // User logged out, reset to 0
-      setPointsState(0);
     }
+    // Don't reset points when user logs out - keep them for when they sign back in
   }, [user?.id]);
 
   // Save points to localStorage whenever they change (user-specific)

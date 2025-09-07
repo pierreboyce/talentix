@@ -146,9 +146,8 @@ export default function Settings() {
         <p style={{
           fontSize: '1.25rem',
           color: '#374151',
-          margin: 0,
-          maxWidth: '600px',
-          margin: '0 auto'
+          margin: '0 auto',
+          maxWidth: '600px'
         }}>
           Customize your Talentix experience and manage your account preferences
         </p>
@@ -904,4 +903,6 @@ export default function Settings() {
     </div>
   );
 }
+
+
 

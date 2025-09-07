@@ -117,9 +117,51 @@ const featuredJobs: JobPostCardProps[] = [
 ];
 
 export default function Home() {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
+  
+  // Clear any corrupted auth state on mount
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      // Check for corrupted or incomplete user data
+      const storedUser = localStorage.getItem('talentix_user');
+      if (storedUser) {
+        try {
+          const userData = JSON.parse(storedUser);
+          // If user data exists but is incomplete, clear it
+          if (!userData.email || !userData.name) {
+            console.log('🧹 Clearing incomplete user data');
+            localStorage.removeItem('talentix_user');
+            localStorage.removeItem('talentix_session');
+            document.cookie = 'talentix-session=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT';
+          }
+        } catch (error) {
+          console.log('🧹 Clearing corrupted user data');
+          localStorage.removeItem('talentix_user');
+          localStorage.removeItem('talentix_session');
+          document.cookie = 'talentix-session=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT';
+        }
+      }
+    }
+  }, []);
+
+  // Debug helper: Press Ctrl+Shift+C to clear all auth data
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if (e.ctrlKey && e.shiftKey && e.code === 'KeyC') {
+        console.log('🧹 Manual auth data clear triggered');
+        localStorage.removeItem('talentix_user');
+        localStorage.removeItem('talentix_session');
+        document.cookie = 'talentix-session=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT';
+        window.location.reload();
+      }
+    };
+    
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, []);
+
   const [score, setScore] = useState(0);
   const [location, setLocation] = useState("");
   const [isLoaded, setIsLoaded] = useState(false);
@@ -139,16 +181,30 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    if (typeof window !== "undefined" && user && isLoaded) {
+    console.log('🏠 Homepage useEffect:', { 
+      user: !!user, 
+      isLoaded, 
+      loading, 
+      hasUserData: !!(user?.email || user?.name),
+      localStorage: typeof window !== "undefined" ? !!localStorage.getItem('talentix_user') : false
+    });
+    
+    // Only redirect if we have a complete user object and everything is loaded
+    if (typeof window !== "undefined" && user && user.email && isLoaded && !loading) {
+      console.log('🏠 Complete user found, setting score and redirecting to dashboard');
       setScore(user.score || 0);
       setLocation(user.location || "Manchester");
-      // Redirect signed-in users to dashboard
-      router.push('/dashboard');
-    } else if (typeof window !== "undefined" && !user && isLoaded) {
+      
+      // Add a small delay to ensure state is fully set
+      setTimeout(() => {
+        router.push('/dashboard');
+      }, 100);
+    } else if (typeof window !== "undefined" && !user && isLoaded && !loading) {
+      console.log('🏠 No user found, resetting to defaults');
       setScore(0);
       setLocation("Manchester");
     }
-  }, [user, router, isLoaded]);
+  }, [user, router, isLoaded, loading]);
 
   // Handle OAuth errors
   useEffect(() => {
@@ -302,8 +358,8 @@ export default function Home() {
     );
   }
 
-  // Show loading state while redirecting signed-in users
-  if (user) {
+  // Show loading state while redirecting signed-in users (only if we have complete user data)
+  if (user && user.email && isLoaded && !loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -715,7 +771,10 @@ export default function Home() {
                   </p>
                   
                   <button
-                    onClick={() => router.push('/our-services')}
+                    onClick={() => {
+                      const contactSection = document.querySelector('section:last-of-type');
+                      contactSection?.scrollIntoView({ behavior: 'smooth' });
+                    }}
                     style={{
                       background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
                       color: '#000',

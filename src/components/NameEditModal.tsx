@@ -204,6 +204,7 @@ export default function NameEditModal({ isOpen, onClose, onNameSave, currentName
         }}>
           <button
             onClick={handleClose}
+            className="cancel-button"
             style={{
               padding: '12px 24px',
               fontSize: '16px',
@@ -215,17 +216,12 @@ export default function NameEditModal({ isOpen, onClose, onNameSave, currentName
               cursor: 'pointer',
               transition: 'all 0.2s ease'
             }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = '#fef3c7';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = '#fff';
-            }}
           >
             Cancel
           </button>
           <button
             onClick={handleSave}
+            className="save-button"
             style={{
               padding: '12px 24px',
               fontSize: '16px',
@@ -236,12 +232,6 @@ export default function NameEditModal({ isOpen, onClose, onNameSave, currentName
               borderRadius: '12px',
               cursor: 'pointer',
               transition: 'all 0.2s ease'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = '#b45309';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = '#d97706';
             }}
           >
             Save Changes

@@ -19,8 +19,8 @@ export default function Navigation() {
   const [showSignInModal, setShowSignInModal] = useState(false);
 
   return (
-    <header className="w-full bg-[rgb(255,255,255)] border-b border-gray-200/80 sticky top-0 left-0 right-0 z-10" style={{ marginTop: 0, paddingTop: 0 }}>
-      <div className="max-w-7xl mx-auto flex items-center justify-between px-6 py-4" style={{ marginTop: 0, paddingTop: 0 }}>
+    <header className="w-full bg-[rgb(255,255,255)] border-b border-gray-200/80 sticky top-0 left-0 right-0 z-10" style={{ marginTop: 0, paddingTop: 0, minHeight: '80px', maxHeight: '80px' }}>
+      <div className="max-w-7xl mx-auto flex items-center justify-between px-6 py-4" style={{ marginTop: 0, paddingTop: 0, height: '80px' }}>
         <div className="flex items-center">
           {/* App Launcher - Only show for authenticated users */}
           {user && <AppLauncher />}
@@ -70,7 +70,7 @@ export default function Navigation() {
               📖 Our Story
             </button>
             <button 
-              onClick={() => router.push('/our-services')}
+              onClick={() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })}
               style={{
                 background: 'linear-gradient(135deg, #ddd6fe 0%, #a78bfa 100%)',
                 color: '#374151',

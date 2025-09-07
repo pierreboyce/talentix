@@ -1,33 +1,57 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { useAuth } from "../../contexts/AuthContext";
 
 export default function SignIn() {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
+  const { signIn, user, loading } = useAuth();
+  const [formData, setFormData] = useState({
+    email: "",
+    password: ""
+  });
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (user && !loading) {
+      router.push('/dashboard');
+    }
+  }, [user, loading, router]);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData(prev => ({
+      ...prev,
+      [e.target.name]: e.target.value
+    }));
+  };
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError("");
 
-    // Simulate API call
-    setTimeout(() => {
-      if (username && password) {
-        localStorage.setItem("talentix_user", username);
-        localStorage.setItem("talentix_score", "25");
-        router.push("/");
+    try {
+      const result = await signIn({
+        email: formData.email,
+        password: formData.password
+      });
+
+      if (result.success) {
+        router.push("/dashboard");
       } else {
-        setError("Please enter both username and password");
+        setError(result.error || 'Sign in failed');
       }
+    } catch (error) {
+      console.error('Error signing in:', error);
+      setError('Network error occurred');
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
   return (
@@ -49,12 +73,13 @@ export default function SignIn() {
         
         <form className="space-y-4" onSubmit={handleSignIn}>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Username</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
             <input
-              type="text"
+              type="email"
+              name="email"
               className="w-full p-3 border border-gray-300 rounded-lg focus:ring-yellow-500 focus:border-yellow-500"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              value={formData.email}
+              onChange={handleInputChange}
               required
               autoFocus
             />
@@ -63,9 +88,10 @@ export default function SignIn() {
             <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
             <input
               type="password"
+              name="password"
               className="w-full p-3 border border-gray-300 rounded-lg focus:ring-yellow-500 focus:border-yellow-500"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              value={formData.password}
+              onChange={handleInputChange}
               required
             />
           </div>

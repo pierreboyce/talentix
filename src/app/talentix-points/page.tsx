@@ -279,7 +279,7 @@ export default function TalentixPoints() {
     // This would update the quest completion status and award XP
     const quest = quests.find(q => q.id === questId);
     if (quest) {
-      setUserPoints(prev => prev + quest.xpReward);
+      addPoints(quest.xpReward);
       alert(`Quest completed! You earned ${quest.xpReward} XP.`);
     }
   };

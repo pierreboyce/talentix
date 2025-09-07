@@ -7,7 +7,15 @@ import { useAuth } from '../../contexts/AuthContext';
 import { usePoints } from '../../contexts/PointsContext';
 import EmojiPickerModal from '../../components/EmojiPickerModal';
 import NameEditModal from '../../components/NameEditModal';
-import { JobPostCardProps } from '../../components/JobPostCard';
+
+// Interface for job post cards
+interface JobPostCardProps {
+  companyName: string;
+  companyLogo: string;
+  jobTitle: string;
+  description: string;
+  applyLink: string;
+}
 
 // Job tips array that rotates daily
 const jobTips = [
@@ -45,11 +53,11 @@ const jobTips = [
 
 
 export default function Dashboard() {
-  const { user, session, loading, updateUser, refreshUser } = useAuth();
+  const { user, session, loading, signOut, updateUser, refreshUser } = useAuth();
   const router = useRouter();
-  const { points: userPoints } = usePoints(); // Use shared points context
+  const { points: userPoints, setPoints } = usePoints(); // Use shared points context
 
-  // All hooks must be called before any conditional returns
+  // All state hooks must be at the top
   const [greeting, setGreeting] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
@@ -57,7 +65,74 @@ export default function Dashboard() {
   const [displayEmoji, setDisplayEmoji] = useState<string>(user?.emoji || '😊');
   const [dailyTip, setDailyTip] = useState<string>('');
 
-  // All useEffect hooks must be called before any conditional returns
+  // Event handler functions to avoid inline handlers
+  const handleEmojiPickerOpen = () => setShowEmojiPicker(true);
+  const handleNameEditOpen = () => setShowNameEdit(true);
+  const handlePointsNavigation = () => router.push('/talentix-points');
+  const handleSearchNavigation = () => router.push('/search');
+  const handleCVReviewerNavigation = () => router.push('/cv-reviewer');
+  const handleInterviewPrepNavigation = () => router.push('/interview-prep');
+  const handleSettingsNavigation = () => router.push('/settings');
+  const handleCareerGuidanceNavigation = () => router.push('/career-guidance');
+  const handleOurStoryNavigation = () => router.push('/our-story');
+  
+  const handleScrollLeft = () => {
+    const container = document.getElementById('feature-cards-container');
+    if (container) {
+      container.scrollBy({ left: -400, behavior: 'smooth' });
+    }
+  };
+  
+  const handleScrollRight = () => {
+    const container = document.getElementById('feature-cards-container');
+    if (container) {
+      container.scrollBy({ left: 400, behavior: 'smooth' });
+    }
+  };
+  
+  const handleAIChatOpen = () => {
+    const chatEvent = new CustomEvent('openChatbot', { 
+      detail: { message: 'Hello! I need help with my career.' } 
+    });
+    window.dispatchEvent(chatEvent);
+  };
+  
+  const handleJobApply = (e: React.MouseEvent, url: string) => {
+    e.preventDefault();
+    window.open(url, '_blank', 'noopener,noreferrer');
+  };
+  
+  const handleJobClick = (e: React.MouseEvent, job: any) => {
+    e.preventDefault();
+    trackJobClick({
+      companyName: job.companyName,
+      jobTitle: job.jobTitle
+    });
+    window.open(job.applyLink, '_blank', 'noopener,noreferrer');
+  };
+
+  // Authentication redirect effect - must be before any early returns
+  useEffect(() => {
+    console.log('📊 Dashboard auth check:', { loading, user: !!user, session: !!session });
+    // Don't redirect if we're still loading or if we have a user
+    if (loading || user || session) {
+      console.log('📊 Dashboard: User authenticated or still loading, staying on dashboard');
+      return;
+    }
+    
+    console.log('📊 Dashboard: No auth found, will redirect to home in 2 seconds');
+    // Only redirect after a longer delay to prevent flashing
+    const timer = setTimeout(() => {
+      // Double check that we still don't have authentication
+      if (!user && !session && !loading) {
+        console.log('📊 Dashboard: Redirecting to home - no authentication');
+        router.push('/');
+      }
+    }, 500); // Reduced delay for testing
+    
+    return () => clearTimeout(timer);
+  }, [loading, user, session, router]);
+
   useEffect(() => {
     setDisplayEmoji(user?.emoji || '😊');
     // Set the daily tip immediately
@@ -66,102 +141,6 @@ export default function Dashboard() {
     const tipIndex = dayOfYear % jobTips.length;
     setDailyTip(jobTips[tipIndex]);
   }, [user?.emoji]);
-
-  // First useEffect - Set greeting based on time of day
-  useEffect(() => {
-    if (loading) return;
-    
-    // Set greeting based on time of day
-    const hour = new Date().getHours();
-    if (hour < 12) setGreeting('Good morning');
-    else if (hour < 17) setGreeting('Good afternoon');
-    else setGreeting('Good evening');
-  }, [loading]);
-
-  // Handle direct OAuth login (when real user data is available)
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const oauthUser = urlParams.get('oauth_user');
-    const provider = urlParams.get('provider');
-    const directLogin = urlParams.get('direct_login');
-    
-    if (oauthUser && provider && directLogin === 'true') {
-      try {
-        const userData = JSON.parse(oauthUser);
-        
-        // Store real OAuth user data in localStorage and create a valid session object
-        const sessionData = {
-          user: userData,
-          provider: provider,
-          timestamp: Date.now(),
-          // IMPORTANT: include an expires field so AuthContext accepts the session
-          expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-          token: `oauth_${provider}_${Date.now()}_${Math.random().toString(36).slice(2)}`
-        };
-        localStorage.setItem('talentix_user', JSON.stringify(userData));
-        localStorage.setItem('talentix_session', JSON.stringify(sessionData));
-        // Also set a lightweight cookie so middleware allows protected routes
-        document.cookie = `talentix-session=1; path=/; max-age=${24 * 60 * 60}`;
-
-        // Clear URL parameters
-        const newUrl = window.location.pathname;
-        window.history.replaceState({}, document.title, newUrl);
-
-        // Force refresh to update auth context
-        refreshUser();
-      } catch (error) {
-        console.error('Failed to parse OAuth user data:', error);
-      }
-    }
-  }, [refreshUser]);
-
-  // Only redirect if we're sure there's no user and loading is complete
-  useEffect(() => {
-    // If we are currently processing a direct login via URL params, do not redirect yet
-    const sp = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : undefined;
-    if (sp && (sp.get('oauth_user') || sp.get('direct_login') === 'true')) return;
-    // Don't redirect if we're still loading or if we have a user
-    if (loading || user || session) {
-      return;
-    }
-    
-    // Only redirect after a longer delay to prevent flashing
-    const timer = setTimeout(() => {
-      // Double check that we still don't have authentication
-      if (!user && !session && !loading) {
-        router.push('/');
-      }
-    }, 2000); // Increased delay
-    
-    return () => clearTimeout(timer);
-  }, [loading, user, session, router]);
-
-  // Show loading state while checking authentication
-  if (loading) {
-    return (
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        minHeight: '100vh',
-        backgroundColor: '#fef3c7',
-        fontFamily: 'Fredoka, Inter, sans-serif'
-      }}>
-        <div style={{
-          backgroundColor: '#ffffff',
-          borderRadius: '20px',
-          padding: '40px',
-          boxShadow: '0 8px 25px rgba(0, 0, 0, 0.1)',
-          textAlign: 'center'
-        }}>
-          <div style={{ fontSize: '3rem', marginBottom: '20px', animation: 'pulse 2s ease-in-out infinite' }}>🚀</div>
-          <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#1f2937' }}>
-            Loading your dashboard...
-          </h2>
-        </div>
-      </div>
-    );
-  }
 
   // Talentix Points levels system (same as Talentix Points page)
   const levels = [
@@ -187,12 +166,96 @@ export default function Dashboard() {
     return currentIndex < levels.length - 1 ? levels[currentIndex + 1] : null;
   };
 
-  // NOTE: Do not add new hooks below this point before the first early return.
-  // All hook setup for greeting and OAuth handling happens above (lines ~60-110).
+  // First useEffect - Set greeting based on time of day
+  useEffect(() => {
+    if (loading) return;
+    
+    // Remove strict authentication check for now
+    // if (!user || !session) {
+    //   router.push('/');
+    //   return;
+    // }
+
+    // Set greeting based on time of day
+    const hour = new Date().getHours();
+    if (hour < 12) setGreeting('Good morning');
+    else if (hour < 17) setGreeting('Good afternoon');
+    else setGreeting('Good evening');
+  }, [user, session, loading, router]);
+
+  // Points are now handled by the shared context
+
+  // Handle direct OAuth login (when real user data is available)
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const oauthUser = urlParams.get('oauth_user');
+    const provider = urlParams.get('provider');
+    const directLogin = urlParams.get('direct_login');
+    
+    if (oauthUser && provider && directLogin === 'true') {
+      try {
+        const userData = JSON.parse(oauthUser);
+        
+        // Store real OAuth user data in localStorage
+        localStorage.setItem('talentix_user', JSON.stringify(userData));
+        localStorage.setItem(`talentix_oauth_${provider}`, JSON.stringify(userData));
+        localStorage.setItem(`talentix_user_${userData.email}`, JSON.stringify(userData));
+        
+        // Create session
+        const session = {
+          user: userData,
+          expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days
+          token: `oauth_token_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+        };
+        
+        localStorage.setItem('talentix_session', JSON.stringify(session));
+        
+        // Clear URL parameters
+        const newUrl = new URL(window.location.href);
+        newUrl.searchParams.delete('oauth_user');
+        newUrl.searchParams.delete('provider');
+        newUrl.searchParams.delete('direct_login');
+        window.history.replaceState({}, '', newUrl.toString());
+        
+        // Reload the page to update the auth context
+        window.location.reload();
+        
+      } catch (error) {
+        console.error('Error processing real OAuth user data:', error);
+      }
+    }
+  }, []);
 
 
+
+  const handleSignOutClick = () => {
+    console.log('Sign out button clicked!'); // Debug log
+    
+    // Simple, direct approach - no async/await
+    try {
+      console.log('Starting simple sign out...'); // Debug log
+      
+      // Clear all localStorage immediately
+      localStorage.removeItem('talentix_session');
+    localStorage.removeItem('talentix_user');
+      console.log('localStorage cleared'); // Debug log
+      
+      // Force redirect immediately
+      console.log('Redirecting immediately...'); // Debug log
+      window.location.href = '/';
+      
+    } catch (error) {
+      console.error('Simple sign out error:', error);
+      // Force redirect even on error
+      window.location.href = '/';
+    }
+  };
 
   // Search functionality
+  const handleSearch = (query: string) => {
+    const trimmedQuery = query.trim() || "jobs";
+    router.push(`/search?q=${encodeURIComponent(trimmedQuery)}`);
+  };
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -213,6 +276,12 @@ export default function Dashboard() {
 
   // Points management is now handled by the shared context
 
+  // Get user's actual name for certificates
+  const getUserName = () => {
+    if (user?.name) return user.name;
+    if (user?.email) return user.email.split('@')[0]; // Use email prefix if no name
+    return 'Talentix User'; // Final fallback
+  };
 
   // Function to handle emoji selection
   const handleEmojiSelect = async (newEmoji: string) => {
@@ -384,9 +453,106 @@ export default function Dashboard() {
     },
   ];
 
+  // Show loading state while checking authentication
+  if (loading) {
+    return (
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: '100vh',
+        backgroundColor: '#fef3c7',
+        fontFamily: 'Fredoka, Inter, sans-serif'
+      }}>
+        <div style={{
+          backgroundColor: '#ffffff',
+          borderRadius: '20px',
+          padding: '40px',
+          boxShadow: '0 8px 25px rgba(0, 0, 0, 0.1)',
+          textAlign: 'center'
+        }}>
+          <div style={{ fontSize: '3rem', marginBottom: '20px', animation: 'pulse 2s ease-in-out infinite' }}>🚀</div>
+          <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#1f2937' }}>
+            Loading your dashboard...
+          </h2>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 pt-4 dashboard-container" style={{ scrollBehavior: 'smooth' }}>
       <style jsx global>{`
+        /* Dashboard hover effects */
+        .dashboard-search-btn:hover {
+          background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
+          transform: translateY(-2px) scale(1.05) !important;
+          box-shadow: 0 8px 20px rgba(251, 191, 36, 0.4) !important;
+        }
+        
+        .dashboard-feature-card:hover {
+          transform: translateY(-5px) scale(1.02) !important;
+        }
+        
+        .dashboard-feature-card.interview:hover {
+          box-shadow: 0 15px 35px rgba(37, 99, 235, 0.4) !important;
+        }
+        
+        .dashboard-feature-card.tracker:hover {
+          box-shadow: 0 15px 35px rgba(22, 163, 74, 0.4) !important;
+        }
+        
+        .dashboard-feature-card.cover-letter:hover {
+          box-shadow: 0 15px 35px rgba(217, 119, 6, 0.4) !important;
+        }
+        
+        .dashboard-feature-card.cv-reviewer:hover {
+          box-shadow: 0 15px 35px rgba(251, 191, 36, 0.4) !important;
+        }
+        
+        .dashboard-feature-card.interview-prep:hover {
+          box-shadow: 0 15px 35px rgba(139, 92, 246, 0.4) !important;
+        }
+        
+        .dashboard-feature-card.points:hover {
+          box-shadow: 0 15px 35px rgba(236, 72, 153, 0.4) !important;
+        }
+        
+        .dashboard-feature-card.career:hover {
+          box-shadow: 0 15px 35px rgba(245, 158, 11, 0.4) !important;
+        }
+        
+        .dashboard-feature-card.search:hover {
+          box-shadow: 0 15px 35px rgba(14, 165, 233, 0.4) !important;
+        }
+        
+        .dashboard-job-card:hover {
+          border-color: #fbbf24 !important;
+          box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important;
+          transform: translateY(-2px) !important;
+        }
+        
+        .dashboard-apply-btn:hover {
+          background-color: #f59e0b !important;
+          transform: translateY(-1px) !important;
+        }
+        
+        .dashboard-nav-btn:hover {
+          background-color: #fbbf24 !important;
+          color: #000000 !important;
+          transform: translateY(-2px) !important;
+          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15) !important;
+        }
+        
+        .dashboard-points-btn:hover {
+          background-color: #f59e0b !important;
+        }
+        
+        .dashboard-input:hover {
+          border-color: #fbbf24 !important;
+          background-color: #fef3c7 !important;
+        }
+        
         body {
           overflow-y: auto !important;
           overflow-x: visible !important;
@@ -485,16 +651,7 @@ export default function Dashboard() {
                       gap: '6px',
                       boxShadow: '0 4px 12px rgba(251, 191, 36, 0.3)'
                     }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.background = 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)';
-                      e.currentTarget.style.transform = 'translateY(-2px) scale(1.05)';
-                      e.currentTarget.style.boxShadow = '0 8px 20px rgba(251, 191, 36, 0.4)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.background = 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)';
-                      e.currentTarget.style.transform = 'translateY(0) scale(1)';
-                      e.currentTarget.style.boxShadow = '0 4px 12px rgba(251, 191, 36, 0.3)';
-                    }}
+                    className="dashboard-search-btn"
                   >
                     ✨ Search
                   </button>
@@ -562,7 +719,7 @@ export default function Dashboard() {
                 justifyContent: 'flex-start'
               }}>
                 <button
-                  onClick={() => setShowEmojiPicker(true)}
+                  onClick={handleEmojiPickerOpen}
                   style={{
                     padding: '12px 24px',
                     backgroundColor: '#ffffff',
@@ -578,24 +735,13 @@ export default function Dashboard() {
                     alignItems: 'center',
                     gap: '8px'
                   }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = '#fbbf24';
-                    e.currentTarget.style.color = '#000000';
-                    e.currentTarget.style.transform = 'translateY(-2px)';
-                    e.currentTarget.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.15)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = '#ffffff';
-                    e.currentTarget.style.color = '#1f2937';
-                    e.currentTarget.style.transform = 'translateY(0)';
-                    e.currentTarget.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.1)';
-                  }}
+                  className="dashboard-nav-btn"
                   title="Click to change your emoji"
                 >
                   ✏️ Edit Emoji
                 </button>
                 <button 
-                  onClick={() => setShowNameEdit(true)}
+                  onClick={handleNameEditOpen}
                   style={{
                     padding: '12px 24px',
                     backgroundColor: '#ffffff',
@@ -611,18 +757,7 @@ export default function Dashboard() {
                     alignItems: 'center',
                     gap: '8px'
                   }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = '#fbbf24';
-                    e.currentTarget.style.color = '#000000';
-                    e.currentTarget.style.transform = 'translateY(-2px)';
-                    e.currentTarget.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.15)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = '#ffffff';
-                    e.currentTarget.style.color = '#1f2937';
-                    e.currentTarget.style.transform = 'translateY(0)';
-                    e.currentTarget.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.1)';
-                  }}
+                  className="dashboard-nav-btn"
                   title="Click to change your name"
                 >
                   ✏️ Edit Name
@@ -746,7 +881,7 @@ export default function Dashboard() {
           {/* View Full Progress Button */}
           <div style={{ marginTop: '16px', textAlign: 'center' }}>
             <button
-              onClick={() => router.push('/talentix-points')}
+              onClick={handlePointsNavigation}
               style={{
                 backgroundColor: '#fbbf24',
                 color: '#1f2937',
@@ -758,12 +893,7 @@ export default function Dashboard() {
                 cursor: 'pointer',
                 transition: 'all 0.2s ease'
               }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = '#f59e0b';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = '#fbbf24';
-              }}
+              className="dashboard-points-btn"
             >
               View Full Progress & Achievements
             </button>
@@ -780,12 +910,7 @@ export default function Dashboard() {
           <div style={{ position: 'relative' }}>
             {/* Navigation Arrows */}
             <button 
-              onClick={() => {
-                const container = document.getElementById('feature-cards-container');
-                if (container) {
-                  container.scrollBy({ left: -400, behavior: 'smooth' });
-                }
-              }}
+              onClick={handleScrollLeft}
               style={{
                 position: 'absolute',
                 left: '-20px',
@@ -804,25 +929,13 @@ export default function Dashboard() {
                 boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
                 transition: 'all 0.2s ease'
               }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = '#fbbf24';
-                e.currentTarget.style.backgroundColor = '#fef3c7';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = '#e5e7eb';
-                e.currentTarget.style.backgroundColor = '#ffffff';
-              }}
+              className="dashboard-input"
             >
               <span style={{ fontSize: '20px', color: '#374151' }}>←</span>
             </button>
 
             <button 
-              onClick={() => {
-                const container = document.getElementById('feature-cards-container');
-                if (container) {
-                  container.scrollBy({ left: 400, behavior: 'smooth' });
-                }
-              }}
+              onClick={handleScrollRight}
               style={{
                 position: 'absolute',
                 right: '-20px',
@@ -841,14 +954,7 @@ export default function Dashboard() {
                 boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
                 transition: 'all 0.2s ease'
               }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = '#fbbf24';
-                e.currentTarget.style.backgroundColor = '#fef3c7';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = '#e5e7eb';
-                e.currentTarget.style.backgroundColor = '#ffffff';
-              }}
+              className="dashboard-input"
             >
               <span style={{ fontSize: '20px', color: '#374151' }}>→</span>
             </button>
@@ -870,7 +976,7 @@ export default function Dashboard() {
               
               {/* Job Search Feature Card */}
               <div 
-                onClick={() => router.push('/search')}
+                onClick={handleSearchNavigation}
                 style={{
                   flexShrink: 0,
                   width: '350px',
@@ -885,14 +991,7 @@ export default function Dashboard() {
                   position: 'relative',
                   overflow: 'hidden'
                 }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-5px) scale(1.02)';
-                  e.currentTarget.style.boxShadow = '0 15px 35px rgba(37, 99, 235, 0.4)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0) scale(1)';
-                  e.currentTarget.style.boxShadow = '0 8px 25px rgba(37, 99, 235, 0.3)';
-                }}
+                className="dashboard-feature-card interview"
               >
                 <div style={{ position: 'absolute', top: '10px', right: '10px', fontSize: '2rem', opacity: '0.3' }}>🔍</div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '24px' }}>
@@ -940,7 +1039,7 @@ export default function Dashboard() {
 
               {/* CV Reviewer Feature Card */}
               <div 
-                onClick={() => router.push('/cv-reviewer')}
+                onClick={handleCVReviewerNavigation}
                 style={{
                   flexShrink: 0,
                   width: '350px',
@@ -955,14 +1054,7 @@ export default function Dashboard() {
                   position: 'relative',
                   overflow: 'hidden'
                 }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-5px) scale(1.02)';
-                  e.currentTarget.style.boxShadow = '0 15px 35px rgba(22, 163, 74, 0.4)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0) scale(1)';
-                  e.currentTarget.style.boxShadow = '0 8px 25px rgba(22, 163, 74, 0.3)';
-                }}
+                className="dashboard-feature-card tracker"
               >
                 <div style={{ position: 'absolute', top: '10px', right: '10px', fontSize: '2rem', opacity: '0.3' }}>📄</div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '24px' }}>
@@ -1010,7 +1102,7 @@ export default function Dashboard() {
 
               {/* Interview Prep Feature Card */}
               <div 
-                onClick={() => router.push('/interview-prep')}
+                onClick={handleInterviewPrepNavigation}
                 style={{
                   flexShrink: 0,
                   width: '350px',
@@ -1025,14 +1117,7 @@ export default function Dashboard() {
                   position: 'relative',
                   overflow: 'hidden'
                 }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-5px) scale(1.02)';
-                  e.currentTarget.style.boxShadow = '0 15px 35px rgba(217, 119, 6, 0.4)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0) scale(1)';
-                  e.currentTarget.style.boxShadow = '0 8px 25px rgba(217, 119, 6, 0.3)';
-                }}
+                className="dashboard-feature-card cover-letter"
               >
                 <div style={{ position: 'absolute', top: '10px', right: '10px', fontSize: '2rem', opacity: '0.3' }}>🎤</div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '24px' }}>
@@ -1080,7 +1165,7 @@ export default function Dashboard() {
 
               {/* Talentix Points Feature Card */}
               <div 
-                onClick={() => router.push('/talentix-points')}
+                onClick={handlePointsNavigation}
                 style={{
                   flexShrink: 0,
                   width: '350px',
@@ -1095,14 +1180,7 @@ export default function Dashboard() {
                   position: 'relative',
                   overflow: 'hidden'
                 }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-5px) scale(1.02)';
-                  e.currentTarget.style.boxShadow = '0 15px 35px rgba(251, 191, 36, 0.4)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0) scale(1)';
-                  e.currentTarget.style.boxShadow = '0 8px 25px rgba(251, 191, 36, 0.3)';
-                }}
+                className="dashboard-feature-card cv-reviewer"
               >
                 <div style={{ position: 'absolute', top: '10px', right: '10px', fontSize: '2rem', opacity: '0.3' }}>🏆</div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '24px' }}>
@@ -1150,7 +1228,7 @@ export default function Dashboard() {
 
               {/* Settings Feature Card */}
               <div 
-                onClick={() => router.push('/settings')}
+                onClick={handleSettingsNavigation}
                 style={{
                   flexShrink: 0,
                   width: '350px',
@@ -1165,14 +1243,7 @@ export default function Dashboard() {
                   position: 'relative',
                   overflow: 'hidden'
                 }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-5px) scale(1.02)';
-                  e.currentTarget.style.boxShadow = '0 15px 35px rgba(139, 92, 246, 0.4)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0) scale(1)';
-                  e.currentTarget.style.boxShadow = '0 8px 25px rgba(139, 92, 246, 0.3)';
-                }}
+                className="dashboard-feature-card interview-prep"
               >
                 <div style={{ position: 'absolute', top: '10px', right: '10px', fontSize: '2rem', opacity: '0.3' }}>⚙️</div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '24px' }}>
@@ -1220,7 +1291,7 @@ export default function Dashboard() {
 
               {/* Career Guidance Feature Card */}
               <div 
-                onClick={() => router.push('/career-guidance')}
+                onClick={handleCareerGuidanceNavigation}
                 style={{
                   flexShrink: 0,
                   width: '350px',
@@ -1235,14 +1306,7 @@ export default function Dashboard() {
                   position: 'relative',
                   overflow: 'hidden'
                 }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-5px) scale(1.02)';
-                  e.currentTarget.style.boxShadow = '0 15px 35px rgba(236, 72, 153, 0.4)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0) scale(1)';
-                  e.currentTarget.style.boxShadow = '0 8px 25px rgba(236, 72, 153, 0.3)';
-                }}
+                className="dashboard-feature-card points"
               >
                 <div style={{ position: 'absolute', top: '10px', right: '10px', fontSize: '2rem', opacity: '0.3' }}>📚</div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '24px' }}>
@@ -1290,7 +1354,7 @@ export default function Dashboard() {
 
               {/* Our Story Feature Card */}
               <div 
-                onClick={() => router.push('/our-story')}
+                onClick={handleOurStoryNavigation}
                 style={{
                   flexShrink: 0,
                   width: '350px',
@@ -1305,14 +1369,7 @@ export default function Dashboard() {
                   position: 'relative',
                   overflow: 'hidden'
                 }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-5px) scale(1.02)';
-                  e.currentTarget.style.boxShadow = '0 15px 35px rgba(245, 158, 11, 0.4)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0) scale(1)';
-                  e.currentTarget.style.boxShadow = '0 8px 25px rgba(245, 158, 11, 0.3)';
-                }}
+                className="dashboard-feature-card career"
               >
                 <div style={{ position: 'absolute', top: '10px', right: '10px', fontSize: '2rem', opacity: '0.3' }}>👥</div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '24px' }}>
@@ -1360,11 +1417,7 @@ export default function Dashboard() {
 
               {/* AI Chat Feature Card */}
               <div 
-                onClick={() => {
-                  // Trigger AI chat widget instead of navigating
-                  const event = new CustomEvent('openChatbot');
-                  window.dispatchEvent(event);
-                }}
+                onClick={handleAIChatOpen}
                 style={{
                   flexShrink: 0,
                   width: '350px',
@@ -1379,14 +1432,7 @@ export default function Dashboard() {
                   position: 'relative',
                   overflow: 'hidden'
                 }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-5px) scale(1.02)';
-                  e.currentTarget.style.boxShadow = '0 15px 35px rgba(14, 165, 233, 0.4)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0) scale(1)';
-                  e.currentTarget.style.boxShadow = '0 8px 25px rgba(14, 165, 233, 0.3)';
-                }}
+                className="dashboard-feature-card search"
               >
                 <div style={{ position: 'absolute', top: '10px', right: '10px', fontSize: '2rem', opacity: '0.3' }}>🤖</div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '24px' }}>
@@ -1489,16 +1535,7 @@ export default function Dashboard() {
                   transition: 'all 0.2s ease',
                   cursor: 'pointer'
                 }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = '#fbbf24';
-                  e.currentTarget.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1)';
-                  e.currentTarget.style.transform = 'translateY(-2px)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = '#e5e7eb';
-                  e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1)';
-                  e.currentTarget.style.transform = 'translateY(0)';
-                }}
+                className="dashboard-job-card"
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
@@ -1579,14 +1616,7 @@ export default function Dashboard() {
                     href={job.applyLink}
                     target="_blank"
                     rel="noopener noreferrer"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      trackJobClick({
-                        companyName: job.companyName,
-                        jobTitle: job.jobTitle
-                      });
-                      window.open(job.applyLink, '_blank');
-                    }}
+                    onClick={(e) => handleJobClick(e, job)}
                     style={{
                       display: 'flex',
                       alignItems: 'center',
@@ -1600,20 +1630,417 @@ export default function Dashboard() {
                       fontSize: '14px',
                       transition: 'all 0.2s ease'
                     }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = '#f59e0b';
-                      e.currentTarget.style.transform = 'translateY(-1px)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor = '#fbbf24';
-                      e.currentTarget.style.transform = 'translateY(0)';
-                    }}
+                    className="dashboard-apply-btn"
                   >
                     Apply Now
                     <ExternalLink style={{ width: '16px', height: '16px' }} />
                   </a>
                 </div>
               </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Fun Achievement Badges Section */}
+        <div style={{ marginBottom: '48px' }}>
+          <div style={{ 
+            textAlign: 'center',
+            marginBottom: '32px',
+            background: 'linear-gradient(135deg, #e0f2fe 0%, #0ea5e9 50%, #0284c7 100%)',
+            borderRadius: '20px',
+            padding: '24px',
+            boxShadow: '0 8px 25px rgba(14, 165, 233, 0.3)'
+          }}>
+            <h2 style={{ 
+              fontSize: '3rem', 
+              fontWeight: 'bold', 
+              color: '#ffffff', 
+              margin: '0 0 16px 0',
+              fontFamily: 'Fredoka',
+              textShadow: '2px 2px 4px rgba(0,0,0,0.3)',
+              lineHeight: '1.1'
+            }}>
+              🏆 Achievement Gallery 🏆
+            </h2>
+            <p style={{ 
+              fontSize: '1.25rem', 
+              color: '#e0f2fe',
+              margin: '0',
+              fontWeight: '600'
+            }}>
+              Unlock badges as you complete career milestones!
+            </p>
+          </div>
+
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+            gap: '20px',
+            maxWidth: '1000px',
+            margin: '0 auto'
+          }}>
+            {[
+              { name: 'First Login', emoji: '🎉', unlocked: true, description: 'Welcome to Talentix!' },
+              { name: 'CV Master', emoji: '📄', unlocked: userPoints >= 50, description: 'Upload your first CV' },
+              { name: 'Interview Ready', emoji: '🎤', unlocked: userPoints >= 100, description: 'Complete interview prep' },
+              { name: 'Job Hunter', emoji: '🔍', unlocked: userPoints >= 150, description: 'Apply to 5 jobs' },
+              { name: 'Social Star', emoji: '⭐', unlocked: userPoints >= 200, description: 'Share your profile' },
+              { name: 'Career Champion', emoji: '👑', unlocked: userPoints >= 500, description: 'Reach Silver level' }
+            ].map((badge, index) => (
+              <div
+                key={index}
+                style={{
+                  backgroundColor: badge.unlocked ? '#ffffff' : '#f3f4f6',
+                  borderRadius: '16px',
+                  padding: '20px',
+                  textAlign: 'center',
+                  boxShadow: badge.unlocked ? '0 4px 15px rgba(0, 0, 0, 0.1)' : '0 2px 8px rgba(0, 0, 0, 0.05)',
+                  border: badge.unlocked ? '3px solid #fbbf24' : '2px solid #e5e7eb',
+                  transition: 'all 0.3s ease',
+                  opacity: badge.unlocked ? 1 : 0.6,
+                  transform: badge.unlocked ? 'scale(1)' : 'scale(0.95)'
+                }}
+              >
+                <div style={{ 
+                  fontSize: '3rem', 
+                  marginBottom: '12px',
+                  filter: badge.unlocked ? 'none' : 'grayscale(100%)'
+                }}>
+                  {badge.emoji}
+                </div>
+                <h3 style={{ 
+                  fontSize: '16px', 
+                  fontWeight: 'bold', 
+                  color: badge.unlocked ? '#1f2937' : '#6b7280', 
+                  margin: '0 0 8px 0' 
+                }}>
+                  {badge.name}
+                </h3>
+                <p style={{ 
+                  fontSize: '12px', 
+                  color: badge.unlocked ? '#4b5563' : '#9ca3af', 
+                  margin: '0',
+                  lineHeight: '1.4'
+                }}>
+                  {badge.description}
+                </p>
+                {badge.unlocked && (
+                  <div style={{
+                    marginTop: '12px',
+                    padding: '6px 12px',
+                    backgroundColor: '#dcfce7',
+                    color: '#166534',
+                    borderRadius: '20px',
+                    fontSize: '11px',
+                    fontWeight: '600'
+                  }}>
+                    ✅ Unlocked!
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Fun Career Stats Dashboard */}
+        <div style={{ marginBottom: '48px' }}>
+          <div style={{ 
+            textAlign: 'center',
+            marginBottom: '32px',
+            background: 'linear-gradient(135deg, #fce7f3 0%, #ec4899 50%, #be185d 100%)',
+            borderRadius: '20px',
+            padding: '24px',
+            boxShadow: '0 8px 25px rgba(236, 72, 153, 0.3)'
+          }}>
+            <h2 style={{ 
+              fontSize: '3rem', 
+              fontWeight: 'bold', 
+              color: '#ffffff', 
+              margin: '0 0 16px 0',
+              fontFamily: 'Fredoka',
+              textShadow: '2px 2px 4px rgba(0,0,0,0.3)',
+              lineHeight: '1.1'
+            }}>
+              📊 Your Career Journey 📊
+            </h2>
+            <p style={{ 
+              fontSize: '1.25rem', 
+              color: '#fce7f3',
+              margin: '0',
+              fontWeight: '600'
+            }}>
+              Track your progress and celebrate wins!
+            </p>
+          </div>
+
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+            gap: '24px',
+            maxWidth: '1200px',
+            margin: '0 auto'
+          }}>
+            {[
+              { 
+                title: 'Days Active', 
+                value: '7', 
+                emoji: '📅', 
+                color: '#3b82f6',
+                bgColor: '#dbeafe',
+                description: 'Keep the streak going!'
+              },
+              { 
+                title: 'CVs Reviewed', 
+                value: '3', 
+                emoji: '📄', 
+                color: '#10b981',
+                bgColor: '#dcfce7',
+                description: 'Each review makes you stronger'
+              },
+              { 
+                title: 'Interview Prep', 
+                value: '5', 
+                emoji: '🎤', 
+                color: '#f59e0b',
+                bgColor: '#fef3c7',
+                description: 'Practice makes perfect'
+              },
+              { 
+                title: 'Jobs Applied', 
+                value: '12', 
+                emoji: '🎯', 
+                color: '#8b5cf6',
+                bgColor: '#e0e7ff',
+                description: 'You\'re putting yourself out there!'
+              }
+            ].map((stat, index) => (
+              <div
+                key={index}
+                style={{
+                  backgroundColor: stat.bgColor,
+                  borderRadius: '20px',
+                  padding: '28px',
+                  textAlign: 'center',
+                  boxShadow: '0 8px 25px rgba(0, 0, 0, 0.1)',
+                  border: `3px solid ${stat.color}20`,
+                  transition: 'all 0.3s ease'
+                }}
+                className="dashboard-feature-card"
+              >
+                <div style={{ 
+                  fontSize: '4rem', 
+                  marginBottom: '16px',
+                  animation: 'float 3s ease-in-out infinite',
+                  animationDelay: `${index * 0.5}s`
+                }}>
+                  {stat.emoji}
+                </div>
+                <div style={{
+                  fontSize: '3rem',
+                  fontWeight: 'bold',
+                  color: stat.color,
+                  margin: '0 0 8px 0',
+                  fontFamily: 'Fredoka'
+                }}>
+                  {stat.value}
+                </div>
+                <h3 style={{ 
+                  fontSize: '18px', 
+                  fontWeight: 'bold', 
+                  color: '#1f2937', 
+                  margin: '0 0 8px 0' 
+                }}>
+                  {stat.title}
+                </h3>
+                <p style={{ 
+                  fontSize: '14px', 
+                  color: '#4b5563', 
+                  margin: '0',
+                  lineHeight: '1.4',
+                  fontStyle: 'italic'
+                }}>
+                  {stat.description}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Motivational Quote Section */}
+        <div style={{ marginBottom: '48px' }}>
+          <div style={{
+            background: 'linear-gradient(135deg, #f3e8ff 0%, #8b5cf6 50%, #7c3aed 100%)',
+            borderRadius: '20px',
+            padding: '40px',
+            textAlign: 'center',
+            boxShadow: '0 8px 25px rgba(139, 92, 246, 0.3)',
+            maxWidth: '800px',
+            margin: '0 auto',
+            position: 'relative',
+            overflow: 'hidden'
+          }}>
+            {/* Floating quote marks */}
+            <div style={{ position: 'absolute', top: '10px', left: '20px', fontSize: '6rem', opacity: '0.2', color: '#ffffff' }}>"</div>
+            <div style={{ position: 'absolute', bottom: '10px', right: '20px', fontSize: '6rem', opacity: '0.2', color: '#ffffff', transform: 'rotate(180deg)' }}>"</div>
+            
+            <div style={{ position: 'relative', zIndex: 2 }}>
+              <h2 style={{
+                fontSize: '2.5rem',
+                fontWeight: 'bold',
+                color: '#ffffff',
+                margin: '0 0 24px 0',
+                fontFamily: 'Fredoka',
+                textShadow: '2px 2px 4px rgba(0,0,0,0.3)'
+              }}>
+                💪 Daily Motivation 💪
+              </h2>
+              <blockquote style={{
+                fontSize: '1.5rem',
+                color: '#f3e8ff',
+                margin: '0 0 20px 0',
+                lineHeight: '1.6',
+                fontStyle: 'italic',
+                fontWeight: '500'
+              }}>
+                "Your future career is created by what you do today, not tomorrow."
+              </blockquote>
+              <p style={{
+                fontSize: '1rem',
+                color: '#e0e7ff',
+                margin: '0',
+                fontWeight: '600'
+              }}>
+                — The Talentix Team ✨
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Quick Actions Panel */}
+        <div style={{ marginBottom: '48px' }}>
+          <div style={{ 
+            textAlign: 'center',
+            marginBottom: '32px'
+          }}>
+            <h2 style={{ 
+              fontSize: '3rem', 
+              fontWeight: 'bold', 
+              color: '#1f2937', 
+              margin: '0 0 16px 0',
+              fontFamily: 'Fredoka',
+              background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              textShadow: '2px 2px 4px rgba(0,0,0,0.1)',
+              lineHeight: '1.1'
+            }}>
+              ⚡ Quick Actions ⚡
+            </h2>
+            <p style={{ 
+              fontSize: '1.25rem', 
+              color: '#4b5563',
+              margin: '0',
+              fontWeight: '500'
+            }}>
+              Jump into your career activities!
+            </p>
+          </div>
+
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+            gap: '20px',
+            maxWidth: '1000px',
+            margin: '0 auto'
+          }}>
+            {[
+              { 
+                title: 'Upload New CV', 
+                description: 'Get AI feedback instantly',
+                emoji: '📤', 
+                action: () => router.push('/cv-reviewer'),
+                color: '#10b981'
+              },
+              { 
+                title: 'Practice Interview', 
+                description: 'Boost your confidence',
+                emoji: '🎯', 
+                action: () => router.push('/interview-prep'),
+                color: '#f59e0b'
+              },
+              { 
+                title: 'Search Jobs', 
+                description: 'Find your dream role',
+                emoji: '🔍', 
+                action: () => router.push('/search'),
+                color: '#3b82f6'
+              },
+              { 
+                title: 'Chat with AI', 
+                description: 'Get career advice',
+                emoji: '💬', 
+                action: handleAIChatOpen,
+                color: '#8b5cf6'
+              }
+            ].map((action, index) => (
+              <button
+                key={index}
+                onClick={action.action}
+                style={{
+                  backgroundColor: '#ffffff',
+                  borderRadius: '16px',
+                  padding: '24px',
+                  textAlign: 'left',
+                  boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1)',
+                  border: `3px solid ${action.color}20`,
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '20px'
+                }}
+                className="dashboard-feature-card"
+              >
+                <div style={{
+                  fontSize: '3rem',
+                  backgroundColor: `${action.color}20`,
+                  borderRadius: '16px',
+                  padding: '16px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  minWidth: '80px',
+                  minHeight: '80px'
+                }}>
+                  {action.emoji}
+                </div>
+                <div>
+                  <h3 style={{ 
+                    fontSize: '20px', 
+                    fontWeight: 'bold', 
+                    color: '#1f2937', 
+                    margin: '0 0 8px 0',
+                    fontFamily: 'Fredoka'
+                  }}>
+                    {action.title}
+                  </h3>
+                  <p style={{ 
+                    fontSize: '14px', 
+                    color: '#6b7280', 
+                    margin: '0',
+                    lineHeight: '1.4'
+                  }}>
+                    {action.description}
+                  </p>
+                </div>
+                <div style={{
+                  marginLeft: 'auto',
+                  fontSize: '24px',
+                  color: action.color
+                }}>
+                  →
+                </div>
+              </button>
             ))}
           </div>
         </div>
