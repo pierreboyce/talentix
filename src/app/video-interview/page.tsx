@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../contexts/AuthContext';
 import { usePoints } from '../../contexts/PointsContext';
+import { useSubscription } from '../../contexts/SubscriptionContext';
 import { Play, Square, RotateCcw, Send, Clock, Mic, Video, ArrowLeft, CheckCircle, Search, Settings, Lightbulb, Shuffle } from 'lucide-react';
 
 // Hardcoded interview questions
@@ -84,6 +85,7 @@ interface FeedbackData {
 export default function VideoInterviewPage(): React.ReactElement {
   const { user, loading } = useAuth();
   const { addPoints } = usePoints();
+  const { subscription } = useSubscription();
   const router = useRouter();
   
   // Core state
@@ -95,6 +97,15 @@ export default function VideoInterviewPage(): React.ReactElement {
   const [feedback, setFeedback] = useState<FeedbackData | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showHowItWorksModal, setShowHowItWorksModal] = useState(false);
+  const [questionsUsed, setQuestionsUsed] = useState(0); // Track questions used for free tier
+  
+  // Initialize questions used from localStorage (user-specific)
+  useEffect(() => {
+    if (typeof window !== 'undefined' && user?.email) {
+      const currentUsage = parseInt(localStorage.getItem(`video_interview_questions_used_${user.email}`) || '0');
+      setQuestionsUsed(currentUsage);
+    }
+  }, [user?.email]);
   
   // Refs
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -158,12 +169,39 @@ export default function VideoInterviewPage(): React.ReactElement {
   }, [stage, recordedBlob]);
 
   const getRandomQuestion = () => {
+    // Check subscription limits for free tier users before getting new question (user-specific)
+    if (!user?.email) {
+      console.error('User email not available for usage tracking');
+      return false;
+    }
+    
+    const currentUsage = parseInt(localStorage.getItem(`video_interview_questions_used_${user.email}`) || '0');
+    if (subscription.tier === 'free' && currentUsage >= 2) {
+      // Trigger pricing modal for upgrade
+      window.dispatchEvent(new CustomEvent('openPricingModal'));
+      return false;
+    }
+    
+    // Track usage in localStorage (user-specific)
+    const newUsage = currentUsage + 1;
+    localStorage.setItem(`video_interview_questions_used_${user.email}`, newUsage.toString());
+    setQuestionsUsed(newUsage);
+    
+    // Notify other components of usage update
+    window.dispatchEvent(new CustomEvent('talentix-usage-update'));
+    
     const randomIndex = Math.floor(Math.random() * interviewQuestions.length);
     setCurrentQuestion(interviewQuestions[randomIndex]);
+    return true;
   };
 
   const startPractice = async () => {
-    getRandomQuestion();
+    // Use getRandomQuestion which now includes paywall check
+    const canProceed = getRandomQuestion();
+    if (!canProceed) {
+      return; // Paywall triggered, stop here
+    }
+    
     setStage('planning');
     setTimeLeft(60);
     setFeedback(null);
@@ -238,15 +276,29 @@ export default function VideoInterviewPage(): React.ReactElement {
         console.warn('⚠️ No video tracks found in stream');
       }
 
-      // Configure MediaRecorder with proper options
-      let options = { mimeType: 'video/webm;codecs=vp9,opus' };
-      if (!MediaRecorder.isTypeSupported(options.mimeType)) {
-        options = { mimeType: 'video/webm;codecs=vp8,opus' };
-        if (!MediaRecorder.isTypeSupported(options.mimeType)) {
-          options = { mimeType: 'video/webm' };
+      // Configure MediaRecorder with compression for smaller file size
+      let options: MediaRecorderOptions = { 
+        mimeType: 'video/webm;codecs=vp9,opus',
+        videoBitsPerSecond: 500000, // 500kbps for smaller file size
+        audioBitsPerSecond: 64000   // 64kbps for audio
+      };
+      
+      if (!MediaRecorder.isTypeSupported(options.mimeType || '')) {
+        options = { 
+          mimeType: 'video/webm;codecs=vp8,opus',
+          videoBitsPerSecond: 500000,
+          audioBitsPerSecond: 64000
+        };
+        if (!MediaRecorder.isTypeSupported(options.mimeType || '')) {
+          options = { 
+            mimeType: 'video/webm',
+            videoBitsPerSecond: 500000,
+            audioBitsPerSecond: 64000
+          };
         }
       }
       console.log('🎬 Using MIME type:', options.mimeType);
+      console.log('🎬 Video bitrate:', options.videoBitsPerSecond, 'bps');
 
       const mediaRecorder = new MediaRecorder(streamRef.current, options);
       mediaRecorderRef.current = mediaRecorder;
@@ -292,6 +344,16 @@ export default function VideoInterviewPage(): React.ReactElement {
     console.log('❓ Question:', currentQuestion.question);
     console.log('📂 Category:', currentQuestion.category);
     
+    // Check file size before submitting
+    const maxSize = 20 * 1024 * 1024; // 20MB limit
+    const fileSizeMB = recordedBlob.size / (1024 * 1024);
+    
+    if (recordedBlob.size > maxSize) {
+      alert(`Video file is too large (${fileSizeMB.toFixed(1)}MB). Please try recording a shorter answer (maximum 30 seconds) or refresh the page to try again with better compression.`);
+      return;
+    }
+    
+    console.log(`📁 Video size: ${fileSizeMB.toFixed(2)}MB - OK to submit`);
     setIsSubmitting(true);
     
     try {
@@ -468,11 +530,44 @@ export default function VideoInterviewPage(): React.ReactElement {
               <p style={{ 
                 fontSize: '20px', 
                 color: '#4b5563', 
-                margin: '0',
+                margin: '0 0 16px 0',
                 fontWeight: '400'
               }}>
                 Get ready to practice interview questions with video recording and AI‑powered feedback
               </p>
+              
+              {/* Usage Limits Display */}
+              {subscription.tier === 'free' && (
+                <div style={{
+                  backgroundColor: '#fef3c7',
+                  border: '2px solid #fbbf24',
+                  borderRadius: '12px',
+                  padding: '16px',
+                  marginBottom: '24px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px'
+                }}>
+                  <span style={{ fontSize: '24px' }}>⚠️</span>
+                  <div>
+                    <p style={{ 
+                      fontSize: '16px', 
+                      fontWeight: 'bold', 
+                      color: '#92400e', 
+                      margin: '0 0 4px 0' 
+                    }}>
+                      Free Tier Limit: {questionsUsed}/2 video interviews used
+                    </p>
+                    <p style={{ 
+                      fontSize: '14px', 
+                      color: '#92400e', 
+                      margin: '0' 
+                    }}>
+                      {questionsUsed >= 2 ? 'Upgrade to Pro for unlimited video interviews!' : `You have ${2 - questionsUsed} interview${2 - questionsUsed === 1 ? '' : 's'} remaining.`}
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
 
             <div style={{ 
@@ -1374,8 +1469,11 @@ export default function VideoInterviewPage(): React.ReactElement {
                         setIsRecording(false);
                         setTimeLeft(60);
                         
-                        // 3. Get new question
-                        getRandomQuestion();
+                        // 3. Get new question (with paywall check)
+                        const canProceed = getRandomQuestion();
+                        if (!canProceed) {
+                          return; // Paywall triggered, stop here
+                        }
                         
                         // 4. Go to planning stage
                         setStage('planning');

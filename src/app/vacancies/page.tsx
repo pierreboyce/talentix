@@ -23,12 +23,14 @@ export default function Vacancies() {
   const [userName, setUserName] = useState('');
   const [filteredJobs, setFilteredJobs] = useState<Job[]>([]);
 
-  useState(() => {
-    const savedUser = localStorage.getItem('talentix_user');
-    if (savedUser) {
-      setUserName(savedUser);
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const savedUser = localStorage.getItem('talentix_user');
+      if (savedUser) {
+        setUserName(savedUser);
+      }
     }
-  });
+  }, []);
 
   const generateJobs = (searchLocation: string) => {
     const jobTemplates = [
@@ -168,9 +170,11 @@ export default function Vacancies() {
     setFilteredJobs(generatedJobs);
     
     // Add points for searching jobs
-    const currentScore = parseInt(localStorage.getItem('talentix_score') || '0');
-    const newScore = currentScore + 10;
-    localStorage.setItem('talentix_score', newScore.toString());
+    if (typeof window !== 'undefined') {
+      const currentScore = parseInt(localStorage.getItem('talentix_score') || '0');
+      const newScore = currentScore + 10;
+      localStorage.setItem('talentix_score', newScore.toString());
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {

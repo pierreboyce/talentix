@@ -1,3 +1,5 @@
+'use client';
+
 export default function NotFound() {
   return (
     <div style={{
@@ -37,6 +39,7 @@ export default function NotFound() {
         </p>
         <button
           onClick={() => window.location.href = '/'}
+          className="home-button"
           style={{
             display: 'inline-block',
             backgroundColor: '#fbbf24',
@@ -50,18 +53,17 @@ export default function NotFound() {
             transition: 'all 0.2s ease',
             textDecoration: 'none'
           }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = '#f59e0b';
-            e.currentTarget.style.transform = 'translateY(-2px)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = '#fbbf24';
-            e.currentTarget.style.transform = 'translateY(0)';
-          }}
         >
           🏠 Go Home
         </button>
       </div>
+      
+      <style jsx>{`
+        .home-button:hover {
+          background-color: #f59e0b !important;
+          transform: translateY(-2px) !important;
+        }
+      `}</style>
     </div>
   )
 }

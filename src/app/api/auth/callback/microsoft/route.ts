@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
           client_secret: process.env.MICROSOFT_CLIENT_SECRET || '', // You'll need to add this
           code: code,
           grant_type: 'authorization_code',
-          redirect_uri: `${request.nextUrl.origin}/api/auth/callback/microsoft`,
+          redirect_uri: `${process.env.NEXTAUTH_URL || request.nextUrl.origin}/api/auth/callback/microsoft`,
         }),
       });
 
@@ -51,6 +51,15 @@ export async function GET(request: NextRequest) {
       if (!accessToken) {
         throw new Error('No access token received from Microsoft');
       }
+
+      // Optional: decode id_token for email fast-path
+      let decodedEmail = '';
+      try {
+        if ((tokenData as any).id_token) {
+          const payload = JSON.parse(Buffer.from((tokenData as any).id_token.split('.')[1], 'base64').toString('utf8'));
+          decodedEmail = payload.email || payload.preferred_username || '';
+        }
+      } catch {}
 
       // Step 2: Fetch user profile from Microsoft Graph API
       console.log('Fetching user profile from Microsoft Graph API...');
@@ -74,7 +83,7 @@ export async function GET(request: NextRequest) {
       // Create user data from real Microsoft profile
       oauthUser = {
         id: `oauth_user_microsoft_${Date.now()}`,
-        email: profileData.mail || profileData.userPrincipalName,
+        email: profileData.mail || profileData.userPrincipalName || decodedEmail,
         name: profileData.displayName,
         location: 'London', // Default location, user can change later
         score: 0,
@@ -84,8 +93,10 @@ export async function GET(request: NextRequest) {
         updatedAt: new Date().toISOString()
       };
 
-      // If we have real name and email, go directly to dashboard
+      // Always go directly to dashboard when we have OAuth data
       if (profileData.displayName && (profileData.mail || profileData.userPrincipalName)) {
+        console.log('✅ Microsoft OAuth: Complete user data received, redirecting to dashboard');
+        
         // Store user data directly and redirect to dashboard
         const userParams = new URLSearchParams({
           oauth_user: JSON.stringify(oauthUser),
@@ -93,9 +104,11 @@ export async function GET(request: NextRequest) {
           direct_login: 'true'
         });
 
-        return NextResponse.redirect(
-          `${request.nextUrl.origin}/dashboard?${userParams.toString()}`
-        );
+        // Important: use 307 to preserve method/headers and avoid losing cookies
+        const redirectUrl = new URL(`/dashboard?${userParams.toString()}`, request.url);
+        return NextResponse.redirect(redirectUrl, { status: 307 });
+      } else {
+        console.log('⚠️ Microsoft OAuth: Incomplete user data, redirecting to oauth-setup');
       }
 
     } catch (oauthError) {
@@ -113,7 +126,7 @@ export async function GET(request: NextRequest) {
             client_secret: process.env.MICROSOFT_CLIENT_SECRET || '',
             code: code,
             grant_type: 'authorization_code',
-            redirect_uri: `${request.nextUrl.origin}/api/auth/callback/microsoft`,
+            redirect_uri: `${process.env.NEXTAUTH_URL || request.nextUrl.origin}/api/auth/callback/microsoft`,
           }),
         });
         

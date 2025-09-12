@@ -1,31 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
-
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+import Groq from 'groq-sdk';
 
 export async function POST(request: NextRequest) {
   try {
     const { message, userName } = await request.json();
 
-    if (!process.env.OPENAI_API_KEY) {
-      console.error('OpenAI API key not configured');
-      return NextResponse.json(
-        { error: 'AI service not configured' },
-        { status: 500 }
-      );
-    }
-
-    console.log('🤖 Using OpenAI for chat response...');
-    console.log('🔍 Chat request:', { message, userName });
-
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages: [
-        {
-          role: 'system',
-          content: `You are a helpful AI career assistant for Talentix, a platform helping teenagers get their first jobs. 
+    const systemPrompt = `You are a helpful AI career assistant for Talentix, a platform helping teenagers get their first jobs.
 
 Your role:
 - Help with CV writing, interview preparation, job applications, and career advice
@@ -40,18 +21,39 @@ User context:
 - Target audience: Teenagers seeking their first job
 - Platform: Talentix career platform
 
-Keep responses helpful, encouraging, and specifically tailored to first-time job seekers!`
-        },
-        {
-          role: 'user',
-          content: message
-        }
-      ],
-      max_tokens: 300,
-      temperature: 0.7,
-    });
+Keep responses helpful, encouraging, and specifically tailored to first-time job seekers!`;
 
-    const aiResponse = completion.choices[0]?.message?.content;
+    let aiResponse: string | undefined;
+
+    if (process.env.OPENAI_API_KEY) {
+      const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+      console.log('🤖 Using OpenAI for chat response...');
+      const completion = await openai.chat.completions.create({
+        model: 'gpt-4o-mini',
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: message },
+        ],
+        max_tokens: 300,
+        temperature: 0.7,
+      });
+      aiResponse = completion.choices[0]?.message?.content || undefined;
+    } else if (process.env.GROQ_API_KEY) {
+      console.log('🤖 Using Groq as fallback for chat response...');
+      const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+      const completion = await groq.chat.completions.create({
+        model: 'llama-3.1-8b-instant',
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: message },
+        ],
+        max_tokens: 300,
+        temperature: 0.7,
+      });
+      aiResponse = completion.choices?.[0]?.message?.content || undefined;
+    } else {
+      console.error('No AI provider configured');
+    }
 
     if (!aiResponse) {
       throw new Error('No response from OpenAI');

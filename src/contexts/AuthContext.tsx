@@ -20,15 +20,47 @@ interface AuthProviderProps {
 export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<AuthSession | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
-  // Check for existing session on mount
+  // Check for existing session on mount and listen for storage changes
   useEffect(() => {
-    checkSession();
+    // Set a timeout to ensure loading never hangs indefinitely
+    const timeoutId = setTimeout(() => {
+      console.warn('🟨 Auth session check timed out, setting loading to false');
+      setLoading(false);
+    }, 5000); // 5 second timeout
+    
+    checkSession().finally(() => {
+      clearTimeout(timeoutId);
+    });
+    
+    // Listen for storage events (for OAuth updates)
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'talentix_user' || e.key === 'talentix_session') {
+        console.log('🔄 Storage changed, rechecking session...');
+        checkSession();
+      }
+    };
+    
+    // Listen for custom storage events (for same-tab updates)
+    const handleCustomStorageEvent = () => {
+      console.log('🔄 Custom storage event, rechecking session...');
+      checkSession();
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('talentix-auth-update', handleCustomStorageEvent);
+    
+    return () => {
+      clearTimeout(timeoutId);
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('talentix-auth-update', handleCustomStorageEvent);
+    };
   }, []);
 
   const checkSession = async () => {
     try {
+      setLoading(true);
       console.log('🟢 checkSession: Starting session check...');
       
       // Check localStorage for existing user session
@@ -167,8 +199,24 @@ export function AuthProvider({ children }: AuthProviderProps) {
       // Keep email-specific user data for XP persistence
       // localStorage.removeItem(`talentix_user_${user.email}`); // Commented out
       
-      // Keep the main user data for XP persistence
-      // localStorage.removeItem('talentix_user'); // Commented out
+      // Keep the main user data for XP persistence (do not remove)
+      // localStorage.removeItem('talentix_user');
+
+      // Ensure points persist under email-based key even after sign out
+      try {
+        const storedUserStr = localStorage.getItem('talentix_user');
+        if (storedUserStr) {
+          const storedUser = JSON.parse(storedUserStr);
+          if (storedUser?.email) {
+            const idKey = storedUser?.id ? `talentix-points-${storedUser.id}` : null;
+            const emailKey = `talentix-points-email-${storedUser.email.toLowerCase()}`;
+            const currentPoints = (idKey && localStorage.getItem(idKey)) || localStorage.getItem(emailKey);
+            if (currentPoints != null) {
+              localStorage.setItem(emailKey, currentPoints);
+            }
+          }
+        }
+      } catch {}
       
       // Only clear session-related data, not user profile data
       
@@ -201,17 +249,25 @@ export function AuthProvider({ children }: AuthProviderProps) {
         microsoft: 'https://login.microsoftonline.com/common/oauth2/v2.0/authorize'
       };
       
+      // Use consistent redirect URIs that match what's registered in OAuth providers
+      // Always use non-www version to match registered URIs
+      let baseUrl = process.env.NEXT_PUBLIC_BASE_URL || window.location.origin;
+      if (baseUrl.includes('://www.')) {
+        baseUrl = baseUrl.replace('://www.', '://');
+      }
       const redirectUris = {
-        google: `${window.location.origin}/api/auth/callback/google`,
-        microsoft: `${window.location.origin}/api/auth/callback/microsoft`
+        google: `${baseUrl}/api/auth/callback/google`,
+        microsoft: `${baseUrl}/api/auth/callback/microsoft`
       };
       
       const scopes = {
         google: 'openid email profile',
-        microsoft: 'https://graph.microsoft.com/user.read openid email profile'
+        // Microsoft needs User.Read to reliably return name/email via Graph
+        microsoft: 'openid email profile https://graph.microsoft.com/User.Read'
       };
       
       // Build OAuth URL
+      console.log(`🔗 ${provider} OAuth redirect URI:`, redirectUris[provider]);
       const baseParams: Record<string, string> = {
         client_id: clientIds[provider],
         redirect_uri: redirectUris[provider],
@@ -223,7 +279,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       
       // Add provider-specific parameters
       if (provider === 'microsoft') {
-        baseParams.access_type = 'offline';
+        baseParams.response_mode = 'query';
       }
       
       const params = new URLSearchParams(baseParams);
@@ -297,6 +353,18 @@ export function AuthProvider({ children }: AuthProviderProps) {
     console.log('🔄 refreshUser called - manually reloading user from localStorage');
     await checkSession();
   };
+
+  // Expose refresh function globally for OAuth callbacks
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      (window as any).talentixAuthRefresh = refreshUser;
+    }
+    return () => {
+      if (typeof window !== 'undefined') {
+        delete (window as any).talentixAuthRefresh;
+      }
+    };
+  }, []);
 
   const value: AuthContextType = {
     user,

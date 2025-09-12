@@ -1,19 +1,22 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { 
   Briefcase, 
   FileText, 
   Users, 
   Trophy, 
   LogIn, 
-  UserPlus
+  UserPlus,
+  Lock
 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useAuth } from '../contexts/AuthContext';
 import { useChatbot } from '../contexts/ChatbotContext';
-import SignOutConfirmModal from './SignOutConfirmModal';
+import { useSubscription } from '../contexts/SubscriptionContext';
+// SignOutConfirmModal now handled by GlobalModalManager
 
 interface AppItem {
   id: string;
@@ -21,6 +24,7 @@ interface AppItem {
   emoji: string;
   href: string;
   color: string;
+  restricted?: boolean; // For free tier limitations
 }
 
 const mainApps: AppItem[] = [
@@ -43,7 +47,8 @@ const mainApps: AppItem[] = [
     name: 'CV Reviewer',
     emoji: '📄',
     href: '/cv-reviewer',
-    color: 'bg-gradient-to-br from-purple-400 to-purple-600'
+    color: 'bg-gradient-to-br from-purple-400 to-purple-600',
+    restricted: true
   },
   {
     id: 'interview-prep',
@@ -57,7 +62,8 @@ const mainApps: AppItem[] = [
     name: 'Video Interview',
     emoji: '🎬',
     href: '/video-interview',
-    color: 'bg-gradient-to-br from-pink-400 to-pink-600'
+    color: 'bg-gradient-to-br from-pink-400 to-pink-600',
+    restricted: true
   },
   {
     id: 'job-tracker',
@@ -92,7 +98,15 @@ const mainApps: AppItem[] = [
     name: 'Career Guidance',
     emoji: '🎓',
     href: '/career-guidance',
-    color: 'bg-gradient-to-br from-emerald-400 to-emerald-600'
+    color: 'bg-gradient-to-br from-emerald-400 to-emerald-600',
+    restricted: true
+  },
+  {
+    id: 'subscription',
+    name: 'Subscription',
+    emoji: '💎',
+    href: '/dashboard/subscription',
+    color: 'bg-gradient-to-br from-violet-400 to-violet-600'
   },
   {
     id: 'settings',
@@ -139,13 +153,16 @@ const loggedInApps: AppItem[] = [
 
 export default function AppLauncher() {
   const [isOpen, setIsOpen] = useState(false);
-  const [showSignOutModal, setShowSignOutModal] = useState(false);
+  // Sign out modal now handled globally
   const [scrollY, setScrollY] = useState(0);
   const { user, signOut } = useAuth();
   const { openChat } = useChatbot();
+  const { subscription } = useSubscription();
+  const [mounted, setMounted] = useState(false);
 
   // Add custom CSS for fade-in animation and handle scroll position
   useEffect(() => {
+    setMounted(true);
     const style = document.createElement('style');
     style.textContent = `
       @keyframes fadeIn {
@@ -193,7 +210,8 @@ export default function AppLauncher() {
     
     // Special handling for logout
     if (appId === 'logout') {
-      setShowSignOutModal(true);
+      // Trigger global sign-out modal
+      window.dispatchEvent(new Event('talentix-show-signout-modal'));
       setIsOpen(false);
       return;
     }
@@ -218,7 +236,7 @@ export default function AppLauncher() {
   };
 
   return (
-    <div className="relative ml-auto">
+    <div className="relative">
       {/* 9 Dots Button - Positioned on the far right */}
       <button
         onClick={handleToggle}
@@ -234,22 +252,24 @@ export default function AppLauncher() {
         />
       </button>
 
-      {/* Dropdown Menu */}
-      {isOpen && (
+      {/* Dropdown Menu (portaled to body to avoid clipping/stacking issues) */}
+      {mounted && isOpen && createPortal(
         <>
           {/* Backdrop */}
           <div 
-            className="fixed inset-0 z-40 bg-black bg-opacity-20 transition-opacity duration-300"
+            className="fixed inset-0 bg-black bg-opacity-20 transition-opacity duration-300"
+            style={{ zIndex: 2147483646 }}
             onClick={handleClose}
           />
           
           {/* Menu - Fun & Playful Design */}
           <div 
-            className="w-[580px] h-[420px] z-50 overflow-hidden rounded-[2.5rem] animate-fadeIn"
+            className="w-[520px] h-[380px] overflow-hidden rounded-[2.5rem] animate-fadeIn"
             style={{
-              position: 'absolute',
-              top: `${scrollY + 80}px`, // 80px to account for header height
-              right: '16px',
+              position: 'fixed',
+              top: '80px', // Fixed position below header
+              left: '0px',
+              zIndex: 2147483647,
               background: 'linear-gradient(135deg, #fef3c7 0%, #fde047 25%, #facc15 50%, #f59e0b 75%, #d97706 100%)',
               boxShadow: '0 30px 60px -12px rgba(245, 158, 11, 0.4), 0 15px 50px -10px rgba(217, 119, 6, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
               border: '3px solid rgba(255, 255, 255, 0.3)',
@@ -275,10 +295,15 @@ export default function AppLauncher() {
                       className="group flex flex-col items-center p-3 rounded-2xl hover:bg-white/30 transition-all duration-300 hover:scale-105 hover:shadow-xl"
                       style={{ backdropFilter: 'blur(5px)' }}
                     >
-                      <div className="w-14 h-14 bg-white/80 rounded-2xl flex items-center justify-center mb-2 group-hover:scale-110 group-hover:rotate-12 transition-all duration-300 shadow-lg group-hover:shadow-xl">
-                        <span className="text-[2rem] group-hover:animate-bounce">{app.emoji}</span>
+                      <div className="w-16 h-16 bg-white/80 rounded-2xl flex items-center justify-center mb-2 group-hover:scale-110 group-hover:rotate-12 transition-all duration-300 shadow-lg group-hover:shadow-xl relative">
+                        <span className="text-[2.2rem] group-hover:animate-bounce">{app.emoji}</span>
+                        {app.restricted && subscription.tier === 'free' && (
+                          <div className="absolute -top-1 -right-1 w-5 h-5 bg-amber-500 rounded-full flex items-center justify-center">
+                            <Lock className="w-3 h-3 text-white" />
+                          </div>
+                        )}
                       </div>
-                      <span className="text-[0.6rem] text-gray-800 text-center font-bold leading-tight max-w-[100px] group-hover:text-gray-900">
+                      <span className="text-[0.72rem] text-gray-800 text-center font-black leading-tight max-w-[100px] group-hover:text-gray-900">
                         {app.name}
                       </span>
                     </button>
@@ -290,10 +315,15 @@ export default function AppLauncher() {
                       className="group flex flex-col items-center p-3 rounded-2xl hover:bg-white/30 transition-all duration-300 hover:scale-105 hover:shadow-xl"
                       style={{ backdropFilter: 'blur(5px)' }}
                     >
-                      <div className="w-14 h-14 bg-white/80 rounded-2xl flex items-center justify-center mb-2 group-hover:scale-110 group-hover:rotate-12 transition-all duration-300 shadow-lg group-hover:shadow-xl">
-                        <span className="text-[2rem] group-hover:animate-bounce">{app.emoji}</span>
+                      <div className="w-16 h-16 bg-white/80 rounded-2xl flex items-center justify-center mb-2 group-hover:scale-110 group-hover:rotate-12 transition-all duration-300 shadow-lg group-hover:shadow-xl relative">
+                        <span className="text-[2.2rem] group-hover:animate-bounce">{app.emoji}</span>
+                        {app.restricted && subscription.tier === 'free' && (
+                          <div className="absolute -top-1 -right-1 w-5 h-5 bg-amber-500 rounded-full flex items-center justify-center">
+                            <Lock className="w-3 h-3 text-white" />
+                          </div>
+                        )}
                       </div>
-                      <span className="text-[0.6rem] text-gray-800 text-center font-bold leading-tight max-w-[100px] group-hover:text-gray-900">
+                      <span className="text-[0.72rem] text-gray-800 text-center font-black leading-tight max-w-[100px] group-hover:text-gray-900">
                         {app.name}
                       </span>
                     </Link>
@@ -324,8 +354,13 @@ export default function AppLauncher() {
                       onClick={() => handleAppClick(app.href, app.id)}
                       className="group flex items-center p-4 rounded-xl hover:bg-gray-50 transition-colors border border-gray-200 hover:border-gray-300 w-full text-left"
                     >
-                      <div className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center mr-4 group-hover:scale-105 transition-transform shadow-lg">
+                      <div className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center mr-4 group-hover:scale-105 transition-transform shadow-lg relative">
                         <span className="text-[1.75rem]">{app.emoji}</span>
+                        {app.restricted && subscription.tier === 'free' && (
+                          <div className="absolute -top-1 -right-1 w-4 h-4 bg-amber-500 rounded-full flex items-center justify-center">
+                            <Lock className="w-2.5 h-2.5 text-white" />
+                          </div>
+                        )}
                       </div>
                       <span className="text-[0.65rem] text-gray-700 font-black">
                         {app.name}
@@ -338,8 +373,13 @@ export default function AppLauncher() {
                       onClick={() => handleAppClick(app.href, app.id)}
                       className="group flex items-center p-4 rounded-xl hover:bg-gray-50 transition-colors border border-gray-200 hover:border-gray-300"
                     >
-                      <div className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center mr-4 group-hover:scale-105 transition-transform shadow-lg">
+                      <div className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center mr-4 group-hover:scale-105 transition-transform shadow-lg relative">
                         <span className="text-[1.75rem]">{app.emoji}</span>
+                        {app.restricted && subscription.tier === 'free' && (
+                          <div className="absolute -top-1 -right-1 w-4 h-4 bg-amber-500 rounded-full flex items-center justify-center">
+                            <Lock className="w-2.5 h-2.5 text-white" />
+                          </div>
+                        )}
                       </div>
                       <span className="text-[0.65rem] text-gray-700 font-black">
                         {app.name}
@@ -357,14 +397,11 @@ export default function AppLauncher() {
               </p>
             </div>
           </div>
-        </>
+        </>,
+        document.body
       )}
       
-      {/* Sign Out Confirmation Modal */}
-      <SignOutConfirmModal 
-        isOpen={showSignOutModal} 
-        onClose={() => setShowSignOutModal(false)} 
-      />
+      {/* Sign Out Confirmation Modal now handled by GlobalModalManager */}
     </div>
   );
 } 

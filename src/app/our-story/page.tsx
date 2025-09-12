@@ -23,7 +23,7 @@ export default function OurStoryPage() {
     },
     {
       name: 'Vishnu Vohra',
-      title: 'Chief Operations Officer',
+      title: 'Ambassador',
       image: '/vishnuheadshot.jpeg',
       story: 'Vishnu will add his inspiring story here shortly...',
       emoji: '⚡'
@@ -34,6 +34,13 @@ export default function OurStoryPage() {
       image: '/mezueheadshot.png',
       story: 'Mezue will add his inspiring story here shortly...',
       emoji: '🎯'
+    },
+    {
+      name: 'Arinze Nwafor',
+      title: 'Business Development Manager',
+      image: '/Arinzeheadshot.jpeg',
+      story: 'Arinze will add his inspiring story here shortly...',
+      emoji: '🤝'
     }
   ];
 

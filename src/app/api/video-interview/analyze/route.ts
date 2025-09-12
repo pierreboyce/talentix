@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
 import Groq from 'groq-sdk';
-import { writeFile, unlink, mkdir } from 'fs/promises';
-import { createReadStream } from 'fs';
-import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
+
+// Configure route for large payloads
+export const maxDuration = 60; // 60 seconds timeout
 
 // Initialize AI providers safely
 let openai: OpenAI | null = null;
@@ -66,35 +66,31 @@ export async function POST(request: NextRequest) {
     console.log('👤 User ID:', userId);
     console.log('🎬 Video file size:', videoFile.size, 'bytes');
 
-    // Save uploaded file temporarily (make sure directory exists)
-    const buffer = Buffer.from(await videoFile.arrayBuffer());
-    const filename = `${uuidv4()}.webm`;
-    const tempDir = path.join(process.cwd(), 'temp');
-    const filepath = path.join(tempDir, filename);
-    
-    try {
-      await mkdir(tempDir, { recursive: true });
-      await writeFile(filepath, buffer);
-      console.log('💾 Video file saved temporarily:', filepath);
-    } catch (error) {
-      console.error('❌ Error saving video file:', error);
+    // Check file size limit (20MB for Vercel compatibility)
+    const maxSize = 20 * 1024 * 1024; // 20MB
+    if (videoFile.size > maxSize) {
+      console.error('❌ Video file too large:', videoFile.size, 'bytes');
       return NextResponse.json(
-        { error: 'Failed to save video file' },
-        { status: 500 }
+        { error: `Video file too large. Maximum size is 20MB. Your file is ${Math.round(videoFile.size / 1024 / 1024)}MB. Please record a shorter answer.` },
+        { status: 413 }
       );
     }
 
+    // Process video file in memory (Vercel doesn't allow disk writes)
+    const buffer = Buffer.from(await videoFile.arrayBuffer());
+    console.log('💾 Video file loaded in memory, size:', buffer.length, 'bytes');
+
     // Helper: attempt transcription with providers in order
     const transcribeAudio = async (): Promise<string> => {
-      // Use Node stream for better compatibility
-      const audioStream = createReadStream(filepath);
+      // Create a File object from buffer for API compatibility
+      const videoFileForAPI = new File([buffer], 'video.webm', { type: videoFile.type });
 
       // 1) Try OpenAI Whisper first if available
       if (openai) {
         try {
           console.log('🎤 Whisper (OpenAI) transcription attempt...');
           const transcriptionResponse = await openai.audio.transcriptions.create({
-            file: audioStream as any,
+            file: videoFileForAPI,
             model: 'whisper-1',
             language: 'en',
           });
@@ -114,7 +110,7 @@ export async function POST(request: NextRequest) {
         try {
           console.log('🎤 Whisper (Groq) transcription attempt...');
           const groqResp = await groq.audio.transcriptions.create({
-            file: createReadStream(filepath) as unknown as any,
+            file: videoFileForAPI,
             // Groq-compatible Whisper model name
             model: 'whisper-large-v3',
             response_format: 'json',
@@ -284,13 +280,7 @@ Return ONLY the JSON object, no additional text.
       return NextResponse.json(analysisResult);
 
     } finally {
-      // Clean up temporary file
-      try {
-        await unlink(filepath);
-        console.log('🗑️ Temporary file deleted');
-      } catch (cleanupError) {
-        console.error('⚠️ Failed to delete temporary file:', cleanupError);
-      }
+      // No cleanup needed since we're processing in memory
     }
 
   } catch (error) {

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useRouter } from 'next/navigation';
+import ForgotPasswordModal from './ForgotPasswordModal';
 
 interface SignInModalProps {
   isOpen: boolean;
@@ -23,8 +24,7 @@ export default function SignInModal({ isOpen, onClose }: SignInModalProps) {
   const [isAnimating, setIsAnimating] = useState(false);
   const [showContent, setShowContent] = useState(false);
   const [error, setError] = useState('');
-  // Forgot password removed for now to simplify auth flow
-  const [showForgotPassword] = useState(false);
+  const [showForgotPasswordModal, setShowForgotPasswordModal] = useState(false);
 
   // Handle fade animation
   useEffect(() => {
@@ -71,9 +71,9 @@ export default function SignInModal({ isOpen, onClose }: SignInModalProps) {
 
       if (result.success) {
         handleClose();
-        // Longer delay to ensure state is updated and localStorage is set
+        // Force a full page redirect instead of router.push
         setTimeout(() => {
-          router.push('/dashboard');
+          window.location.href = '/dashboard';
         }, 500);
       } else {
         setError(result.error || 'Sign in failed');
@@ -95,9 +95,9 @@ export default function SignInModal({ isOpen, onClose }: SignInModalProps) {
       
       if (result.success) {
         handleClose();
-        // Longer delay to ensure state is updated and localStorage is set
+        // Force a full page redirect instead of router.push
         setTimeout(() => {
-          router.push('/dashboard');
+          window.location.href = '/dashboard';
         }, 500);
       } else {
         setError(result.error || 'OAuth sign in failed');
@@ -123,10 +123,18 @@ export default function SignInModal({ isOpen, onClose }: SignInModalProps) {
     <div 
       className="modal-overlay"
       style={{
+        position: 'fixed',
+        top: 0,
+        right: 0,
+        bottom: 0,
+        left: 0,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         padding: '20px',
+        backgroundColor: 'rgba(0, 0, 0, 0.35)',
+        zIndex: 10000,
+        overflowY: 'auto',
         opacity: isVisible ? 1 : 0,
         transition: 'opacity 0.3s ease-in-out'
       }}
@@ -135,16 +143,16 @@ export default function SignInModal({ isOpen, onClose }: SignInModalProps) {
       {/* Modal container with rounded background */}
       <div 
         style={{
-          backgroundColor: '#fbbf24',
-          borderRadius: '20px',
+          background: 'linear-gradient(135deg, #fef3c7 0%, #fde047 25%, #a78bfa 75%, #8b5cf6 100%)',
+          borderRadius: '24px',
           padding: '24px',
           width: '100%',
-          maxWidth: '560px',
-          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+          maxWidth: '600px',
+          boxShadow: '0 25px 50px -12px rgba(139, 92, 246, 0.4)',
           position: 'relative',
-          transform: isVisible ? 'scale(1)' : 'scale(0.9)',
+          transform: isVisible ? 'scale(1) translateY(0)' : 'scale(0.9) translateY(20px)',
           opacity: isVisible ? 1 : 0,
-          transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
         }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -426,7 +434,25 @@ export default function SignInModal({ isOpen, onClose }: SignInModalProps) {
                 {isLoading ? 'Signing In...' : 'Sign In'}
               </button>
 
-              {/* Forgot Password disabled */}
+              {/* Forgot Password Link */}
+              <div style={{ textAlign: 'center', marginTop: '16px' }}>
+                <button
+                  type="button"
+                  onClick={() => setShowForgotPasswordModal(true)}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: '#8b5cf6',
+                    fontSize: '14px',
+                    fontFamily: 'Fredoka, sans-serif',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    textDecoration: 'underline'
+                  }}
+                >
+                  Forgot your password? 🔑
+                </button>
+              </div>
 
               <button
                 type="button"
@@ -450,7 +476,11 @@ export default function SignInModal({ isOpen, onClose }: SignInModalProps) {
         </div>
       </div>
       
-      {/* Forgot Password Modal disabled */}
+      {/* Forgot Password Modal */}
+      <ForgotPasswordModal 
+        isOpen={showForgotPasswordModal}
+        onClose={() => setShowForgotPasswordModal(false)}
+      />
     </div>
   );
 } 

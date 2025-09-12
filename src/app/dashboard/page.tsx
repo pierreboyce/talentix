@@ -119,6 +119,15 @@ export default function Dashboard() {
       console.log('📊 Dashboard: User authenticated or still loading, staying on dashboard');
       return;
     }
+
+    // If this is an OAuth landing (direct_login or oauth_user in URL),
+    // give the OAuth handler effect time to persist the session
+    const params = new URLSearchParams(window.location.search);
+    const isOAuthLanding = params.get('direct_login') === 'true' || params.has('oauth_user');
+    if (isOAuthLanding) {
+      console.log('📊 Dashboard: OAuth landing detected, skipping auth redirect');
+      return;
+    }
     
     console.log('📊 Dashboard: No auth found, will redirect to home in 2 seconds');
     // Only redirect after a longer delay to prevent flashing
@@ -128,7 +137,7 @@ export default function Dashboard() {
         console.log('📊 Dashboard: Redirecting to home - no authentication');
         router.push('/');
       }
-    }, 500); // Reduced delay for testing
+    }, 1500); // Slightly longer delay to avoid racing OAuth flow
     
     return () => clearTimeout(timer);
   }, [loading, user, session, router]);
@@ -197,17 +206,19 @@ export default function Dashboard() {
         const userData = JSON.parse(oauthUser);
         
         // Store real OAuth user data in localStorage
+        console.log('💾 Storing OAuth user data:', userData);
         localStorage.setItem('talentix_user', JSON.stringify(userData));
         localStorage.setItem(`talentix_oauth_${provider}`, JSON.stringify(userData));
         localStorage.setItem(`talentix_user_${userData.email}`, JSON.stringify(userData));
         
-        // Create session
+        // Create session with longer expiry
         const session = {
           user: userData,
           expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days
           token: `oauth_token_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
         };
         
+        console.log('💾 Storing session:', session);
         localStorage.setItem('talentix_session', JSON.stringify(session));
         
         // Clear URL parameters
@@ -217,8 +228,17 @@ export default function Dashboard() {
         newUrl.searchParams.delete('direct_login');
         window.history.replaceState({}, '', newUrl.toString());
         
-        // Reload the page to update the auth context
-        window.location.reload();
+        // Update auth context directly instead of reloading
+        console.log('✅ OAuth user data stored, updating auth context');
+        
+        // Force auth context to update by calling refreshUser
+        setTimeout(() => {
+          window.dispatchEvent(new Event('talentix-auth-update'));
+          // Also try to access the auth context directly if available
+          if (typeof window !== 'undefined' && (window as any).talentixAuthRefresh) {
+            (window as any).talentixAuthRefresh();
+          }
+        }, 100);
         
       } catch (error) {
         console.error('Error processing real OAuth user data:', error);
@@ -676,7 +696,7 @@ export default function Dashboard() {
       </header>
 
       {/* Modern Greeting & Job Tips Section */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8 mt-8">
+      <div className="relative z-0 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8 mt-8">
         <div className="flex items-start gap-8">
           {/* Profile Emoji */}
           <div className="flex-shrink-0">
@@ -692,7 +712,9 @@ export default function Dashboard() {
               padding: '20px',
               boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
               maxWidth: '500px',
-              height: '160px'
+              height: '160px',
+              position: 'relative',
+              zIndex: 1
             }}>
               <h2 style={{
                 fontSize: '1.875rem',
@@ -767,7 +789,7 @@ export default function Dashboard() {
       </div>
 
           {/* Job Tips of the Day - Right Side */}
-          <div className="flex-1">
+          <div className="flex-1 relative" style={{ zIndex: 0 }}>
             <div style={{
               height: '160px',
               display: 'flex',
@@ -1780,40 +1802,84 @@ export default function Dashboard() {
             maxWidth: '1200px',
             margin: '0 auto'
           }}>
-            {[
-              { 
-                title: 'Days Active', 
-                value: '7', 
-                emoji: '📅', 
-                color: '#3b82f6',
-                bgColor: '#dbeafe',
-                description: 'Keep the streak going!'
-              },
-              { 
-                title: 'CVs Reviewed', 
-                value: '3', 
-                emoji: '📄', 
-                color: '#10b981',
-                bgColor: '#dcfce7',
-                description: 'Each review makes you stronger'
-              },
-              { 
-                title: 'Interview Prep', 
-                value: '5', 
-                emoji: '🎤', 
-                color: '#f59e0b',
-                bgColor: '#fef3c7',
-                description: 'Practice makes perfect'
-              },
-              { 
-                title: 'Jobs Applied', 
-                value: '12', 
-                emoji: '🎯', 
-                color: '#8b5cf6',
-                bgColor: '#e0e7ff',
-                description: 'You\'re putting yourself out there!'
-              }
-            ].map((stat, index) => (
+            {(() => {
+              // Derive real stats from localStorage and quest progress
+              let daysActive = 1;
+              try {
+                const storedUser = localStorage.getItem('talentix_user');
+                if (storedUser) {
+                  const u = JSON.parse(storedUser);
+                  if (u?.createdAt) {
+                    const created = new Date(u.createdAt).getTime();
+                    const today = new Date();
+                    const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime();
+                    daysActive = Math.max(1, Math.ceil((startOfToday - created) / (1000 * 60 * 60 * 24)) + 1);
+                  }
+                }
+              } catch {}
+
+              // CVs reviewed from quest progress cv_analysis (progress or completed)
+              let cvsReviewed = 0;
+              try {
+                // Check both id-based and email-based quest keys for compatibility
+                const sessionStr = localStorage.getItem('talentix_session');
+                const userStr = localStorage.getItem('talentix_user');
+                const userObj = userStr ? JSON.parse(userStr) : null;
+                const possibleKeys = [] as string[];
+                if (userObj?.id) possibleKeys.push(`talentix-quests-${userObj.id}`);
+                if (userObj?.email) possibleKeys.push(`talentix-quests-${userObj.email}`);
+                for (const k of possibleKeys) {
+                  const q = localStorage.getItem(k);
+                  if (q) {
+                    const arr = JSON.parse(q) as Array<any>;
+                    const cvQuest = arr.find(qi => qi.id === 'cv_analysis');
+                    if (cvQuest) {
+                      cvsReviewed = cvQuest.completed ? Math.max(cvQuest.maxProgress, 1) : cvQuest.progress || 0;
+                      break;
+                    }
+                  }
+                }
+              } catch {}
+
+              // Interview practice count from quest 'interview_practice'
+              let interviewCount = 0;
+              try {
+                const userStr = localStorage.getItem('talentix_user');
+                const userObj = userStr ? JSON.parse(userStr) : null;
+                const possibleKeys = [] as string[];
+                if (userObj?.id) possibleKeys.push(`talentix-quests-${userObj.id}`);
+                if (userObj?.email) possibleKeys.push(`talentix-quests-${userObj.email}`);
+                for (const k of possibleKeys) {
+                  const q = localStorage.getItem(k);
+                  if (q) {
+                    const arr = JSON.parse(q) as Array<any>;
+                    const iq = arr.find(qi => qi.id === 'interview_practice');
+                    if (iq) {
+                      interviewCount = iq.completed ? Math.max(iq.maxProgress, iq.progress) : (iq.progress || 0);
+                      break;
+                    }
+                  }
+                }
+              } catch {}
+
+              // Jobs applied from job tracker
+              let jobsApplied = 0;
+              try {
+                const apps = localStorage.getItem('job_applications');
+                if (apps) {
+                  const parsed = JSON.parse(apps) as Array<any>;
+                  jobsApplied = parsed.length;
+                }
+              } catch {}
+
+              const stats = [
+                { title: 'Days Active', value: String(daysActive), emoji: '📅', color: '#3b82f6', bgColor: '#dbeafe', description: 'Keep the streak going!' },
+                { title: 'CVs Reviewed', value: String(cvsReviewed), emoji: '📄', color: '#10b981', bgColor: '#dcfce7', description: 'Each review makes you stronger' },
+                { title: 'Interview Prep', value: String(interviewCount), emoji: '🎤', color: '#f59e0b', bgColor: '#fef3c7', description: 'Practice makes perfect' },
+                { title: 'Jobs Applied', value: String(jobsApplied), emoji: '🎯', color: '#8b5cf6', bgColor: '#e0e7ff', description: "You're putting yourself out there!" }
+              ];
+
+              return stats.map((stat, index) => (
               <div
                 key={index}
                 style={{
@@ -1862,7 +1928,8 @@ export default function Dashboard() {
                   {stat.description}
                 </p>
               </div>
-            ))}
+              ));
+            })()}
           </div>
         </div>
 

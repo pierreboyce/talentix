@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
         client_secret: process.env.GOOGLE_CLIENT_SECRET!,
         code,
         grant_type: 'authorization_code',
-        redirect_uri: `${new URL(request.url).origin}/api/auth/callback/google`,
+        redirect_uri: `${process.env.NEXTAUTH_URL || request.nextUrl.origin}/api/auth/callback/google`,
       }),
     });
 

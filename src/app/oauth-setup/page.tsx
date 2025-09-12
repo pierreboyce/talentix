@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '../../contexts/AuthContext';
 
-export default function OAuthSetupPage() {
+function OAuthSetupContent() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -12,7 +12,7 @@ export default function OAuthSetupPage() {
   const [needsEmail, setNeedsEmail] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { signIn } = useAuth();
+  const { refreshUser } = useAuth() as any;
 
   useEffect(() => {
     // Get OAuth data from URL params
@@ -33,6 +33,27 @@ export default function OAuthSetupPage() {
           // We have real OAuth data
           setEmail(userData.email);
           setName(userData.name || '');
+
+          // If we already have complete data, auto-complete without asking user
+          try {
+            const session = {
+              user: userData,
+              expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+              token: `oauth_token_${userData.provider}_${Date.now()}`
+            };
+            localStorage.setItem('talentix_user', JSON.stringify(userData));
+            localStorage.setItem('talentix_session', JSON.stringify(session));
+            if (typeof window !== 'undefined') {
+              window.dispatchEvent(new Event('talentix-auth-update'));
+              if ((window as any).talentixAuthRefresh) {
+                (window as any).talentixAuthRefresh();
+              }
+            }
+            router.replace('/dashboard');
+            return;
+          } catch (e) {
+            console.error('Auto-complete OAuth setup failed:', e);
+          }
         }
       } catch (error) {
         console.error('Error parsing OAuth data:', error);
@@ -155,6 +176,20 @@ export default function OAuthSetupPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function OAuthSetupPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
+        <div className="bg-slate-700 rounded-3xl p-8 max-w-md w-full text-center">
+          <div className="text-white text-xl">Loading...</div>
+        </div>
+      </div>
+    }>
+      <OAuthSetupContent />
+    </Suspense>
   );
 } 
  

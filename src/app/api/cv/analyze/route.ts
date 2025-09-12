@@ -1,9 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
-
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+import Groq from 'groq-sdk';
 
 // Calculate points based on score (30/25/20/10/0 for 5/4/3/2/1)
 function calculatePoints(score: number): number {
@@ -36,12 +33,12 @@ async function analyzeWithOpenAI(cvText: string): Promise<CVFeedback> {
   console.log('🔍 analyzeWithOpenAI called with CV text length:', cvText.length);
   console.log('📄 CV TEXT CONTENT:', cvText);
 
-  if (!process.env.OPENAI_API_KEY) {
-    console.log('❌ No OpenAI API key found');
-    throw new Error('OpenAI API key not configured');
+  const usingOpenAI = Boolean(process.env.OPENAI_API_KEY);
+  const usingGroq = !usingOpenAI && Boolean(process.env.GROQ_API_KEY);
+  if (!usingOpenAI && !usingGroq) {
+    console.log('❌ No AI provider key found');
+    throw new Error('AI service not configured');
   }
-  
-  console.log('✅ OpenAI API key exists:', process.env.OPENAI_API_KEY.slice(0, 10) + '...');
 
       const prompt = `ANALYZE THIS ACTUAL CV TEXT AND PROVIDE PERSONALIZED FEEDBACK:
 
@@ -85,23 +82,32 @@ ABSOLUTELY CRITICAL:
 - If you cannot extract real information, state exactly what information is missing from the CV text`;
 
   try {
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [
-        {
-          role: "system",
-          content: "You are an expert CV reviewer. You MUST read the actual CV text and use ONLY real information from it. NEVER use placeholders like [Name] or [Company] - use the actual names, companies, job titles, and details from the CV text. Always respond with valid JSON only, no markdown formatting. If you use generic examples instead of real CV content, you have failed the task."
-        },
-        {
-          role: "user", 
-          content: prompt
-        }
-      ],
-      temperature: 0.7,
-      max_tokens: 2000,
-    });
-
-    const rawResponse = completion.choices[0]?.message?.content || '';
+    let rawResponse = '';
+    if (usingOpenAI) {
+      const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! });
+      const completion = await openai.chat.completions.create({
+        model: 'gpt-4o-mini',
+        messages: [
+          { role: 'system', content: "You are an expert CV reviewer. You MUST read the actual CV text and use ONLY real information from it. NEVER use placeholders like [Name] or [Company] - use the actual names, companies, job titles, and details from the CV text. Always respond with valid JSON only, no markdown formatting. If you use generic examples instead of real CV content, you have failed the task." },
+          { role: 'user', content: prompt },
+        ],
+        temperature: 0.7,
+        max_tokens: 2000,
+      });
+      rawResponse = completion.choices[0]?.message?.content || '';
+    } else {
+      const groq = new Groq({ apiKey: process.env.GROQ_API_KEY! });
+      const completion = await groq.chat.completions.create({
+        model: 'llama-3.1-70b-versatile',
+        messages: [
+          { role: 'system', content: "You are an expert CV reviewer. You MUST read the actual CV text and use ONLY real information from it. NEVER use placeholders like [Name] or [Company] - use the actual names, companies, job titles, and details from the CV text. Always respond with valid JSON only, no markdown formatting. If you use generic examples instead of real CV content, you have failed the task." },
+          { role: 'user', content: prompt },
+        ],
+        temperature: 0.7,
+        max_tokens: 2000,
+      });
+      rawResponse = completion.choices?.[0]?.message?.content || '';
+    }
     console.log('🔍 Raw OpenAI response:', rawResponse);
 
     // Clean up potential markdown formatting

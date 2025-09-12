@@ -1,6 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useSubscription } from '../../contexts/SubscriptionContext';
+import { useAuth } from '../../contexts/AuthContext';
+import PaywallGuard from '../../components/PaywallGuard';
 
 interface BlogPost {
   id: number;
@@ -1825,9 +1828,20 @@ Remember: Your portfolio is a living document that should evolve with your caree
 ];
 
 export default function CareerGuidance() {
+  const { subscription } = useSubscription();
+  const { user } = useAuth();
   const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [searchTerm, setSearchTerm] = useState('');
+  const [postsViewed, setPostsViewed] = useState(0); // Track blog posts viewed for free tier
+
+  // Initialize posts viewed from localStorage
+  useEffect(() => {
+    if (typeof window !== 'undefined' && user?.email) {
+      const viewedCount = parseInt(localStorage.getItem(`career_articles_viewed_${user.email}`) || '0');
+      setPostsViewed(viewedCount);
+    }
+  }, [user?.email]);
 
   const allPosts = [...blogPosts, ...additionalPosts, ...morePosts];
   
@@ -2046,6 +2060,7 @@ Remember: Even experienced professionals get nervous before important interviews
         }}>
           <button
             onClick={() => setSelectedPost(null)}
+            className="back-button"
             style={{
               marginBottom: '20px',
               padding: '10px 20px',
@@ -2056,14 +2071,6 @@ Remember: Even experienced professionals get nervous before important interviews
               fontSize: '0.9rem',
               fontFamily: 'inherit',
               transition: 'all 0.2s ease'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = '#e5e7eb';
-              e.currentTarget.style.borderColor = '#9ca3af';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = '#f3f4f6';
-              e.currentTarget.style.borderColor = '#d1d5db';
             }}
           >
             ← Back to Articles
@@ -2177,10 +2184,45 @@ Remember: Even experienced professionals get nervous before important interviews
           fontSize: '1.25rem',
           color: '#374151',
           maxWidth: '600px',
-          margin: '0 auto'
+          margin: '0 auto 16px auto'
         }}>
           Expert advice, tips, and strategies to accelerate your career journey and land your dream job
         </p>
+        
+        {/* Usage Limits Display */}
+        {subscription.tier === 'free' && (
+          <div style={{
+            backgroundColor: '#fef3c7',
+            border: '2px solid #fbbf24',
+            borderRadius: '12px',
+            padding: '16px',
+            marginTop: '24px',
+            maxWidth: '600px',
+            margin: '24px auto 0 auto',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px'
+          }}>
+            <span style={{ fontSize: '24px' }}>⚠️</span>
+            <div>
+              <p style={{ 
+                fontSize: '16px', 
+                fontWeight: 'bold', 
+                color: '#92400e', 
+                margin: '0 0 4px 0' 
+              }}>
+                Free Tier Limit: {postsViewed}/6 articles accessed
+              </p>
+              <p style={{ 
+                fontSize: '14px', 
+                color: '#92400e', 
+                margin: '0' 
+              }}>
+                {postsViewed >= 6 ? 'Upgrade to Pro for unlimited access to all career articles!' : `You can access ${6 - postsViewed} more article${6 - postsViewed === 1 ? '' : 's'}.`}
+              </p>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Search and Filters */}
@@ -2215,6 +2257,7 @@ Remember: Even experienced professionals get nervous before important interviews
             <button
               key={category}
               onClick={() => setSelectedCategory(category)}
+              className={`category-button ${selectedCategory === category ? 'active' : ''}`}
               style={{
                 padding: '8px 16px',
                 borderRadius: '20px',
@@ -2227,24 +2270,46 @@ Remember: Even experienced professionals get nervous before important interviews
                 transition: 'all 0.2s ease',
                 fontFamily: 'inherit'
               }}
-              onMouseEnter={(e) => {
-                if (selectedCategory !== category) {
-                  e.currentTarget.style.backgroundColor = '#f9fafb';
-                  e.currentTarget.style.borderColor = '#d1d5db';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (selectedCategory !== category) {
-                  e.currentTarget.style.backgroundColor = '#ffffff';
-                  e.currentTarget.style.borderColor = '#e5e7eb';
-                }
-              }}
             >
               {category}
             </button>
           ))}
         </div>
       </div>
+
+      {/* Usage Counter for Free Tier */}
+      {subscription.tier === 'free' && (
+        <div style={{
+          maxWidth: '1200px',
+          margin: '0 auto 30px auto',
+          backgroundColor: postsViewed >= 6 ? '#fef2f2' : '#f0f9ff',
+          border: `2px solid ${postsViewed >= 6 ? '#fecaca' : '#bae6fd'}`,
+          borderRadius: '16px',
+          padding: '16px 24px',
+          textAlign: 'center'
+        }}>
+          <div style={{
+            fontSize: '16px',
+            fontWeight: '600',
+            color: postsViewed >= 6 ? '#dc2626' : '#0369a1',
+            marginBottom: '4px'
+          }}>
+            {postsViewed >= 6 ? (
+              <>🔒 Free article limit reached ({postsViewed}/6 articles viewed)</>
+            ) : (
+              <>📚 Free tier: {postsViewed}/6 articles viewed</>
+            )}
+          </div>
+          {postsViewed >= 6 && (
+            <div style={{
+              fontSize: '14px',
+              color: '#dc2626'
+            }}>
+              Upgrade to Pro for unlimited access to all career guidance articles!
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Articles Grid */}
       <div style={{
@@ -2254,28 +2319,59 @@ Remember: Even experienced professionals get nervous before important interviews
         gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))',
         gap: '30px'
       }}>
-        {filteredPosts.map(post => (
+        {filteredPosts.map((post, index) => (
           <article
             key={post.id}
-            onClick={() => setSelectedPost(post)}
+            onClick={() => {
+              // Check paywall for free tier users
+              if (subscription.tier === 'free' && index >= 6 && postsViewed >= 6) {
+                window.dispatchEvent(new CustomEvent('openPricingModal'));
+                return;
+              }
+              
+              // If free tier and viewing a new post, increment counter in localStorage
+              if (subscription.tier === 'free' && index >= postsViewed && user?.email) {
+                const newCount = Math.max(postsViewed, index + 1);
+                localStorage.setItem(`career_articles_viewed_${user.email}`, newCount.toString());
+                setPostsViewed(newCount);
+                
+                // Notify other components of usage update
+                window.dispatchEvent(new CustomEvent('talentix-usage-update'));
+              }
+              
+              setSelectedPost(post);
+            }}
+            className="article-card"
             style={{
               backgroundColor: '#ffffff',
               borderRadius: '20px',
               padding: '30px',
+              position: 'relative',
+              opacity: (subscription.tier === 'free' && index >= 6 && postsViewed >= 6) ? 0.6 : 1,
               boxShadow: '0 10px 30px rgba(0,0,0,0.1)',
               border: '3px solid #fbbf24',
               cursor: 'pointer',
               transition: 'all 0.3s ease'
             }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-5px)';
-              e.currentTarget.style.boxShadow = '0 15px 40px rgba(0,0,0,0.15)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = '0 10px 30px rgba(0,0,0,0.1)';
-            }}
           >
+            {/* Premium Badge for locked posts */}
+            {subscription.tier === 'free' && index >= 6 && postsViewed >= 6 && (
+              <div style={{
+                position: 'absolute',
+                top: '15px',
+                right: '15px',
+                backgroundColor: '#f59e0b',
+                color: 'white',
+                padding: '4px 8px',
+                borderRadius: '12px',
+                fontSize: '12px',
+                fontWeight: '600',
+                zIndex: 1
+              }}>
+                🔒 PRO
+              </div>
+            )}
+            
             <div style={{ marginBottom: '16px' }}>
               <span style={{
                 display: 'inline-block',
@@ -2372,6 +2468,7 @@ Remember: Even experienced professionals get nervous before important interviews
         </p>
         <button
           onClick={() => window.location.href = '/dashboard'}
+          className="dashboard-button"
           style={{
             padding: '12px 24px',
             background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
@@ -2384,18 +2481,32 @@ Remember: Even experienced professionals get nervous before important interviews
             transition: 'all 0.2s ease',
             fontFamily: 'inherit'
           }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.transform = 'translateY(-2px)';
-            e.currentTarget.style.boxShadow = '0 8px 20px rgba(251, 191, 36, 0.4)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.transform = 'translateY(0)';
-            e.currentTarget.style.boxShadow = 'none';
-          }}
         >
           Go to Dashboard
         </button>
       </div>
+      
+      <style jsx>{`
+        .back-button:hover {
+          background-color: #e5e7eb !important;
+          border-color: #9ca3af !important;
+        }
+        
+        .category-button:not(.active):hover {
+          background-color: #f9fafb !important;
+          border-color: #d1d5db !important;
+        }
+        
+        .article-card:hover {
+          transform: translateY(-5px) !important;
+          box-shadow: 0 15px 40px rgba(0,0,0,0.15) !important;
+        }
+        
+        .dashboard-button:hover {
+          transform: translateY(-2px) !important;
+          box-shadow: 0 8px 20px rgba(251, 191, 36, 0.4) !important;
+        }
+      `}</style>
     </div>
   );
 }

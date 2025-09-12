@@ -5,6 +5,7 @@ const nextConfig = {
     // Server actions are stable in Next.js 14+, no longer needed
   },
   
+  
   // Domain configuration
   async headers() {
     return [

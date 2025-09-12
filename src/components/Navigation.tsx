@@ -5,21 +5,48 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { useAuth } from '../contexts/AuthContext';
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useRouter, usePathname } from 'next/navigation';
 
 import SignUpModal from './SignUpModal';
 import SignInModal from './SignInModal';
+import PricingModal from './PricingModal';
 import AppLauncher from './AppLauncher';
 
 export default function Navigation() {
   const { user } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
   const [showSignUpModal, setShowSignUpModal] = useState(false);
   const [showSignInModal, setShowSignInModal] = useState(false);
+  const [showPricingModal, setShowPricingModal] = useState(false);
+
+  // Listen for pricing modal events from PaywallGuard
+  useEffect(() => {
+    const handleOpenPricingModal = () => {
+      setShowPricingModal(true);
+    };
+
+    window.addEventListener('openPricingModal', handleOpenPricingModal);
+    return () => {
+      window.removeEventListener('openPricingModal', handleOpenPricingModal);
+    };
+  }, []);
+
+  const isExcludedPage = (
+    pathname === '/' ||
+    pathname === '/dashboard' ||
+    pathname === '/our-story' ||
+    pathname.startsWith('/our-services')
+  );
+  const isSticky = !isExcludedPage;
+  const headerPositionClass = isSticky
+    ? 'fixed top-0 left-0 right-0 z-20'
+    : 'relative';
 
   return (
-    <header className="w-full bg-[rgb(255,255,255)] border-b border-gray-200/80 sticky top-0 left-0 right-0 z-10" style={{ marginTop: 0, paddingTop: 0, minHeight: '80px', maxHeight: '80px' }}>
+    <>
+    <header className={`w-full bg-[rgb(255,255,255)] border-b border-gray-200/80 ${headerPositionClass}`} style={{ marginTop: 0, paddingTop: 0, minHeight: '80px', maxHeight: '80px' }}>
       <div className="max-w-7xl mx-auto flex items-center justify-between px-6 py-4" style={{ marginTop: 0, paddingTop: 0, height: '80px' }}>
         <div className="flex items-center">
           {/* App Launcher - Only show for authenticated users */}
@@ -70,7 +97,7 @@ export default function Navigation() {
               📖 Our Story
             </button>
             <button 
-              onClick={() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })}
+              onClick={() => router.push('/our-services')}
               style={{
                 background: 'linear-gradient(135deg, #ddd6fe 0%, #a78bfa 100%)',
                 color: '#374151',
@@ -96,6 +123,34 @@ export default function Navigation() {
               }}
             >
               🛠️ Our Services
+            </button>
+            <button 
+              onClick={() => setShowPricingModal(true)}
+              style={{
+                background: 'linear-gradient(135deg, #fef3c7 0%, #fbbf24 100%)',
+                color: '#374151',
+                padding: '10px 18px',
+                borderRadius: '25px',
+                border: 'none',
+                fontSize: '14px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                boxShadow: '0 4px 15px rgba(251, 191, 36, 0.3)',
+                fontFamily: "'Fredoka', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-3px) scale(1.05)';
+                e.currentTarget.style.boxShadow = '0 8px 25px rgba(251, 191, 36, 0.4)';
+                e.currentTarget.style.background = 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                e.currentTarget.style.boxShadow = '0 4px 15px rgba(251, 191, 36, 0.3)';
+                e.currentTarget.style.background = 'linear-gradient(135deg, #fef3c7 0%, #fbbf24 100%)';
+              }}
+            >
+              💎 Pricing
             </button>
             <button 
               onClick={() => setShowSignInModal(true)}
@@ -165,6 +220,12 @@ export default function Navigation() {
         isOpen={showSignInModal} 
         onClose={() => setShowSignInModal(false)} 
       />
+      <PricingModal 
+        isOpen={showPricingModal} 
+        onClose={() => setShowPricingModal(false)} 
+      />
     </header>
+    {isSticky && <div style={{ height: '80px' }} />}
+    </>
   );
 } 

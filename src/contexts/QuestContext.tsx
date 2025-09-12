@@ -204,7 +204,7 @@ export function QuestProvider({ children }: { children: ReactNode }) {
       // User logged out, reset to default
       setQuests(getDefaultQuests());
     }
-  }, [user?.id]);
+  }, [user?.id, user?.email]);
 
   // Save quest progress to localStorage whenever they change (user-specific)
   useEffect(() => {
@@ -212,7 +212,7 @@ export function QuestProvider({ children }: { children: ReactNode }) {
       const questsKey = `talentix-quests-${user.id}`;
       localStorage.setItem(questsKey, JSON.stringify(quests));
     }
-  }, [quests, user?.id]);
+  }, [quests, user?.id, user?.email]);
 
   const updateQuestProgress = (questId: string, progressIncrement: number = 1) => {
     setQuests(prev => prev.map(quest => {

@@ -7,7 +7,9 @@ import SessionWrapper from "../components/SessionWrapper";
 import { PointsProvider } from "../contexts/PointsContext";
 import { QuestProvider } from "../contexts/QuestContext";
 import { ChatbotProvider } from "../contexts/ChatbotContext";
+import { SubscriptionProvider } from "../contexts/SubscriptionContext";
 import PointsNotification from "../components/PointsNotification";
+import GlobalModalManager from "../components/GlobalModalManager";
 
 const inter = Inter({ subsets: ["latin"] });
 const fredoka = Fredoka({ 
@@ -33,21 +35,25 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+        <meta name="theme-color" content="#fde047" />
       </head>
       <body className={`${inter.className} ${fredoka.className}`}>
         <SessionWrapper>
-          <PointsProvider>
-            <QuestProvider>
-              <ChatbotProvider>
-                <Navigation />
+          <SubscriptionProvider>
+            <PointsProvider>
+              <QuestProvider>
+                <ChatbotProvider>
+                  <Navigation />
                 <div className="min-h-screen bg-white text-black">
                 {children}
                 </div>
                 <PointsNotification />
                 <ChatbotClientWrapper />
-              </ChatbotProvider>
-            </QuestProvider>
-          </PointsProvider>
+                <GlobalModalManager />
+                </ChatbotProvider>
+              </QuestProvider>
+            </PointsProvider>
+          </SubscriptionProvider>
         </SessionWrapper>
       </body>
     </html>

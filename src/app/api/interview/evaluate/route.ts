@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
+import Groq from 'groq-sdk';
 
 interface EvaluationRequest {
   question: string;
@@ -15,10 +16,6 @@ interface AIEvaluation {
   points?: number; // Points awarded based on score
 }
 
-// Initialize OpenAI client
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
 
 // Calculate points based on score (30/25/20/10/0 for 5/4/3/2/1)
 function calculatePoints(score: number): number {
@@ -35,12 +32,12 @@ function calculatePoints(score: number): number {
 async function evaluateWithOpenAI(question: string, answer: string, category: string): Promise<AIEvaluation> {
   console.log('🔍 evaluateWithOpenAI called with:', { question: question.substring(0, 50), answer: answer.substring(0, 20), category });
   
-  if (!process.env.OPENAI_API_KEY) {
-    console.error('❌ No OpenAI API key found');
-    throw new Error('OpenAI API key not configured');
+  const usingOpenAI = Boolean(process.env.OPENAI_API_KEY);
+  const usingGroq = !usingOpenAI && Boolean(process.env.GROQ_API_KEY);
+  if (!usingOpenAI && !usingGroq) {
+    console.error('❌ No AI provider key found');
+    throw new Error('AI service not configured');
   }
-  
-  console.log('✅ OpenAI API key exists:', process.env.OPENAI_API_KEY.substring(0, 10) + '...');
 
   const categoryContext = {
     introductory: "This is an introductory interview question about the candidate's background, experience, and personal qualities. Look for relevant experience, clear communication, and genuine enthusiasm.",
@@ -75,23 +72,32 @@ SCORING GUIDE:
 - 5/5: Excellent, comprehensive, well-structured with specific examples and clear relevance`;
 
   try {
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [
-        {
-          role: "system",
-          content: "You are an expert interview coach and career advisor. You MUST respond with ONLY a valid JSON object - no markdown code blocks, no explanatory text, no formatting. Just pure JSON that can be parsed directly."
-        },
-        {
-          role: "user",
-          content: prompt
-        }
-      ],
-      temperature: 0.3,
-      max_tokens: 800,
-    });
-
-    const responseText = completion.choices[0].message.content;
+    let responseText = '';
+    if (usingOpenAI) {
+      const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! });
+      const completion = await openai.chat.completions.create({
+        model: 'gpt-4o-mini',
+        messages: [
+          { role: 'system', content: 'You are an expert interview coach and career advisor. You MUST respond with ONLY a valid JSON object - no markdown code blocks, no explanatory text, no formatting. Just pure JSON that can be parsed directly.' },
+          { role: 'user', content: prompt },
+        ],
+        temperature: 0.3,
+        max_tokens: 800,
+      });
+      responseText = completion.choices[0].message.content || '';
+    } else {
+      const groq = new Groq({ apiKey: process.env.GROQ_API_KEY! });
+      const completion = await groq.chat.completions.create({
+        model: 'llama-3.1-8b-instant',
+        messages: [
+          { role: 'system', content: 'You are an expert interview coach and career advisor. You MUST respond with ONLY a valid JSON object - no markdown code blocks, no explanatory text, no formatting. Just pure JSON that can be parsed directly.' },
+          { role: 'user', content: prompt },
+        ],
+        temperature: 0.3,
+        max_tokens: 800,
+      });
+      responseText = completion.choices?.[0]?.message?.content || '';
+    }
     if (!responseText) {
       throw new Error('No response from OpenAI');
     }

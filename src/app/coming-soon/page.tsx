@@ -13,6 +13,8 @@ export default function ComingSoon() {
 
   const correctPassword = 'yourfirstjob129!';
 
+  // Note: Do not auto-redirect here; middleware protects the rest of the site.
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -118,6 +120,16 @@ export default function ComingSoon() {
         
         {/* Logo */}
         <div style={{ marginBottom: '40px' }}>
+          <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'center' }}>
+            <Image
+              src="/logo.png"
+              alt="Talentix Logo"
+              width={200}
+              height={60}
+              style={{ objectFit: 'contain' }}
+              priority
+            />
+          </div>
           <h1 style={{
             fontSize: '4rem',
             fontWeight: 'bold',
@@ -202,6 +214,7 @@ export default function ComingSoon() {
           
           <button
             type="submit"
+            className="submit-button"
             style={{
               background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
               color: '#ffffff',
@@ -215,14 +228,6 @@ export default function ComingSoon() {
               boxShadow: '0 8px 25px rgba(102, 126, 234, 0.4)',
               fontFamily: 'inherit',
               transform: 'translateY(0)'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-3px) scale(1.05)';
-              e.currentTarget.style.boxShadow = '0 15px 35px rgba(102, 126, 234, 0.5)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0) scale(1)';
-              e.currentTarget.style.boxShadow = '0 8px 25px rgba(102, 126, 234, 0.4)';
             }}
           >
             🚀 Launch Into Talentix! 🌟
@@ -329,6 +334,16 @@ export default function ComingSoon() {
           from { opacity: 0; transform: translateY(20px); }
           to { opacity: 1; transform: translateY(0); }
         }
+        
+        .submit-button:hover:not(:disabled) {
+          transform: translateY(-3px) scale(1.05) !important;
+          box-shadow: 0 15px 35px rgba(102, 126, 234, 0.5) !important;
+        }
+      `}</style>
+
+      {/* Hide global navigation on this page */}
+      <style jsx global>{`
+        header { display: none !important; }
       `}</style>
     </div>
   );

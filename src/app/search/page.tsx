@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { usePoints } from '../../contexts/PointsContext';
 import { useQuests } from '../../contexts/QuestContext';
@@ -21,7 +21,7 @@ interface JobResult {
   tags: string[];
 }
 
-export default function SearchPage() {
+function SearchPageContent() {
   const router = useRouter();
   const { addPoints } = usePoints(); // Use shared points context
   const { updateQuestProgress } = useQuests(); // Use quest system
@@ -714,5 +714,17 @@ export default function SearchPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function SearchPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
+        <div className="text-white text-xl">Loading...</div>
+      </div>
+    }>
+      <SearchPageContent />
+    </Suspense>
   );
 }

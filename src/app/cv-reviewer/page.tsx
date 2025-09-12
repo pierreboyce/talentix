@@ -1,10 +1,13 @@
 "use client";
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Upload, Download, Edit3, FileText, Star, CheckCircle, AlertCircle } from 'lucide-react';
 import { usePoints } from '../../contexts/PointsContext';
 import { useQuests } from '../../contexts/QuestContext';
+import { useSubscription } from '../../contexts/SubscriptionContext';
+import { useAuth } from '../../contexts/AuthContext';
+import PaywallGuard from '../../components/PaywallGuard';
 import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, BorderStyle } from 'docx';
 import { saveAs } from 'file-saver';
 
@@ -69,8 +72,10 @@ interface CVTemplate {
 
 export default function CVReviewer() {
   const router = useRouter();
+  const { user } = useAuth();
   const { addPoints } = usePoints(); // Use shared points context
   const { updateQuestProgress } = useQuests(); // Use quest system
+  const { canAccess, subscription } = useSubscription();
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [currentView, setCurrentView] = useState<'upload' | 'feedback' | 'edit'>('upload');
@@ -78,6 +83,18 @@ export default function CVReviewer() {
   const [cvText, setCvText] = useState('');
   const [feedback, setFeedback] = useState<CVFeedback | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [dailyUsage, setDailyUsage] = useState(0); // Track CV reviews today
+  
+  // Initialize daily usage from localStorage (user-specific)
+  useEffect(() => {
+    if (typeof window !== 'undefined' && user?.email) {
+      const today = new Date().toDateString();
+      const cvUsageKey = `cv_reviews_${today}_${user.email}`;
+      const todayUsage = parseInt(localStorage.getItem(cvUsageKey) || '0');
+      setDailyUsage(todayUsage);
+    }
+  }, [user?.email]);
+  
   const [cvTemplate, setCvTemplate] = useState<CVTemplate>({
     personalInfo: {
       name: '',
@@ -280,6 +297,13 @@ export default function CVReviewer() {
   const handleAnalyze = async () => {
     if (!cvText) return;
     
+    // Check subscription limits for free tier users
+    if (subscription.tier === 'free' && dailyUsage >= 1) {
+      // Trigger pricing modal for upgrade
+      window.dispatchEvent(new CustomEvent('openPricingModal'));
+      return;
+    }
+    
     setIsAnalyzing(true);
     try {
       const response = await fetch('/api/cv/analyze', {
@@ -305,6 +329,29 @@ export default function CVReviewer() {
         if (result.score >= 4) {
           updateQuestProgress('cv_optimizer', 1);
         }
+        
+        // Track usage in localStorage for accurate reporting (user-specific)
+        if (user?.email) {
+          const today = new Date().toDateString();
+          const cvUsageKey = `cv_reviews_${today}_${user.email}`;
+          const currentUsage = parseInt(localStorage.getItem(cvUsageKey) || '0');
+          const newUsage = currentUsage + 1;
+          localStorage.setItem(cvUsageKey, newUsage.toString());
+          
+          // Track total CV reviews (user-specific)
+          const totalKey = `total_cv_reviews_${user.email}`;
+          const totalReviews = parseInt(localStorage.getItem(totalKey) || '0');
+          localStorage.setItem(totalKey, (totalReviews + 1).toString());
+          
+          // Update last CV update time (user-specific)
+          localStorage.setItem(`last_cv_update_${user.email}`, new Date().toISOString());
+          
+          // Update local state
+          setDailyUsage(newUsage);
+        }
+        
+        // Notify other components of usage update
+        window.dispatchEvent(new CustomEvent('talentix-usage-update'));
       }
     } catch (error) {
       console.error('Analysis failed:', error);
@@ -691,10 +738,43 @@ export default function CVReviewer() {
               <p style={{
                 fontSize: '18px',
                 color: '#4b5563',
-                margin: '0'
+                margin: '0 0 16px 0'
               }}>
                 Upload your CV to get AI-powered feedback and improvements
               </p>
+              
+              {/* Usage Limits Display */}
+              {subscription.tier === 'free' && (
+                <div style={{
+                  backgroundColor: '#fef3c7',
+                  border: '2px solid #fbbf24',
+                  borderRadius: '12px',
+                  padding: '16px',
+                  marginBottom: '24px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px'
+                }}>
+                  <span style={{ fontSize: '24px' }}>⚠️</span>
+                  <div>
+                    <p style={{ 
+                      fontSize: '16px', 
+                      fontWeight: 'bold', 
+                      color: '#92400e', 
+                      margin: '0 0 4px 0' 
+                    }}>
+                      Free Tier Limit: {dailyUsage}/1 CV review used today
+                    </p>
+                    <p style={{ 
+                      fontSize: '14px', 
+                      color: '#92400e', 
+                      margin: '0' 
+                    }}>
+                      {dailyUsage >= 1 ? 'Come back tomorrow for another free review or upgrade to Pro!' : 'You have 1 CV review remaining today.'}
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
 
             <div style={{
@@ -776,6 +856,39 @@ export default function CVReviewer() {
                       File uploaded: {uploadedFile.name}
                     </span>
                   </div>
+                  
+                  {/* Usage counter for free tier users */}
+                  {subscription.tier === 'free' && (
+                    <div style={{
+                      backgroundColor: dailyUsage >= 1 ? '#fef2f2' : '#f0f9ff',
+                      border: `1px solid ${dailyUsage >= 1 ? '#fecaca' : '#bae6fd'}`,
+                      borderRadius: '8px',
+                      padding: '12px',
+                      marginBottom: '16px',
+                      textAlign: 'center'
+                    }}>
+                      <div style={{
+                        fontSize: '14px',
+                        color: dailyUsage >= 1 ? '#dc2626' : '#0369a1',
+                        fontWeight: '500'
+                      }}>
+                        {dailyUsage >= 1 ? (
+                          <>🔒 Daily limit reached (1/1 review used today)</>
+                        ) : (
+                          <>📊 Free tier: {dailyUsage}/1 review used today</>
+                        )}
+                      </div>
+                      {dailyUsage >= 1 && (
+                        <div style={{
+                          fontSize: '12px',
+                          color: '#dc2626',
+                          marginTop: '4px'
+                        }}>
+                          Upgrade to Pro for unlimited CV reviews!
+                        </div>
+                      )}
+                    </div>
+                  )}
                   
                   <button
                     onClick={handleAnalyze}

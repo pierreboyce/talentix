@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import Image from "next/image";
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '../contexts/AuthContext';
@@ -116,7 +116,7 @@ const featuredJobs: JobPostCardProps[] = [
   },
 ];
 
-export default function Home() {
+function HomeContent() {
   const { user, loading } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -165,18 +165,14 @@ export default function Home() {
   const [score, setScore] = useState(0);
   const [location, setLocation] = useState("");
   const [isLoaded, setIsLoaded] = useState(false);
-  const [showLoader, setShowLoader] = useState(true);
+  const [showLoader, setShowLoader] = useState(false);
   const [showSignUpModal, setShowSignUpModal] = useState(false);
   const [showSignInModal, setShowSignInModal] = useState(false);
   const [oauthError, setOauthError] = useState<string | null>(null);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      // Always hide loader after 0.8 seconds regardless of user state
-      setTimeout(() => {
-        setShowLoader(false);
       setIsLoaded(true);
-      }, 800);
     }
   }, []);
 
@@ -771,10 +767,7 @@ export default function Home() {
                   </p>
                   
                   <button
-                    onClick={() => {
-                      const contactSection = document.querySelector('section:last-of-type');
-                      contactSection?.scrollIntoView({ behavior: 'smooth' });
-                    }}
+                    onClick={() => router.push('/our-services')}
                     style={{
                       background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
                       color: '#000',
@@ -976,5 +969,17 @@ export default function Home() {
         }
       `}</style>
     </div>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
+        <div className="text-white text-xl">Loading...</div>
+      </div>
+    }>
+      <HomeContent />
+    </Suspense>
   );
 }

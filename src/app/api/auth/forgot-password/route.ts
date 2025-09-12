@@ -1,102 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import nodemailer from 'nodemailer';
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
+import sgMail from '@sendgrid/mail';
 
-// Module-level cache to persist between requests (in production, use a database)
-const globalForVerificationCodes = globalThis as unknown as {
-  verificationCodes: Map<string, { code: string; timestamp: number; email: string }> | undefined
-};
-
-// Function to generate a 6-digit code
-function generateVerificationCode(): string {
-  return Math.floor(100000 + Math.random() * 900000).toString();
-}
-
-// Function to send email using Nodemailer (Gmail SMTP)
-async function sendVerificationEmail(email: string, code: string): Promise<boolean> {
-  try {
-    // For demo purposes, we'll still log to console as backup
-    console.log(`📧 Sending verification code to ${email}: ${code}`);
-    
-    // Use the Talentix email for sending password reset codes
-    const emailUser = 'talentixuk@gmail.com';
-    const emailPass = process.env.EMAIL_PASS || 'defaultpass'; // You'll need to set this in .env.local
-    
-    if (!process.env.EMAIL_PASS) {
-      console.log('⚠️ EMAIL_PASS not configured in .env.local, using console output for now');
-      console.log(`🔗 Verification code for ${email}: ${code}`);
-      return true; // Return success for demo until email is configured
-    }
-    
-    // Use nodemailer to send real email
-    
-    const transporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        user: emailUser,
-        pass: emailPass
-      }
-    });
-    
-    const mailOptions = {
-      from: `"Talentix Support" <${emailUser}>`,
-      to: email,
-      subject: '🔐 Your Talentix Password Reset Code',
-      html: `
-        <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: linear-gradient(135deg, #fef3c7 0%, #fde047 100%); border-radius: 10px;">
-          <div style="text-align: center; margin-bottom: 30px;">
-            <h1 style="color: #1f2937; margin: 0; font-size: 2.5rem;">🚀 Talentix</h1>
-            <p style="color: #4b5563; margin: 5px 0 0 0; font-size: 1.1rem;">Your Career Journey Starts Here</p>
-          </div>
-          
-          <div style="background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-            <h2 style="color: #1f2937; margin-top: 0;">Password Reset Request 🔐</h2>
-            
-            <p style="color: #4b5563; line-height: 1.6;">Hi there! 👋</p>
-            
-            <p style="color: #4b5563; line-height: 1.6;">
-              We received a request to reset your Talentix password. Use the verification code below to proceed:
-            </p>
-            
-            <div style="text-align: center; margin: 30px 0;">
-              <div style="background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%); color: #000; font-size: 2rem; font-weight: bold; padding: 20px; border-radius: 10px; letter-spacing: 3px; display: inline-block; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                ${code}
-              </div>
-            </div>
-            
-            <p style="color: #4b5563; line-height: 1.6;">
-              This code will expire in <strong>10 minutes</strong> for security reasons.
-            </p>
-            
-            <p style="color: #4b5563; line-height: 1.6;">
-              If you didn't request this password reset, you can safely ignore this email. Your password will remain unchanged.
-            </p>
-            
-            <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
-              <p style="color: #6b7280; font-size: 0.9rem; margin: 0;">
-                Best regards,<br>
-                The Talentix Team 💼✨
-              </p>
-            </div>
-          </div>
-          
-          <div style="text-align: center; margin-top: 20px;">
-            <p style="color: #6b7280; font-size: 0.8rem; margin: 0;">
-              This is an automated message. Please do not reply to this email.
-            </p>
-          </div>
-        </div>
-      `
-    };
-    
-    await transporter.sendMail(mailOptions);
-    console.log(`✅ Email sent successfully to ${email}`);
-    return true;
-    
-  } catch (error) {
-    console.error('❌ Email sending failed:', error);
-    console.log(`🔗 Fallback - Verification code for ${email}: ${code}`);
-    return true; // Return success anyway for demo purposes
-  }
+// Initialize SendGrid
+if (process.env.SENDGRID_API_KEY) {
+  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 }
 
 export async function POST(request: NextRequest) {
@@ -104,59 +13,185 @@ export async function POST(request: NextRequest) {
     const { email } = await request.json();
 
     if (!email) {
-      return NextResponse.json({ error: 'Email is required' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Email is required' },
+        { status: 400 }
+      );
     }
 
-    // Check if user exists (check localStorage simulation)
-    // In production, check your user database
-    const users = JSON.parse(process.env.DEMO_USERS || '[]');
-    const userExists = users.some((user: any) => user.email === email);
+    // Check if SendGrid is configured
+    if (!process.env.SENDGRID_API_KEY) {
+      return NextResponse.json(
+        { error: 'Email service not configured' },
+        { status: 500 }
+      );
+    }
+
+    // TODO: Replace with your actual database query
+    // For now, we'll simulate checking if user exists
+    // In a real app, you'd query your database here
+    const userExists = true; // Replace with actual database check
 
     if (!userExists) {
-      // For security, we still return success even if user doesn't exist
-      // This prevents email enumeration attacks
-      return NextResponse.json({ 
-        success: true, 
-        message: 'If an account with this email exists, a verification code has been sent.' 
+      // Don't reveal if email exists or not for security
+      return NextResponse.json({
+        success: true,
+        message: 'If an account with that email exists, we\'ve sent a password reset link.'
       });
     }
 
-    // Generate verification code
-    const code = generateVerificationCode();
-    const timestamp = Date.now();
+    // Generate reset token
+    const resetToken = jwt.sign(
+      { email, type: 'password_reset' },
+      process.env.JWT_SECRET || 'your-secret-key',
+      { expiresIn: '1h' }
+    );
 
-    // Initialize verificationCodes if not already done
-    if (!globalForVerificationCodes.verificationCodes) {
-      globalForVerificationCodes.verificationCodes = new Map<string, { code: string; timestamp: number; email: string }>();
-    }
+    // Create reset URL - always use custom domain in production
+    const baseUrl = process.env.NODE_ENV === 'production' 
+      ? 'https://talentix.co.uk'
+      : process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+    const resetUrl = `${baseUrl}/reset-password?token=${resetToken}`;
 
-    // Store verification code (expires in 10 minutes)
-    globalForVerificationCodes.verificationCodes.set(email, { code, timestamp, email });
+    // Email template
+    const emailHtml = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Reset Your Talentix Password</title>
+          <style>
+            body {
+              font-family: 'Fredoka', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+              background: linear-gradient(135deg, #fef3c7 0%, #fde047 25%, #a78bfa 75%, #8b5cf6 100%);
+              margin: 0;
+              padding: 20px;
+            }
+            .container {
+              max-width: 600px;
+              margin: 0 auto;
+              background: white;
+              border-radius: 24px;
+              padding: 40px;
+              box-shadow: 0 25px 50px -12px rgba(139, 92, 246, 0.4);
+            }
+            .header {
+              text-align: center;
+              margin-bottom: 32px;
+            }
+            .title {
+              font-size: 32px;
+              font-weight: 900;
+              color: #1f2937;
+              margin-bottom: 16px;
+            }
+            .subtitle {
+              font-size: 18px;
+              color: #6b7280;
+              font-weight: 600;
+            }
+            .content {
+              font-size: 16px;
+              line-height: 1.6;
+              color: #374151;
+              margin-bottom: 32px;
+            }
+            .button {
+              display: inline-block;
+              background: linear-gradient(135deg, #8b5cf6 0%, #3b82f6 100%);
+              color: white;
+              text-decoration: none;
+              padding: 18px 32px;
+              border-radius: 16px;
+              font-weight: 700;
+              font-size: 18px;
+              text-align: center;
+              box-shadow: 0 12px 24px rgba(139, 92, 246, 0.4);
+            }
+            .footer {
+              margin-top: 32px;
+              padding-top: 24px;
+              border-top: 2px solid #f3f4f6;
+              font-size: 14px;
+              color: #6b7280;
+              text-align: center;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <div class="title">🔑 Reset Your Password</div>
+              <div class="subtitle">Let's get you back into your Talentix account!</div>
+            </div>
+            
+            <div class="content">
+              <p>Hi there! 👋</p>
+              <p>We received a request to reset your Talentix password. No worries - it happens to the best of us!</p>
+              <p>Click the button below to reset your password. This link will expire in 1 hour for security reasons.</p>
+            </div>
+            
+            <div style="text-align: center; margin: 32px 0;">
+              <a href="${resetUrl}" class="button">Reset My Password 🚀</a>
+            </div>
+            
+            <div class="content">
+              <p><strong>Didn't request this?</strong> No problem! You can safely ignore this email and your password will remain unchanged.</p>
+            </div>
+            
+            <div class="footer">
+              <p>This link will expire in 1 hour for your security.</p>
+              <p>If the button doesn't work, copy and paste this URL into your browser:</p>
+              <p style="word-break: break-all; font-family: monospace; background: #f3f4f6; padding: 8px; border-radius: 8px;">${resetUrl}</p>
+              <p style="margin-top: 24px;">
+                🎯 <strong>Talentix Team</strong><br>
+                Helping you land your dream job!
+              </p>
+            </div>
+          </div>
+        </body>
+      </html>
+    `;
 
-    // Clean up expired codes
-    for (const [key, value] of globalForVerificationCodes.verificationCodes.entries()) {
-      if (timestamp - value.timestamp > 10 * 60 * 1000) { // 10 minutes
-        globalForVerificationCodes.verificationCodes.delete(key);
-      }
-    }
+    // Send email using SendGrid
+    const msg = {
+      to: email,
+      from: {
+        email: process.env.SENDGRID_FROM_EMAIL || 'noreply@talentix.co.uk',
+        name: 'Talentix Team'
+      },
+      subject: '🔑 Reset Your Talentix Password',
+      html: emailHtml,
+      text: `
+        Reset Your Talentix Password
+        
+        Hi there!
+        
+        We received a request to reset your Talentix password. Click the link below to reset it:
+        
+        ${resetUrl}
+        
+        This link will expire in 1 hour for security reasons.
+        
+        If you didn't request this, you can safely ignore this email.
+        
+        - The Talentix Team
+      `
+    };
 
-    // Send verification email
-    const emailSent = await sendVerificationEmail(email, code);
+    await sgMail.send(msg);
 
-    if (emailSent) {
       return NextResponse.json({ 
         success: true, 
-        message: 'Verification code sent to your email' 
-      });
-    } else {
-      return NextResponse.json({ error: 'Failed to send email' }, { status: 500 });
-    }
+      message: 'If an account with that email exists, we\'ve sent a password reset link.'
+    });
 
   } catch (error) {
     console.error('Forgot password error:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Failed to send reset email' },
+      { status: 500 }
+    );
   }
 }
-
-// Verification codes are now stored in globalForVerificationCodes
-
