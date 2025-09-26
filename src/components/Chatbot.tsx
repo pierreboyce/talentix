@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 
 interface Message {
   id: number;
@@ -34,6 +35,7 @@ export default function Chatbot({ userName }: ChatbotProps) {
   useEffect(() => {
     scrollToBottom();
   }, [messages, isTyping]);
+
 
   // Listen for external open chat events
   useEffect(() => {
@@ -88,7 +90,7 @@ export default function Chatbot({ userName }: ChatbotProps) {
         "Totally normal! 😊 Practice helps - do mock interviews with friends or family. Remember, the interviewer wants you to succeed. Take deep breaths and focus on your strengths! You've got this! 💪✨"
       ];
 
-      const randomIndex = Math.floor(Math.random() * responses.length);
+      const randomIndex = typeof window !== 'undefined' ? Math.floor(Math.random() * responses.length) : 0;
       return responses[randomIndex] + "\n\nWould you like me to dive deeper into any specific aspect? 🤔";
     }
   };
@@ -174,26 +176,28 @@ export default function Chatbot({ userName }: ChatbotProps) {
       </button>
 
       {/* Modern Chat Window */}
-      {isOpen && (
+      {isOpen && typeof window !== 'undefined' && createPortal(
         <div 
           className="chat-window-fade-in"
           style={{
             position: 'fixed',
-          bottom: '100px',
-          right: '24px',
-          top: '20px',
-            zIndex: 999998,
-          width: '400px',
-          maxHeight: 'calc(100vh - 120px)',
-          height: 'auto',
-          backgroundColor: '#ffffff',
-          borderRadius: '20px',
-          boxShadow: '0 20px 40px rgba(0, 0, 0, 0.15)',
-          border: '3px solid #fbbf24',
-          display: 'flex',
-          flexDirection: 'column',
-          overflow: 'hidden'
-        }}>
+            bottom: '100px',
+            right: '24px',
+            top: '20px',
+            zIndex: 9999998,
+            width: '400px',
+            maxHeight: 'calc(100vh - 120px)',
+            height: 'auto',
+            backgroundColor: '#ffffff',
+            borderRadius: '20px',
+            boxShadow: '0 20px 40px rgba(0, 0, 0, 0.15)',
+            border: '3px solid #fbbf24',
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: 'hidden',
+            opacity: '1',
+            visibility: 'visible'
+          }}>
           {/* Header */}
           <div style={{
             background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
@@ -459,7 +463,8 @@ export default function Chatbot({ userName }: ChatbotProps) {
                 </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Add CSS animations */}

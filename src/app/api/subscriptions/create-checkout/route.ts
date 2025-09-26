@@ -8,7 +8,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { priceId } = body;
+    const { priceId, userEmail } = body;
 
     if (!priceId) {
       return NextResponse.json(
@@ -17,8 +17,32 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (!userEmail) {
+      return NextResponse.json(
+        { error: 'Missing user email' },
+        { status: 400 }
+      );
+    }
+
+    // Create or get existing customer
+    const customers = await stripe.customers.list({
+      email: userEmail,
+      limit: 1,
+    });
+
+    let customerId: string;
+    if (customers.data.length > 0) {
+      customerId = customers.data[0].id;
+    } else {
+      const customer = await stripe.customers.create({
+        email: userEmail,
+      });
+      customerId = customer.id;
+    }
+
     // Create Stripe checkout session
     const session = await stripe.checkout.sessions.create({
+      customer: customerId,
       payment_method_types: ['card'],
       line_items: [
         {
@@ -32,6 +56,7 @@ export async function POST(request: NextRequest) {
       allow_promotion_codes: true,
       metadata: {
         priceId: priceId,
+        userEmail: userEmail,
       },
     });
 

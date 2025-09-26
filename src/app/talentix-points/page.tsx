@@ -37,9 +37,32 @@ export default function TalentixPoints() {
   
   // Get user's actual name or fallback to default
   const getUserName = () => {
-    if (user?.name) return user.name;
-    if (user?.email) return user.email.split('@')[0]; // Use email prefix if no name
-    return 'Talentix User'; // Final fallback
+    // First priority: user.name from AuthContext
+    if (user?.name && user.name.trim()) return user.name.trim();
+    
+    // Second priority: user.email prefix from AuthContext
+    if (user?.email && user.email.trim()) {
+      const emailPrefix = user.email.split('@')[0];
+      if (emailPrefix && emailPrefix.trim()) return emailPrefix.trim();
+    }
+    
+    // Third priority: try to get from localStorage directly
+    try {
+      const storedUser = localStorage.getItem('talentix_user');
+      if (storedUser) {
+        const userData = JSON.parse(storedUser);
+        if (userData?.name && userData.name.trim()) return userData.name.trim();
+        if (userData?.email && userData.email.trim()) {
+          const emailPrefix = userData.email.split('@')[0];
+          if (emailPrefix && emailPrefix.trim()) return emailPrefix.trim();
+        }
+      }
+    } catch (error) {
+      console.error('Error parsing stored user data:', error);
+    }
+    
+    // Final fallback
+    return 'Talentix User';
   };
   
   const levels = [
@@ -226,6 +249,33 @@ export default function TalentixPoints() {
     const currentLevel = getCurrentLevel();
     const userName = getUserName(); // Get actual user name
     const certificateId = `TLX-${achievement.name.substring(0, 3).toUpperCase()}-${Date.now().toString().slice(-6)}`;
+
+    // Enhanced debug logging for production troubleshooting
+    const debugInfo = {
+      user,
+      userName,
+      userEmail: user?.email,
+      userID: user?.id,
+      localStorage_user: localStorage.getItem('talentix_user'),
+      localStorage_session: localStorage.getItem('talentix_session'),
+      window_location: window.location.href,
+      domain: window.location.hostname,
+      authContext_user: user,
+      getUserName_result: getUserName()
+    };
+    
+    console.log('🔍 PRODUCTION Certificate download debug:', debugInfo);
+    
+    // Also send debug info to server for logging
+    try {
+      await fetch('/api/debug/user-data', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(debugInfo)
+      });
+    } catch (e) {
+      console.log('Debug logging failed (non-critical):', e);
+    }
 
     try {
       // Determine the level for the certificate image

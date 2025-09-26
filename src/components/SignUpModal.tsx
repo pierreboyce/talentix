@@ -172,12 +172,16 @@ export default function SignUpModal({ isOpen, onClose }: SignUpModalProps) {
       style={{
         position: 'fixed',
         inset: 0,
+        width: '100vw',
+        height: '100vh',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         padding: '20px',
-        background: 'rgba(0, 0, 0, 0.5)',
-        zIndex: 50,
+        background: 'rgba(0, 0, 0, 0.3)',
+        backdropFilter: 'blur(12px) saturate(0.8)',
+        WebkitBackdropFilter: 'blur(12px) saturate(0.8)',
+        zIndex: 9999999,
         overflowY: 'auto',
         opacity: isVisible ? 1 : 0,
         transition: 'opacity 0.3s ease-in-out'
@@ -280,6 +284,7 @@ export default function SignUpModal({ isOpen, onClose }: SignUpModalProps) {
           maxWidth: '600px',
           boxShadow: '0 25px 50px -12px rgba(139, 92, 246, 0.4)',
           position: 'relative',
+          zIndex: 10000000,
           transform: isVisible ? 'scale(1) translateY(0)' : 'scale(0.9) translateY(20px)',
           opacity: isVisible ? 1 : 0,
           transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
@@ -420,7 +425,7 @@ export default function SignUpModal({ isOpen, onClose }: SignUpModalProps) {
                 <span style={{ fontSize: '18px' }}>🔴</span>
                 Google
               </button>
-              
+
               <button
                 type="button"
                 onClick={() => handleOAuthSignUp('microsoft')}
@@ -449,25 +454,25 @@ export default function SignUpModal({ isOpen, onClose }: SignUpModalProps) {
                 Microsoft
               </button>
             </div>
-            
-            <div style={{
-              display: 'flex',
+
+                <div style={{
+                  display: 'flex',
               alignItems: 'center',
             gap: '12px',
             margin: '12px 0'
             }}>
               <div style={{ flex: 1, height: '2px', background: 'rgba(255, 255, 255, 0.3)' }} />
-              <span style={{
+                  <span style={{
                 color: '#374151',
                 fontFamily: 'Fredoka, sans-serif',
                 fontWeight: '600',
                 fontSize: '14px'
               }}>
                 Or with email
-              </span>
+                  </span>
               <div style={{ flex: 1, height: '2px', background: 'rgba(255, 255, 255, 0.3)' }} />
-            </div>
-          </div>
+                </div>
+              </div>
 
           {/* Sign Up Form */}
           <form onSubmit={handleSignUp} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -530,15 +535,15 @@ export default function SignUpModal({ isOpen, onClose }: SignUpModalProps) {
               }}>
                 📧
               </div>
-              <input
-                type="email"
-                name="email"
+                <input
+                  type="email"
+                  name="email"
                 placeholder="your.email@awesome.com"
-                value={formData.email}
-                onChange={handleInputChange}
+                  value={formData.email}
+                  onChange={handleInputChange}
                 onFocus={() => setFocusedInput('email')}
                 onBlur={() => setFocusedInput(null)}
-                required
+                  required
                 style={{
                   width: '100%',
                   backgroundColor: 'rgba(255, 255, 255, 0.9)',
@@ -558,9 +563,9 @@ export default function SignUpModal({ isOpen, onClose }: SignUpModalProps) {
                   transform: focusedInput === 'email' ? 'translateY(-2px)' : 'translateY(0)'
                 }}
                 className="fun-input"
-              />
-            </div>
-
+                />
+              </div>
+              
             {/* Password Input */}
             <div style={{ position: 'relative' }}>
               <div style={{
@@ -575,15 +580,15 @@ export default function SignUpModal({ isOpen, onClose }: SignUpModalProps) {
               }}>
                 🔑
               </div>
-              <input
-                type="password"
-                name="password"
+                <input
+                  type="password"
+                  name="password"
                 placeholder="Super secret password"
-                value={formData.password}
-                onChange={handleInputChange}
+                  value={formData.password}
+                  onChange={handleInputChange}
                 onFocus={() => setFocusedInput('password')}
                 onBlur={() => setFocusedInput(null)}
-                required
+                  required
                 style={{
                   width: '100%',
                   backgroundColor: 'rgba(255, 255, 255, 0.9)',
@@ -603,9 +608,9 @@ export default function SignUpModal({ isOpen, onClose }: SignUpModalProps) {
                   transform: focusedInput === 'password' ? 'translateY(-2px)' : 'translateY(0)'
                 }}
                 className="fun-input"
-              />
-            </div>
-
+                />
+              </div>
+              
             {/* Confirm Password Input */}
             <div style={{ position: 'relative' }}>
               <div style={{
@@ -620,15 +625,15 @@ export default function SignUpModal({ isOpen, onClose }: SignUpModalProps) {
               }}>
                 🔐
               </div>
-              <input
+                <input
                 type="password"
                 name="confirmPassword"
                 placeholder="Confirm that awesome password"
                 value={formData.confirmPassword}
-                onChange={handleInputChange}
+                  onChange={handleInputChange}
                 onFocus={() => setFocusedInput('confirmPassword')}
                 onBlur={() => setFocusedInput(null)}
-                required
+                  required
                 style={{
                   width: '100%',
                   backgroundColor: 'rgba(255, 255, 255, 0.9)',
@@ -695,8 +700,8 @@ export default function SignUpModal({ isOpen, onClose }: SignUpModalProps) {
             )}
 
             {/* Submit Button */}
-            <button
-              type="submit"
+                <button
+                  type="submit"
               disabled={isLoading || passwordsMatch === false}
               className="signup-button"
               style={{
@@ -721,8 +726,8 @@ export default function SignUpModal({ isOpen, onClose }: SignUpModalProps) {
               }}
             >
               {isLoading ? '✨ Creating your account...' : 'Let\'s Go 🚀'}
-            </button>
-          </form>
+                </button>
+            </form>
         </div>
       </div>
 

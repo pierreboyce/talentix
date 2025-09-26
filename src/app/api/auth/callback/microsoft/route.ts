@@ -2,13 +2,25 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
   try {
+    console.log('🔍 Microsoft OAuth callback hit!', request.url);
+    
     const searchParams = request.nextUrl.searchParams;
     const code = searchParams.get('code');
     const state = searchParams.get('state');
     const error = searchParams.get('error');
+    const errorDescription = searchParams.get('error_description');
+
+    console.log('🔍 Microsoft OAuth parameters:', {
+      code: code ? 'PRESENT' : 'MISSING',
+      state,
+      error,
+      errorDescription,
+      allParams: Object.fromEntries(searchParams.entries())
+    });
 
     if (error) {
       // OAuth error occurred
+      console.error('❌ Microsoft OAuth error from provider:', error, errorDescription);
       return NextResponse.redirect(
         `${request.nextUrl.origin}/?error=oauth_${error}`
       );
@@ -16,6 +28,7 @@ export async function GET(request: NextRequest) {
 
     if (!code) {
       // No authorization code received
+      console.error('❌ Microsoft OAuth: No authorization code received');
       return NextResponse.redirect(
         `${request.nextUrl.origin}/?error=oauth_missing_code`
       );
@@ -23,6 +36,17 @@ export async function GET(request: NextRequest) {
 
     // Real OAuth implementation - Exchange code for access token and get user data
     let oauthUser;
+    
+    // FORCE production URL if we detect production domain
+    let baseUrl = process.env.NEXTAUTH_URL || request.nextUrl.origin;
+    if (request.nextUrl.hostname === 'talentix.co.uk' || request.nextUrl.hostname === 'www.talentix.co.uk') {
+      baseUrl = 'https://talentix.co.uk';
+      console.log(`🔗 FORCED production baseUrl for Microsoft token exchange:`, baseUrl);
+    }
+    const redirectUri = `${baseUrl}/api/auth/callback/microsoft`;
+    
+    console.log('🔍 Microsoft OAuth callback hit!', request.url);
+    console.log(`🔗 Microsoft token exchange redirect_uri:`, redirectUri);
     
     try {
       // Step 1: Exchange authorization code for access token
@@ -36,12 +60,19 @@ export async function GET(request: NextRequest) {
           client_secret: process.env.MICROSOFT_CLIENT_SECRET || '', // You'll need to add this
           code: code,
           grant_type: 'authorization_code',
-          redirect_uri: `${process.env.NEXTAUTH_URL || request.nextUrl.origin}/api/auth/callback/microsoft`,
+          redirect_uri: redirectUri,
         }),
       });
 
       if (!tokenResponse.ok) {
-        throw new Error('Failed to exchange code for token');
+        const errorText = await tokenResponse.text();
+        console.error('❌ Microsoft token exchange failed:', {
+          status: tokenResponse.status,
+          statusText: tokenResponse.statusText,
+          error: errorText,
+          redirectUri
+        });
+        throw new Error(`Failed to exchange code for token: ${tokenResponse.status} ${errorText}`);
       }
 
       const tokenData = await tokenResponse.json();
@@ -93,79 +124,35 @@ export async function GET(request: NextRequest) {
         updatedAt: new Date().toISOString()
       };
 
-      // Always go directly to dashboard when we have OAuth data
-      if (profileData.displayName && (profileData.mail || profileData.userPrincipalName)) {
-        console.log('✅ Microsoft OAuth: Complete user data received, redirecting to dashboard');
-        
-        // Store user data directly and redirect to dashboard
-        const userParams = new URLSearchParams({
-          oauth_user: JSON.stringify(oauthUser),
-          provider: 'microsoft',
-          direct_login: 'true'
-        });
+      console.log('✅ Microsoft OAuth successful, user data:', {
+        displayName: profileData.displayName,
+        email: profileData.mail || profileData.userPrincipalName,
+        hasName: !!profileData.displayName,
+        hasEmail: !!(profileData.mail || profileData.userPrincipalName)
+      });
 
-        // Important: use 307 to preserve method/headers and avoid losing cookies
-        const redirectUrl = new URL(`/dashboard?${userParams.toString()}`, request.url);
-        return NextResponse.redirect(redirectUrl, { status: 307 });
-      } else {
-        console.log('⚠️ Microsoft OAuth: Incomplete user data, redirecting to oauth-setup');
-      }
+      // Always go directly to dashboard when we have OAuth data - Microsoft always provides a display name
+      console.log('✅ Microsoft OAuth: Redirecting directly to dashboard with user data');
+      
+      // Store user data directly and redirect to dashboard
+      const userParams = new URLSearchParams({
+        oauth_user: JSON.stringify(oauthUser),
+        provider: 'microsoft',
+        direct_login: 'true'
+      });
+
+      // Important: use 307 to preserve method/headers and avoid losing cookies
+      const redirectUrl = new URL(`/dashboard?${userParams.toString()}`, request.url);
+      return NextResponse.redirect(redirectUrl, { status: 307 });
 
     } catch (oauthError) {
-      console.error('OAuth token exchange failed:', oauthError);
+      console.error('❌ Microsoft OAuth failed completely:', oauthError);
       
-      // Try to get at least the email from the token response if available
-      let fallbackEmail = '';
-      try {
-        // If we got a token but Graph API failed, try to get email from JWT token
-        const tokenResponse = await fetch('https://login.microsoftonline.com/common/oauth2/v2.0/token', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: new URLSearchParams({
-            client_id: process.env.NEXT_PUBLIC_MICROSOFT_CLIENT_ID!,
-            client_secret: process.env.MICROSOFT_CLIENT_SECRET || '',
-            code: code,
-            grant_type: 'authorization_code',
-            redirect_uri: `${process.env.NEXTAUTH_URL || request.nextUrl.origin}/api/auth/callback/microsoft`,
-          }),
-        });
-        
-        if (tokenResponse.ok) {
-          const tokenData = await tokenResponse.json();
-          // Try to decode the id_token to get email
-          if (tokenData.id_token) {
-            const payload = JSON.parse(atob(tokenData.id_token.split('.')[1]));
-            fallbackEmail = payload.email || payload.preferred_username || '';
-            console.log('Extracted email from id_token:', fallbackEmail);
-          }
-        }
-      } catch (fallbackError) {
-        console.error('Fallback email extraction failed:', fallbackError);
-      }
-      
-      // Fallback to name selection flow if real OAuth fails
-      oauthUser = {
-        id: `oauth_user_microsoft_${Date.now()}`,
-        email: fallbackEmail, // Use extracted email if available
-        location: 'London',
-        score: 0,
-        emoji: '😊',
-        provider: 'microsoft',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        needsEmailAndName: !fallbackEmail // Only need both if we don't have email
-      };
+      // If OAuth fails completely, redirect to home with error
+      return NextResponse.redirect(
+        `${request.nextUrl.origin}/?error=microsoft_oauth_failed`
+      );
     }
-
-    // Redirect to name selection page only if we don't have complete user data
-    const userParams = new URLSearchParams({
-      oauth_user: JSON.stringify(oauthUser),
-      provider: 'microsoft'
-    });
-
-    return NextResponse.redirect(
-      `${request.nextUrl.origin}/oauth-setup?${userParams.toString()}`
-    );
 
   } catch (error) {
     console.error('Microsoft OAuth callback error:', error);

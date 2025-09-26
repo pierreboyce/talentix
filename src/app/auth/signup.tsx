@@ -36,7 +36,8 @@ export default function SignUp() {
     setTimeout(() => {
       if (username && email && password && location) {
         const userData = {
-          username,
+          id: `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          name: username,
           email,
           password,
           location,
@@ -44,10 +45,19 @@ export default function SignUp() {
           createdAt: new Date().toISOString()
         };
         
-        localStorage.setItem(`talentix_user_${username}`, JSON.stringify(userData));
-        localStorage.setItem("talentix_user", username);
+        // Store user data consistently with OAuth users
+        localStorage.setItem(`talentix_user_${email}`, JSON.stringify(userData));
+        localStorage.setItem("talentix_user", JSON.stringify(userData));
         localStorage.setItem("talentix_location", location);
         localStorage.setItem("talentix_score", "0");
+        
+        // Create session
+        const session = {
+          user: userData,
+          expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days
+          token: `signup_token_${Date.now()}`
+        };
+        localStorage.setItem('talentix_session', JSON.stringify(session));
         router.push("/");
       } else {
         setError("Please fill in all fields");

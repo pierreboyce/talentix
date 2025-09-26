@@ -25,7 +25,7 @@ export default function OurStoryPage() {
       name: 'Vishnu Vohra',
       title: 'Ambassador',
       image: '/vishnuheadshot.jpeg',
-      story: 'Vishnu will add his inspiring story here shortly...',
+      story: `Vishnu is a motivated student from Hayes in West London with a passion for entrepreneurship and personal growth. Currently studying BTEC Business, CTEC IT, and BTEC Travel and Tourism, he is driven by purpose and sees every opportunity as a step towards success. Vishnu actively seeks work experience placements to build his leadership and communication skills, embracing growth and challenges with determination.`,
       emoji: '⚡'
     },
     {

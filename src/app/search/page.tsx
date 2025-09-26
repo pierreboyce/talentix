@@ -4,7 +4,8 @@ import React, { useState, useEffect, useMemo, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { usePoints } from '../../contexts/PointsContext';
 import { useQuests } from '../../contexts/QuestContext';
-import { ArrowLeft, Search, MapPin, Clock, Star, ExternalLink, Filter, Briefcase, DollarSign } from 'lucide-react';
+import { useDeviceDetection } from '../../hooks/useDeviceDetection';
+import { ArrowLeft, Search, MapPin, Clock, Star, ExternalLink, Filter, Briefcase, DollarSign, X, Menu } from 'lucide-react';
 
 interface JobResult {
   id: string;
@@ -27,10 +28,12 @@ function SearchPageContent() {
   const { updateQuestProgress } = useQuests(); // Use quest system
   const searchParams = useSearchParams();
   const initialQuery = searchParams.get('q') || '';
+  const { isMobile } = useDeviceDetection();
   
   const [searchQuery, setSearchQuery] = useState(initialQuery);
   const [selectedFilter, setSelectedFilter] = useState<string>('all');
   const [selectedLocation, setSelectedLocation] = useState<string>('all');
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
 
   // Track job clicks and award points
   const trackJobClick = async (job: any) => {
@@ -290,8 +293,278 @@ function SearchPageContent() {
   };
 
   return (
-    <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #fef3c7 0%, #fbbf24 50%, #f59e0b 100%)', display: 'flex' }}>
-      {/* Left Sidebar */}
+    <div style={{ 
+      minHeight: '100vh', 
+      background: 'linear-gradient(135deg, #fef3c7 0%, #fbbf24 50%, #f59e0b 100%)',
+      display: isMobile ? 'block' : 'flex'
+    }}>
+      <style jsx>{`
+        /* Mobile responsive styles */
+        @media (max-width: 767px) {
+          .job-mobile-header {
+            position: sticky !important;
+            top: 60px !important; /* Space for mobile navigation */
+            z-index: 50 !important; /* Lower than mobile nav */
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
+          }
+          .job-mobile-content {
+            padding: 16px !important;
+          }
+          .job-mobile-card {
+            padding: 16px !important;
+            margin-bottom: 16px !important;
+          }
+          .job-mobile-search {
+            padding: 12px 16px !important;
+            font-size: 16px !important; /* Prevent zoom on iOS */
+          }
+          .job-mobile-button {
+            padding: 12px 20px !important;
+            font-size: 16px !important;
+            min-height: 44px !important;
+          }
+          .job-mobile-filters {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            bottom: 0 !important;
+            z-index: 1000 !important;
+            background: rgba(0,0,0,0.5) !important;
+          }
+        }
+      `}</style>
+
+      {/* Mobile Header */}
+      {isMobile && (
+        <div className="job-mobile-header" style={{
+          backgroundColor: '#ffffff',
+          padding: '16px',
+          borderBottom: '1px solid #e5e7eb'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+            <button
+              onClick={() => router.push('/dashboard')}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                background: 'none',
+                border: 'none',
+                color: '#374151',
+                cursor: 'pointer',
+                fontSize: '16px',
+                fontWeight: '500'
+              }}
+            >
+              <ArrowLeft style={{ width: '20px', height: '20px' }} />
+              Dashboard
+            </button>
+            <h1 style={{ 
+              fontSize: '20px', 
+              fontWeight: 'bold', 
+              color: '#1f2937',
+              margin: '0',
+              fontFamily: "'Fredoka', sans-serif"
+            }}>
+              🎯 Job Search
+            </h1>
+            <button
+              onClick={() => setShowMobileFilters(true)}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
+                background: '#fbbf24',
+                border: 'none',
+                borderRadius: '8px',
+                padding: '8px 12px',
+                color: '#1f2937',
+                cursor: 'pointer',
+                fontSize: '14px',
+                fontWeight: '500'
+              }}
+            >
+              <Filter style={{ width: '16px', height: '16px' }} />
+              Filters
+            </button>
+          </div>
+
+          {/* Mobile Search Bar */}
+          <form onSubmit={handleSearch}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              backgroundColor: '#f9fafb',
+              borderRadius: '12px',
+              padding: '12px 16px',
+              border: '1px solid #e5e7eb'
+            }}>
+              <Search style={{ width: '18px', height: '18px', color: '#6b7280', marginRight: '12px' }} />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search jobs..."
+                className="job-mobile-search"
+                style={{
+                  flex: 1,
+                  border: 'none',
+                  outline: 'none',
+                  fontSize: '16px',
+                  backgroundColor: 'transparent',
+                  pointerEvents: 'auto',
+                  touchAction: 'manipulation'
+                }}
+                autoComplete="off"
+                autoCapitalize="off"
+                autoCorrect="off"
+              />
+              <button
+                type="submit"
+                className="job-mobile-button"
+                style={{
+                  marginLeft: '8px',
+                  padding: '8px 12px',
+                  backgroundColor: '#fbbf24',
+                  color: '#1f2937',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  minWidth: '50px',
+                  flexShrink: 0
+                }}
+              >
+                Go
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {/* Mobile Filters Modal */}
+      {isMobile && showMobileFilters && (
+        <div className="job-mobile-filters">
+          <div style={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            backgroundColor: '#ffffff',
+            borderTopLeftRadius: '20px',
+            borderTopRightRadius: '20px',
+            maxHeight: '80vh',
+            overflowY: 'auto',
+            padding: '20px'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+              <h3 style={{ fontSize: '20px', fontWeight: 'bold', color: '#1f2937', margin: '0' }}>
+                Filters
+              </h3>
+              <button
+                onClick={() => setShowMobileFilters(false)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: '#6b7280',
+                  cursor: 'pointer',
+                  padding: '4px'
+                }}
+              >
+                <X style={{ width: '24px', height: '24px' }} />
+              </button>
+            </div>
+
+            {/* Mobile Job Type Filter */}
+            <div style={{ marginBottom: '24px' }}>
+              <h4 style={{ fontSize: '16px', fontWeight: '600', color: '#374151', marginBottom: '12px' }}>
+                Job Type
+              </h4>
+              <div style={{ display: 'grid', gap: '8px' }}>
+                {[
+                  { key: 'all', label: 'All Jobs' },
+                  { key: 'part-time', label: 'Part-time' },
+                  { key: 'full-time', label: 'Full-time' }
+                ].map((filter) => (
+                  <button
+                    key={filter.key}
+                    onClick={() => setSelectedFilter(filter.key)}
+                    style={{
+                      backgroundColor: selectedFilter === filter.key ? '#fbbf24' : '#f9fafb',
+                      color: selectedFilter === filter.key ? '#1f2937' : '#4b5563',
+                      padding: '12px 16px',
+                      border: '1px solid #e5e7eb',
+                      borderRadius: '8px',
+                      cursor: 'pointer',
+                      fontSize: '16px',
+                      fontWeight: '500',
+                      textAlign: 'left'
+                    }}
+                  >
+                    {filter.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Mobile Location Filter */}
+            <div style={{ marginBottom: '24px' }}>
+              <h4 style={{ fontSize: '16px', fontWeight: '600', color: '#374151', marginBottom: '12px' }}>
+                Location
+              </h4>
+              <div style={{ display: 'grid', gap: '8px' }}>
+                {[
+                  { key: 'all', label: 'All Locations' },
+                  { key: 'london', label: 'London' },
+                  { key: 'manchester', label: 'Manchester' },
+                  { key: 'birmingham', label: 'Birmingham' }
+                ].map((location) => (
+                  <button
+                    key={location.key}
+                    onClick={() => setSelectedLocation(location.key)}
+                    style={{
+                      backgroundColor: selectedLocation === location.key ? '#fbbf24' : '#f9fafb',
+                      color: selectedLocation === location.key ? '#1f2937' : '#4b5563',
+                      padding: '12px 16px',
+                      border: '1px solid #e5e7eb',
+                      borderRadius: '8px',
+                      cursor: 'pointer',
+                      fontSize: '16px',
+                      fontWeight: '500',
+                      textAlign: 'left'
+                    }}
+                  >
+                    {location.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <button
+              onClick={() => setShowMobileFilters(false)}
+              className="job-mobile-button"
+              style={{
+                width: '100%',
+                padding: '14px',
+                backgroundColor: '#fbbf24',
+                color: '#1f2937',
+                border: 'none',
+                borderRadius: '12px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                fontSize: '16px'
+              }}
+            >
+              Apply Filters
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Desktop Sidebar */}
+      {!isMobile && (
       <div style={{
         width: '280px',
         backgroundColor: '#1f2937',
@@ -484,9 +757,16 @@ function SearchPageContent() {
           </div>
         </nav>
       </div>
+      )}
 
       {/* Main Content */}
-      <div style={{ marginLeft: '280px', flex: 1, padding: '32px 48px' }}>
+      <div className="job-mobile-content" style={{ 
+        marginLeft: isMobile ? '0' : '280px', 
+        flex: 1, 
+        padding: isMobile ? '16px' : '32px 48px' 
+      }}>
+        {/* Desktop Header */}
+        {!isMobile && (
         <div style={{ marginBottom: '40px' }}>
           <h1 style={{ 
             fontSize: '48px', 
@@ -506,7 +786,7 @@ function SearchPageContent() {
             Discover amazing opportunities with top UK companies
           </p>
 
-          {/* Search Bar */}
+            {/* Desktop Search Bar */}
           <form onSubmit={handleSearch} style={{ marginBottom: '24px' }}>
             <div style={{
               display: 'flex',
@@ -554,89 +834,183 @@ function SearchPageContent() {
             Found {filteredResults.length} jobs
           </p>
         </div>
+        )}
+
+        {/* Mobile Results Header */}
+        {isMobile && (
+          <div style={{ 
+            marginBottom: '20px', 
+            padding: '16px 0', 
+            textAlign: 'center',
+            borderBottom: '1px solid #e5e7eb'
+          }}>
+            <p style={{ 
+              fontSize: '16px', 
+              color: '#6b7280', 
+              margin: '0',
+              fontWeight: '500'
+            }}>
+              Found {filteredResults.length} jobs
+            </p>
+          </div>
+        )}
 
         {/* Job Results */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+        <div style={{ 
+          display: 'flex', 
+          flexDirection: 'column', 
+          gap: isMobile ? '16px' : '24px' 
+        }}>
           {filteredResults.map((job) => (
-            <div key={job.id} style={{
+            <div key={job.id} className="job-mobile-card" style={{
               backgroundColor: '#ffffff',
-              borderRadius: '16px',
-              padding: '24px',
+              borderRadius: isMobile ? '12px' : '16px',
+              padding: isMobile ? '16px' : '24px',
               boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
               border: '2px solid #e5e7eb',
               transition: 'all 0.2s ease'
             }}
             onMouseEnter={(e) => {
+              if (!isMobile) {
               e.currentTarget.style.borderColor = '#fbbf24';
               e.currentTarget.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1)';
+              }
             }}
             onMouseLeave={(e) => {
+              if (!isMobile) {
               e.currentTarget.style.borderColor = '#e5e7eb';
               e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1)';
+              }
             }}
             >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                   <div style={{
-                    width: '48px',
-                    height: '48px',
+                display: 'flex', 
+                justifyContent: 'space-between', 
+                alignItems: 'flex-start', 
+                marginBottom: isMobile ? '12px' : '16px',
+                flexDirection: isMobile ? 'column' : 'row',
+                gap: isMobile ? '12px' : '0'
+              }}>
+                <div style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: isMobile ? '12px' : '16px',
+                  width: isMobile ? '100%' : 'auto'
+                }}>
+                  <div style={{
+                    width: isMobile ? '40px' : '48px',
+                    height: isMobile ? '40px' : '48px',
                     borderRadius: '12px',
                     backgroundColor: '#fef3c7',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    fontSize: '24px'
+                    fontSize: isMobile ? '20px' : '24px',
+                    flexShrink: 0
                   }}>
                     {job.companyLogo}
                   </div>
-                  <div>
-                    <h3 style={{ fontSize: '20px', fontWeight: 'bold', color: '#1f2937', margin: '0 0 4px 0' }}>
+                  <div style={{ flex: 1 }}>
+                    <h3 style={{ 
+                      fontSize: isMobile ? '18px' : '20px', 
+                      fontWeight: 'bold', 
+                      color: '#1f2937', 
+                      margin: '0 0 4px 0',
+                      lineHeight: '1.2'
+                    }}>
                       {job.jobTitle}
                     </h3>
-                    <p style={{ fontSize: '16px', color: '#6b7280', margin: '0' }}>
+                    <p style={{ 
+                      fontSize: isMobile ? '14px' : '16px', 
+                      color: '#6b7280', 
+                      margin: '0' 
+                    }}>
                       {job.companyName}
                     </p>
                   </div>
                 </div>
-                <div style={{ textAlign: 'right' }}>
-                  <p style={{ fontSize: '18px', fontWeight: 'bold', color: '#059669', margin: '0 0 4px 0' }}>
+                <div style={{ 
+                  textAlign: isMobile ? 'left' : 'right',
+                  width: isMobile ? '100%' : 'auto'
+                }}>
+                  <p style={{ 
+                    fontSize: isMobile ? '16px' : '18px', 
+                    fontWeight: 'bold', 
+                    color: '#059669', 
+                    margin: '0 0 4px 0' 
+                  }}>
                     {job.salary}
                   </p>
-                  <p style={{ fontSize: '14px', color: '#6b7280', margin: '0' }}>
+                  <p style={{ 
+                    fontSize: isMobile ? '12px' : '14px', 
+                    color: '#6b7280', 
+                    margin: '0' 
+                  }}>
                     {job.type}
                   </p>
                 </div>
               </div>
               
-              <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '16px' }}>
+              <div style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: isMobile ? '12px' : '16px', 
+                marginBottom: isMobile ? '12px' : '16px',
+                flexWrap: 'wrap'
+              }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <MapPin style={{ width: '16px', height: '16px', color: '#6b7280' }} />
-                  <span style={{ fontSize: '14px', color: '#6b7280' }}>{job.location}</span>
+                  <MapPin style={{ width: '14px', height: '14px', color: '#6b7280' }} />
+                  <span style={{ 
+                    fontSize: isMobile ? '12px' : '14px', 
+                    color: '#6b7280' 
+                  }}>{job.location}</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <Clock style={{ width: '16px', height: '16px', color: '#6b7280' }} />
-                  <span style={{ fontSize: '14px', color: '#6b7280' }}>{job.postedDate}</span>
+                  <Clock style={{ width: '14px', height: '14px', color: '#6b7280' }} />
+                  <span style={{ 
+                    fontSize: isMobile ? '12px' : '14px', 
+                    color: '#6b7280' 
+                  }}>{job.postedDate}</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <Star style={{ width: '16px', height: '16px', color: '#fbbf24', fill: 'currentColor' }} />
-                  <span style={{ fontSize: '14px', color: '#6b7280' }}>{job.rating}</span>
+                  <Star style={{ width: '14px', height: '14px', color: '#fbbf24', fill: 'currentColor' }} />
+                  <span style={{ 
+                    fontSize: isMobile ? '12px' : '14px', 
+                    color: '#6b7280' 
+                  }}>{job.rating}</span>
                 </div>
               </div>
               
-              <p style={{ fontSize: '14px', color: '#4b5563', lineHeight: '1.5', marginBottom: '16px' }}>
+              <p style={{ 
+                fontSize: isMobile ? '13px' : '14px', 
+                color: '#4b5563', 
+                lineHeight: '1.5', 
+                marginBottom: isMobile ? '12px' : '16px' 
+              }}>
                 {job.description}
               </p>
               
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                  {job.tags.slice(0, 3).map((tag, index) => (
+              <div style={{ 
+                display: 'flex', 
+                justifyContent: 'space-between', 
+                alignItems: isMobile ? 'stretch' : 'center',
+                flexDirection: isMobile ? 'column' : 'row',
+                gap: isMobile ? '12px' : '0'
+              }}>
+                <div style={{ 
+                  display: 'flex', 
+                  gap: '6px', 
+                  flexWrap: 'wrap',
+                  marginBottom: isMobile ? '8px' : '0'
+                }}>
+                  {job.tags.slice(0, isMobile ? 2 : 3).map((tag, index) => (
                     <span key={index} style={{
-                      padding: '4px 12px',
+                      padding: isMobile ? '3px 8px' : '4px 12px',
                       backgroundColor: '#e0e7ff',
                       color: '#3730a3',
-                      fontSize: '12px',
+                      fontSize: isMobile ? '11px' : '12px',
                       fontWeight: '500',
-                      borderRadius: '12px'
+                      borderRadius: '8px'
                     }}>
                       {tag.replace('-', ' ')}
                     </span>
@@ -647,30 +1021,37 @@ function SearchPageContent() {
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={() => trackJobClick(job)}
+                  className="job-mobile-button"
                   style={{
                     display: 'inline-flex',
                     alignItems: 'center',
-                    gap: '8px',
-                    padding: '12px 24px',
+                    justifyContent: 'center',
+                    gap: '6px',
+                    padding: isMobile ? '12px 20px' : '12px 24px',
                     backgroundColor: '#fbbf24',
                     color: '#1f2937',
                     textDecoration: 'none',
                     borderRadius: '8px',
                     fontWeight: '600',
-                    fontSize: '14px',
-                    transition: 'all 0.2s ease'
+                    fontSize: isMobile ? '14px' : '14px',
+                    transition: 'all 0.2s ease',
+                    width: isMobile ? '100%' : 'auto'
                   }}
                   onMouseEnter={(e) => {
+                    if (!isMobile) {
                     e.currentTarget.style.backgroundColor = '#f59e0b';
                     e.currentTarget.style.transform = 'translateY(-1px)';
+                    }
                   }}
                   onMouseLeave={(e) => {
+                    if (!isMobile) {
                     e.currentTarget.style.backgroundColor = '#fbbf24';
                     e.currentTarget.style.transform = 'translateY(0)';
+                    }
                   }}
                 >
                   Apply Now
-                  <ExternalLink style={{ width: '16px', height: '16px' }} />
+                  <ExternalLink style={{ width: '14px', height: '14px' }} />
                 </a>
               </div>
             </div>
@@ -678,18 +1059,31 @@ function SearchPageContent() {
         </div>
 
         {filteredResults.length === 0 && (
-          <div style={{
+          <div className="job-mobile-card" style={{
             backgroundColor: '#ffffff',
-            borderRadius: '16px',
-            padding: '48px',
+            borderRadius: isMobile ? '12px' : '16px',
+            padding: isMobile ? '32px 20px' : '48px',
             textAlign: 'center',
             boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
           }}>
-            <span style={{ fontSize: '64px', marginBottom: '16px', display: 'block' }}>🔍</span>
-            <h3 style={{ fontSize: '24px', fontWeight: 'bold', color: '#1f2937', marginBottom: '8px' }}>
+            <span style={{ 
+              fontSize: isMobile ? '48px' : '64px', 
+              marginBottom: '16px', 
+              display: 'block' 
+            }}>🔍</span>
+            <h3 style={{ 
+              fontSize: isMobile ? '20px' : '24px', 
+              fontWeight: 'bold', 
+              color: '#1f2937', 
+              marginBottom: '8px' 
+            }}>
               No jobs found
             </h3>
-            <p style={{ fontSize: '16px', color: '#6b7280', marginBottom: '24px' }}>
+            <p style={{ 
+              fontSize: isMobile ? '14px' : '16px', 
+              color: '#6b7280', 
+              marginBottom: '24px' 
+            }}>
               Try adjusting your search or filters to find more opportunities
             </p>
             <button
@@ -698,14 +1092,17 @@ function SearchPageContent() {
                 setSelectedFilter('all');
                 setSelectedLocation('all');
               }}
+              className="job-mobile-button"
               style={{
-                padding: '12px 24px',
+                padding: isMobile ? '12px 24px' : '12px 24px',
                 backgroundColor: '#fbbf24',
                 color: '#1f2937',
                 border: 'none',
                 borderRadius: '8px',
                 fontWeight: '600',
-                cursor: 'pointer'
+                cursor: 'pointer',
+                fontSize: isMobile ? '16px' : '14px',
+                width: isMobile ? '100%' : 'auto'
               }}
             >
               Clear Filters

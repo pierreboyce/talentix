@@ -13,7 +13,18 @@ export async function POST(request: NextRequest) {
   try {
     const { level, userName, achievementName }: CertificateImageRequest = await request.json();
 
+    // Debug logging for production
+    console.log('Certificate generation request:', {
+      level,
+      userName,
+      achievementName,
+      timestamp: new Date().toISOString(),
+      userAgent: request.headers.get('user-agent'),
+      origin: request.headers.get('origin')
+    });
+
     if (!level || !userName) {
+      console.error('Missing required fields:', { level, userName });
       return NextResponse.json(
         { error: 'Level and userName are required' },
         { status: 400 }

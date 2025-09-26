@@ -4,7 +4,11 @@ import { useState, useEffect, Suspense } from "react";
 import Image from "next/image";
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '../contexts/AuthContext';
+import { useDeviceDetection } from '../hooks/useDeviceDetection';
 import FeaturesMarquee from '../components/FeaturesMarquee';
+import HomepageFeaturesCarousel from '../components/HomepageFeaturesCarousel';
+import HomepageMobile from '../components/HomepageMobile';
+import ClientOnly from '../components/ClientOnly';
 import { JobPostCardProps } from '../components/JobPostCard';
 import SignUpModal from '../components/SignUpModal';
 import SignInModal from '../components/SignInModal';
@@ -118,6 +122,7 @@ const featuredJobs: JobPostCardProps[] = [
 
 function HomeContent() {
   const { user, loading } = useAuth();
+  const { isMobile } = useDeviceDetection();
   const router = useRouter();
   const searchParams = useSearchParams();
   
@@ -146,21 +151,6 @@ function HomeContent() {
     }
   }, []);
 
-  // Debug helper: Press Ctrl+Shift+C to clear all auth data
-  useEffect(() => {
-    const handleKeyPress = (e: KeyboardEvent) => {
-      if (e.ctrlKey && e.shiftKey && e.code === 'KeyC') {
-        console.log('🧹 Manual auth data clear triggered');
-        localStorage.removeItem('talentix_user');
-        localStorage.removeItem('talentix_session');
-        document.cookie = 'talentix-session=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT';
-        window.location.reload();
-      }
-    };
-    
-    window.addEventListener('keydown', handleKeyPress);
-    return () => window.removeEventListener('keydown', handleKeyPress);
-  }, []);
 
   const [score, setScore] = useState(0);
   const [location, setLocation] = useState("");
@@ -168,7 +158,10 @@ function HomeContent() {
   const [showLoader, setShowLoader] = useState(false);
   const [showSignUpModal, setShowSignUpModal] = useState(false);
   const [showSignInModal, setShowSignInModal] = useState(false);
+  const [showWhatWeDoModal, setShowWhatWeDoModal] = useState(false);
   const [oauthError, setOauthError] = useState<string | null>(null);
+
+  // Removed mobile conditional rendering to prevent hydration issues
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -367,7 +360,11 @@ function HomeContent() {
   }
 
   return (
-    <div className="min-h-screen bg-white text-gray-800">
+    <div 
+      className="min-h-screen bg-white text-gray-800"
+      suppressHydrationWarning
+      data-is-mobile={isMobile ? 'true' : 'false'}
+    >
       {/* New Hero Section */}
       <section className="relative min-h-screen flex flex-col items-center justify-center text-center px-6 overflow-hidden">
         {/* Floating Emojis */}
@@ -413,19 +410,36 @@ function HomeContent() {
               zIndex: 1
             }}
           >
-            for <span className="yellow-gradient-text">teenagers</span> by a <span className="yellow-gradient-text">teenager</span>
+            <span className="mobile-two-col">
+              <span className="phrase">for <span className="yellow-gradient-text">teenagers</span></span>
+              <span className="phrase second-phrase"><span className="desktop-only">by a </span><span className="mobile-only">by </span><span className="yellow-gradient-text">teenager</span><span className="mobile-only-s">s</span></span>
+            </span>
           </h1>
-          <button 
-            onClick={() => setShowSignUpModal(true)}
-            className="mt-32 btn-primary-yellow border-4 border-yellow-400/80 rounded-xl text-lg font-semibold relative z-10"
-            style={{ fontFamily: "'Fredoka', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}
-          >
-            Sign up now
-          </button>
+          <div className="flex flex-col items-center gap-4 mt-32">
+            <button 
+              onClick={() => setShowSignUpModal(true)}
+              className="btn-primary-yellow border-4 border-yellow-400/80 rounded-xl text-lg font-semibold relative z-10"
+              style={{ fontFamily: "'Fredoka', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}
+            >
+              Sign up now
+            </button>
+            
+            <button 
+              onClick={() => {
+                console.log('Button clicked! Setting modal to true');
+                setShowWhatWeDoModal(true);
+                console.log('showWhatWeDoModal state should now be:', true);
+              }}
+              className="btn-primary-purple-small border-3 border-purple-400/80 rounded-lg text-base font-semibold relative z-10"
+              style={{ fontFamily: "'Fredoka', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}
+            >
+              What do we do? 🤔
+            </button>
+          </div>
         </div>
       </section>
 
-      <FeaturesMarquee />
+      <HomepageFeaturesCarousel />
 
       {/* Featured Jobs Section - Fun & Engaging Design */}
       <section className="py-24 bg-gradient-to-br from-yellow-50 via-orange-50 to-pink-50 pt-40 pb-24 relative overflow-hidden">
@@ -440,7 +454,7 @@ function HomeContent() {
         <div className="max-w-6xl mx-auto px-6 relative z-10">
           <div className="text-center mb-16">
             <h2 
-              className="font-bold text-gray-900 mb-4" 
+              className="font-bold text-gray-900 mb-4 featured-jobs-heading" 
               style={{ 
                 fontSize: '4.5rem',
                 fontFamily: "'Fredoka', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
@@ -454,7 +468,7 @@ function HomeContent() {
             </h2>
             {/* Subtitle removed per request */}
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', maxWidth: '1000px', margin: '0 auto' }}>
+          <div className="responsive-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', maxWidth: '1000px', margin: '0 auto' }}>
             {featuredJobs.map((job) => {
               // Function to render the appropriate icon with fun colors
               const renderIcon = (iconName: string) => {
@@ -629,7 +643,7 @@ function HomeContent() {
       {/* Our Story and Our Services Section */}
       <section className="py-24 bg-white">
         <div className="max-w-6xl mx-auto px-6">
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px', marginTop: '40px' }}>
+          <div className="responsive-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px', marginTop: '40px' }}>
             
             {/* Our Story Box */}
             <div style={{
@@ -799,26 +813,66 @@ function HomeContent() {
               </div>
             </div>
           </div>
+
+          {/* Footer Links */}
+          <div className="mt-16 pt-8 border-t border-gray-300 text-center">
+            <div className="flex flex-wrap justify-center gap-6 mb-4">
+              <button
+                onClick={() => router.push('/privacy')}
+                className="text-gray-600 hover:text-gray-900 font-medium transition-colors duration-200"
+                style={{ fontFamily: 'Fredoka, sans-serif' }}
+              >
+                🔒 Privacy Policy
+              </button>
+              <button
+                onClick={() => router.push('/terms')}
+                className="text-gray-600 hover:text-gray-900 font-medium transition-colors duration-200"
+                style={{ fontFamily: 'Fredoka, sans-serif' }}
+              >
+                📋 Terms of Service
+              </button>
+              <button
+                onClick={() => router.push('/contact')}
+                className="text-gray-600 hover:text-gray-900 font-medium transition-colors duration-200"
+                style={{ fontFamily: 'Fredoka, sans-serif' }}
+              >
+                💌 Contact Us
+              </button>
+              <button
+                onClick={() => router.push('/admin-access')}
+                className="text-gray-600 hover:text-gray-900 font-medium transition-colors duration-200"
+                style={{ fontFamily: 'Fredoka, sans-serif' }}
+              >
+                🔐 Admin
+              </button>
+            </div>
+            <p className="text-gray-500 text-sm" style={{ fontFamily: 'Fredoka, sans-serif' }}>
+              © {new Date().getFullYear()} Talentix. All rights reserved. Made with ❤️ for your career success.
+            </p>
+          </div>
         </div>
       </section>
 
-      {/* Contact Us Section - Fun Design */}
-      <section className="py-24 bg-gradient-to-r from-blue-50 via-purple-50 to-pink-50 relative overflow-hidden">
-        {/* Fun Background Elements */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-10 left-10 text-5xl animate-pulse">📞</div>
-          <div className="absolute top-20 right-20 text-4xl animate-bounce">📧</div>
-          <div className="absolute bottom-20 left-20 text-6xl animate-spin">💬</div>
-          <div className="absolute bottom-10 right-10 text-5xl animate-pulse">🤝</div>
+      {/* Contact Us Section - Modern Playful Design */}
+      <section className="py-24 bg-gradient-to-br from-yellow-100 via-pink-100 to-purple-100 relative overflow-hidden">
+        {/* Enhanced Background Elements */}
+        <div className="absolute inset-0 opacity-15">
+          <div className="absolute top-10 left-10 text-6xl animate-bounce">📞</div>
+          <div className="absolute top-20 right-20 text-5xl animate-pulse">📧</div>
+          <div className="absolute bottom-20 left-20 text-7xl animate-spin" style={{ animationDuration: '6s' }}>💬</div>
+          <div className="absolute bottom-10 right-10 text-6xl animate-pulse" style={{ animationDelay: '1s' }}>🤝</div>
+          <div className="absolute top-1/2 left-1/4 text-4xl animate-bounce" style={{ animationDelay: '2s' }}>✨</div>
+          <div className="absolute top-1/3 right-1/3 text-5xl animate-pulse" style={{ animationDelay: '1.5s' }}>💫</div>
         </div>
         
-        <div className="max-w-4xl mx-auto px-6 text-center relative z-10">
+        <div className="max-w-6xl mx-auto px-6 text-center relative z-10">
+          <div className="mb-16">
           <h2 
-            className="font-bold text-gray-900 mb-8" 
+              className="font-black text-gray-900 mb-6" 
             style={{ 
-              fontSize: '4rem',
-              fontFamily: "'Fredoka', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-              background: 'linear-gradient(135deg, #8b5cf6 0%, #ec4899 50%, #f59e0b 100%)',
+                fontSize: '5rem',
+                fontFamily: 'Fredoka, sans-serif',
+                background: 'linear-gradient(135deg, #8b5cf6 0%, #ec4899 30%, #f59e0b 70%, #10b981 100%)',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
               textShadow: '2px 2px 4px rgba(0,0,0,0.1)'
@@ -826,45 +880,56 @@ function HomeContent() {
           >
             💬 Get In Touch! 💬
           </h2>
+          </div>
           
-          <p className="text-xl text-gray-600 mb-12 max-w-2xl mx-auto">
-            Have questions? Need help? We'd love to hear from you! 🎉
-          </p>
-          
-          <div className="grid md:grid-cols-2 gap-8">
-            {/* Email Card */}
+          <div className="grid md:grid-cols-2 gap-12 max-w-4xl mx-auto">
+            {/* Email Card - Enhanced */}
             <div 
-              className="bg-white rounded-3xl p-8 shadow-xl border-2 border-yellow-200 transform transition-all duration-300 hover:scale-105"
-              style={{ boxShadow: '0 20px 40px rgba(0,0,0,0.1)' }}
+              className="group bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl border-4 border-gradient-to-r from-purple-300 to-pink-300 transform transition-all duration-500 hover:scale-110 hover:rotate-2 hover:shadow-3xl"
+              style={{ 
+                padding: '40px 30px',
+                boxShadow: '0 25px 50px rgba(139, 92, 246, 0.3)',
+                border: '4px solid transparent',
+                background: 'linear-gradient(white, white) padding-box, linear-gradient(135deg, #a855f7, #ec4899) border-box'
+              }}
             >
-              <div className="text-6xl mb-4">📧</div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-4" style={{ fontFamily: "'Fredoka'" }}>
+              <div className="text-8xl mb-6 group-hover:animate-bounce">📧</div>
+              <h3 className="text-3xl font-black text-gray-900 mb-4" style={{ fontFamily: 'Fredoka, sans-serif' }}>
                 Email Us
               </h3>
-              <p className="text-gray-600 mb-4">Send us a message anytime!</p>
+              <p className="text-lg text-gray-600 mb-6 font-medium" style={{ fontFamily: 'Fredoka, sans-serif' }}>
+                Send us a message anytime!
+              </p>
               <a 
                 href="mailto:talentixuk@gmail.com"
-                className="inline-block bg-gradient-to-r from-purple-500 to-pink-500 text-white px-8 py-3 rounded-2xl font-bold text-lg transition-all duration-300 hover:shadow-lg hover:scale-105"
-                style={{ textDecoration: 'none' }}
+                className="inline-block bg-gradient-to-r from-purple-500 to-pink-500 text-white px-10 py-4 rounded-3xl font-black text-xl transition-all duration-300 hover:shadow-2xl hover:scale-105 group-hover:animate-pulse"
+                style={{ textDecoration: 'none', fontFamily: 'Fredoka, sans-serif' }}
               >
                 talentixuk@gmail.com
               </a>
             </div>
             
-            {/* Phone Card */}
+            {/* Phone Card - Enhanced */}
             <div 
-              className="bg-white rounded-3xl p-8 shadow-xl border-2 border-blue-200 transform transition-all duration-300 hover:scale-105"
-              style={{ boxShadow: '0 20px 40px rgba(0,0,0,0.1)' }}
+              className="group bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl border-4 border-gradient-to-r from-blue-300 to-cyan-300 transform transition-all duration-500 hover:scale-110 hover:-rotate-2 hover:shadow-3xl"
+              style={{ 
+                padding: '40px 30px',
+                boxShadow: '0 25px 50px rgba(59, 130, 246, 0.3)',
+                border: '4px solid transparent',
+                background: 'linear-gradient(white, white) padding-box, linear-gradient(135deg, #3b82f6, #06b6d4) border-box'
+              }}
             >
-              <div className="text-6xl mb-4">📱</div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-4" style={{ fontFamily: "'Fredoka'" }}>
+              <div className="text-8xl mb-6 group-hover:animate-bounce">📱</div>
+              <h3 className="text-3xl font-black text-gray-900 mb-4" style={{ fontFamily: 'Fredoka, sans-serif' }}>
                 Call Us
               </h3>
-              <p className="text-gray-600 mb-4">Give us a ring!</p>
+              <p className="text-lg text-gray-600 mb-6 font-medium" style={{ fontFamily: 'Fredoka, sans-serif' }}>
+                Give us a ring!
+              </p>
               <a 
                 href="tel:07828946517"
-                className="inline-block bg-gradient-to-r from-blue-500 to-cyan-500 text-white px-8 py-3 rounded-2xl font-bold text-lg transition-all duration-300 hover:shadow-lg hover:scale-105"
-                style={{ textDecoration: 'none' }}
+                className="inline-block bg-gradient-to-r from-blue-500 to-cyan-500 text-white px-10 py-4 rounded-3xl font-black text-xl transition-all duration-300 hover:shadow-2xl hover:scale-105 group-hover:animate-pulse"
+                style={{ textDecoration: 'none', fontFamily: 'Fredoka, sans-serif' }}
               >
                 07828 946517
               </a>
@@ -873,68 +938,451 @@ function HomeContent() {
         </div>
       </section>
 
-      {/* Website Screenshots Carousel */}
-      <section className="py-24 bg-gradient-to-br from-gray-50 to-gray-100 relative overflow-hidden">
-        <div className="max-w-6xl mx-auto px-6">
-          <h2 
-            className="font-bold text-center mb-16 text-gray-900" 
-            style={{ 
-              fontSize: '4rem',
-              fontFamily: "'Fredoka', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-              background: 'linear-gradient(135deg, #1f2937 0%, #4b5563 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent'
-            }}
-          >
-            🖥️ See Talentix In Action! 📱
+      {/* PLAYFUL TESTIMONIALS CARDS SECTION */}
+      <div style={{
+        padding: '80px 0',
+        background: 'linear-gradient(135deg, #FEF7CD 0%, #FDE047 30%, #FACC15 70%, #F59E0B 100%)',
+        minHeight: '600px'
+      }}>
+        <div style={{
+          maxWidth: '1200px',
+          margin: '0 auto',
+          padding: '0 24px'
+        }}>
+          {/* Header */}
+          <div style={{
+            textAlign: 'center',
+            marginBottom: '60px'
+          }}>
+            <h2 style={{
+              fontSize: '3rem',
+              fontWeight: '900',
+              color: '#374151',
+              marginBottom: '16px',
+              fontFamily: 'Fredoka, sans-serif',
+              textShadow: '2px 2px 4px rgba(0,0,0,0.1)'
+            }}>
+              What our users are saying 🌟
           </h2>
-          
-          <div className="grid md:grid-cols-3 gap-8">
-            {/* Dashboard Screenshot */}
-            <div className="bg-white rounded-3xl p-6 shadow-xl transform transition-all duration-300 hover:scale-105 hover:rotate-1">
-              <div className="bg-gradient-to-br from-yellow-100 to-orange-100 rounded-2xl p-4 mb-4">
-                <div className="text-8xl text-center">🏠</div>
+            <p style={{
+              fontSize: '1.2rem',
+              color: '#6B7280',
+              fontFamily: 'Fredoka, sans-serif'
+            }}>
+              Here's what some of our users have to say about Talentix! 💖
+            </p>
+          </div>
+
+          {/* 3-Column Grid */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))',
+            gap: '30px',
+            marginBottom: '60px'
+          }}>
+            {/* Card 1 */}
+            <div style={{
+              background: 'linear-gradient(135deg, #374151 0%, #1F2937 100%)',
+              padding: '32px',
+              borderRadius: '24px',
+              boxShadow: '0 20px 40px rgba(0, 0, 0, 0.3)',
+              transform: 'translateY(0)',
+              transition: 'all 0.3s ease',
+              cursor: 'pointer'
+            }}
+            onMouseEnter={(e) => {
+              (e.target as HTMLElement).style.transform = 'translateY(-8px)';
+              (e.target as HTMLElement).style.boxShadow = '0 25px 50px rgba(0, 0, 0, 0.4)';
+            }}
+            onMouseLeave={(e) => {
+              (e.target as HTMLElement).style.transform = 'translateY(0)';
+              (e.target as HTMLElement).style.boxShadow = '0 20px 40px rgba(0, 0, 0, 0.3)';
+            }}>
+              <div style={{ marginBottom: '20px' }}>
+                <h4 style={{
+                  fontSize: '1.3rem',
+                  fontWeight: 'bold',
+                  color: 'white',
+                  marginBottom: '8px',
+                  fontFamily: 'Fredoka, sans-serif'
+                }}>
+                  Sarah Johnson 😊
+                </h4>
+                <p style={{
+                  fontSize: '0.9rem',
+                  color: '#9CA3AF',
+                  fontFamily: 'Fredoka, sans-serif'
+                }}>
+                  @sarahjohnson
+                </p>
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2" style={{ fontFamily: "'Fredoka'" }}>
-                Your Dashboard
-              </h3>
-              <p className="text-gray-600">Track your progress, earn points, and manage your career journey!</p>
+              <p style={{
+                color: '#D1D5DB',
+                marginBottom: '20px',
+                lineHeight: '1.6',
+                fontFamily: 'Fredoka, sans-serif',
+                fontSize: '1rem'
+              }}>
+                The platform has really helped me stay focused on my career goals and discover opportunities I never knew existed! 🚀
+              </p>
+              <div style={{ display: 'flex', gap: '4px' }}>
+                {[...Array(5)].map((_, i) => (
+                  <span key={i} style={{
+                    color: '#FFD600',
+                    fontSize: '1.4rem',
+                    textShadow: '0 0 10px rgba(255, 214, 0, 0.5)'
+                  }}>★</span>
+                ))}
+              </div>
             </div>
             
-            {/* CV Reviewer Screenshot */}
-            <div className="bg-white rounded-3xl p-6 shadow-xl transform transition-all duration-300 hover:scale-105 hover:rotate-1">
-              <div className="bg-gradient-to-br from-blue-100 to-purple-100 rounded-2xl p-4 mb-4">
-                <div className="text-8xl text-center">📄</div>
+            {/* Card 2 */}
+            <div style={{
+              background: 'linear-gradient(135deg, #374151 0%, #1F2937 100%)',
+              padding: '32px',
+              borderRadius: '24px',
+              boxShadow: '0 20px 40px rgba(0, 0, 0, 0.3)',
+              transform: 'translateY(0)',
+              transition: 'all 0.3s ease',
+              cursor: 'pointer'
+            }}
+            onMouseEnter={(e) => {
+              (e.target as HTMLElement).style.transform = 'translateY(-8px)';
+              (e.target as HTMLElement).style.boxShadow = '0 25px 50px rgba(0, 0, 0, 0.4)';
+            }}
+            onMouseLeave={(e) => {
+              (e.target as HTMLElement).style.transform = 'translateY(0)';
+              (e.target as HTMLElement).style.boxShadow = '0 20px 40px rgba(0, 0, 0, 0.3)';
+            }}>
+              <div style={{ marginBottom: '20px' }}>
+                <h4 style={{
+                  fontSize: '1.3rem',
+                  fontWeight: 'bold',
+                  color: 'white',
+                  marginBottom: '8px',
+                  fontFamily: 'Fredoka, sans-serif'
+                }}>
+                  Marcus Chen 🎯
+                </h4>
+                <p style={{
+                  fontSize: '0.9rem',
+                  color: '#9CA3AF',
+                  fontFamily: 'Fredoka, sans-serif'
+                }}>
+                  @marcuschen
+                </p>
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2" style={{ fontFamily: "'Fredoka'" }}>
-                AI CV Review
-              </h3>
-              <p className="text-gray-600">Get instant feedback on your CV from our smart AI system!</p>
+              <p style={{
+                color: '#D1D5DB',
+                marginBottom: '20px',
+                lineHeight: '1.6',
+                fontFamily: 'Fredoka, sans-serif',
+                fontSize: '1rem'
+              }}>
+                The site is super easy to use and understand, especially for someone like me just starting my career journey! ✨
+              </p>
+              <div style={{ display: 'flex', gap: '4px' }}>
+                {[...Array(5)].map((_, i) => (
+                  <span key={i} style={{
+                    color: '#FFD600',
+                    fontSize: '1.4rem',
+                    textShadow: '0 0 10px rgba(255, 214, 0, 0.5)'
+                  }}>★</span>
+                ))}
+              </div>
             </div>
             
-            {/* Job Search Screenshot */}
-            <div className="bg-white rounded-3xl p-6 shadow-xl transform transition-all duration-300 hover:scale-105 hover:rotate-1">
-              <div className="bg-gradient-to-br from-green-100 to-teal-100 rounded-2xl p-4 mb-4">
-                <div className="text-8xl text-center">🔍</div>
+            {/* Card 3 */}
+            <div style={{
+              background: 'linear-gradient(135deg, #374151 0%, #1F2937 100%)',
+              padding: '32px',
+              borderRadius: '24px',
+              boxShadow: '0 20px 40px rgba(0, 0, 0, 0.3)',
+              transform: 'translateY(0)',
+              transition: 'all 0.3s ease',
+              cursor: 'pointer'
+            }}
+            onMouseEnter={(e) => {
+              (e.target as HTMLElement).style.transform = 'translateY(-8px)';
+              (e.target as HTMLElement).style.boxShadow = '0 25px 50px rgba(0, 0, 0, 0.4)';
+            }}
+            onMouseLeave={(e) => {
+              (e.target as HTMLElement).style.transform = 'translateY(0)';
+              (e.target as HTMLElement).style.boxShadow = '0 20px 40px rgba(0, 0, 0, 0.3)';
+            }}>
+              <div style={{ marginBottom: '20px' }}>
+                <h4 style={{
+                  fontSize: '1.3rem',
+                  fontWeight: 'bold',
+                  color: 'white',
+                  marginBottom: '8px',
+                  fontFamily: 'Fredoka, sans-serif'
+                }}>
+                  Emma Rodriguez 💼
+                </h4>
+                <p style={{
+                  fontSize: '0.9rem',
+                  color: '#9CA3AF',
+                  fontFamily: 'Fredoka, sans-serif'
+                }}>
+                  @emmarodriguez
+                </p>
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2" style={{ fontFamily: "'Fredoka'" }}>
-                Job Search
-              </h3>
-              <p className="text-gray-600">Find your perfect first job with our powerful search tools!</p>
+              <p style={{
+                color: '#D1D5DB',
+                marginBottom: '20px',
+                lineHeight: '1.6',
+                fontFamily: 'Fredoka, sans-serif',
+                fontSize: '1rem'
+              }}>
+                Talentix is clean and looks professional. It gave me the confidence boost I needed to pursue better opportunities! 🌟
+              </p>
+              <div style={{ display: 'flex', gap: '4px' }}>
+                {[...Array(5)].map((_, i) => (
+                  <span key={i} style={{
+                    color: '#FFD600',
+                    fontSize: '1.4rem',
+                    textShadow: '0 0 10px rgba(255, 214, 0, 0.5)'
+                  }}>★</span>
+                ))}
             </div>
           </div>
           
-          <div className="text-center mt-12">
+            {/* Card 4 */}
+            <div style={{
+              background: 'linear-gradient(135deg, #374151 0%, #1F2937 100%)',
+              padding: '32px',
+              borderRadius: '24px',
+              boxShadow: '0 20px 40px rgba(0, 0, 0, 0.3)',
+              transform: 'translateY(0)',
+              transition: 'all 0.3s ease',
+              cursor: 'pointer'
+            }}
+            onMouseEnter={(e) => {
+              (e.target as HTMLElement).style.transform = 'translateY(-8px)';
+              (e.target as HTMLElement).style.boxShadow = '0 25px 50px rgba(0, 0, 0, 0.4)';
+            }}
+            onMouseLeave={(e) => {
+              (e.target as HTMLElement).style.transform = 'translateY(0)';
+              (e.target as HTMLElement).style.boxShadow = '0 20px 40px rgba(0, 0, 0, 0.3)';
+            }}>
+              <div style={{ marginBottom: '20px' }}>
+                <h4 style={{
+                  fontSize: '1.3rem',
+                  fontWeight: 'bold',
+                  color: 'white',
+                  marginBottom: '8px',
+                  fontFamily: 'Fredoka, sans-serif'
+                }}>
+                  David Thompson 🏆
+                </h4>
+                <p style={{
+                  fontSize: '0.9rem',
+                  color: '#9CA3AF',
+                  fontFamily: 'Fredoka, sans-serif'
+                }}>
+                  @davidthompson
+                </p>
+              </div>
+              <p style={{
+                color: '#D1D5DB',
+                marginBottom: '20px',
+                lineHeight: '1.6',
+                fontFamily: 'Fredoka, sans-serif',
+                fontSize: '1rem'
+              }}>
+                The AI interview practice has been invaluable in preparing me for real interviews. I feel so much more confident now! 💪
+              </p>
+              <div style={{ display: 'flex', gap: '4px' }}>
+                {[...Array(5)].map((_, i) => (
+                  <span key={i} style={{
+                    color: '#FFD600',
+                    fontSize: '1.4rem',
+                    textShadow: '0 0 10px rgba(255, 214, 0, 0.5)'
+                  }}>★</span>
+                ))}
+              </div>
+            </div>
+
+            {/* Card 5 */}
+            <div style={{
+              background: 'linear-gradient(135deg, #374151 0%, #1F2937 100%)',
+              padding: '32px',
+              borderRadius: '24px',
+              boxShadow: '0 20px 40px rgba(0, 0, 0, 0.3)',
+              transform: 'translateY(0)',
+              transition: 'all 0.3s ease',
+              cursor: 'pointer'
+            }}
+            onMouseEnter={(e) => {
+              (e.target as HTMLElement).style.transform = 'translateY(-8px)';
+              (e.target as HTMLElement).style.boxShadow = '0 25px 50px rgba(0, 0, 0, 0.4)';
+            }}
+            onMouseLeave={(e) => {
+              (e.target as HTMLElement).style.transform = 'translateY(0)';
+              (e.target as HTMLElement).style.boxShadow = '0 20px 40px rgba(0, 0, 0, 0.3)';
+            }}>
+              <div style={{ marginBottom: '20px' }}>
+                <h4 style={{
+                  fontSize: '1.3rem',
+                  fontWeight: 'bold',
+                  color: 'white',
+                  marginBottom: '8px',
+                  fontFamily: 'Fredoka, sans-serif'
+                }}>
+                  Lisa Park 📄
+                </h4>
+                <p style={{
+                  fontSize: '0.9rem',
+                  color: '#9CA3AF',
+                  fontFamily: 'Fredoka, sans-serif'
+                }}>
+                  @lisapark
+                </p>
+              </div>
+              <p style={{
+                color: '#D1D5DB',
+                marginBottom: '20px',
+                lineHeight: '1.6',
+                fontFamily: 'Fredoka, sans-serif',
+                fontSize: '1rem'
+              }}>
+                The CV builder helped me create a professional resume that stands out. I started getting more interview calls immediately! 📞
+              </p>
+              <div style={{ display: 'flex', gap: '4px' }}>
+                {[...Array(5)].map((_, i) => (
+                  <span key={i} style={{
+                    color: '#FFD600',
+                    fontSize: '1.4rem',
+                    textShadow: '0 0 10px rgba(255, 214, 0, 0.5)'
+                  }}>★</span>
+                ))}
+              </div>
+            </div>
+
+            {/* Card 6 */}
+            <div style={{
+              background: 'linear-gradient(135deg, #374151 0%, #1F2937 100%)',
+              padding: '32px',
+              borderRadius: '24px',
+              boxShadow: '0 20px 40px rgba(0, 0, 0, 0.3)',
+              transform: 'translateY(0)',
+              transition: 'all 0.3s ease',
+              cursor: 'pointer'
+            }}
+            onMouseEnter={(e) => {
+              (e.target as HTMLElement).style.transform = 'translateY(-8px)';
+              (e.target as HTMLElement).style.boxShadow = '0 25px 50px rgba(0, 0, 0, 0.4)';
+            }}
+            onMouseLeave={(e) => {
+              (e.target as HTMLElement).style.transform = 'translateY(0)';
+              (e.target as HTMLElement).style.boxShadow = '0 20px 40px rgba(0, 0, 0, 0.3)';
+            }}>
+              <div style={{ marginBottom: '20px' }}>
+                <h4 style={{
+                  fontSize: '1.3rem',
+                  fontWeight: 'bold',
+                  color: 'white',
+                  marginBottom: '8px',
+                  fontFamily: 'Fredoka, sans-serif'
+                }}>
+                  Alex Kumar 📚
+                </h4>
+                <p style={{
+                  fontSize: '0.9rem',
+                  color: '#9CA3AF',
+                  fontFamily: 'Fredoka, sans-serif'
+                }}>
+                  @alexkumar
+                </p>
+              </div>
+              <p style={{
+                color: '#D1D5DB',
+                marginBottom: '20px',
+                lineHeight: '1.6',
+                fontFamily: 'Fredoka, sans-serif',
+                fontSize: '1rem'
+              }}>
+                The learning resources are comprehensive and well-organized. Perfect for continuous skill development and career growth! 🌱
+              </p>
+              <div style={{ display: 'flex', gap: '4px' }}>
+                {[...Array(5)].map((_, i) => (
+                  <span key={i} style={{
+                    color: '#FFD600',
+                    fontSize: '1.4rem',
+                    textShadow: '0 0 10px rgba(255, 214, 0, 0.5)'
+                  }}>★</span>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* CTA Section */}
+          <div style={{ textAlign: 'center' }}>
+            <div style={{
+              background: 'linear-gradient(135deg, #FDE047 0%, #F97316 100%)',
+              borderRadius: '24px',
+              padding: '40px',
+              maxWidth: '600px',
+              margin: '0 auto',
+              boxShadow: '0 20px 40px rgba(0, 0, 0, 0.2)'
+            }}>
+              <h3 style={{
+                fontSize: '1.8rem',
+                fontWeight: 'bold',
+                color: '#111827',
+                marginBottom: '12px',
+                fontFamily: 'Fredoka, sans-serif'
+              }}>
+                Ready to join them? 🚀
+              </h3>
+              <p style={{
+                color: '#374151',
+                marginBottom: '24px',
+                fontFamily: 'Fredoka, sans-serif',
+                fontSize: '1.1rem'
+              }}>
+                Start your career journey today and become our next success story! ✨
+              </p>
             <button 
               onClick={() => setShowSignUpModal(true)}
-              className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-12 py-4 rounded-3xl font-bold text-xl transition-all duration-300 hover:shadow-xl hover:scale-105 transform"
-              style={{ fontFamily: "'Fredoka'" }}
-            >
-              🚀 Try It Now - It's Free! 🚀
+                style={{
+                  background: '#111827',
+                  color: 'white',
+                  fontWeight: 'bold',
+                  padding: '16px 32px',
+                  borderRadius: '16px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontSize: '1.1rem',
+                  fontFamily: 'Fredoka, sans-serif',
+                  transition: 'all 0.3s ease',
+                  boxShadow: '0 8px 16px rgba(0, 0, 0, 0.3)'
+                }}
+                onMouseEnter={(e) => {
+                  (e.target as HTMLElement).style.transform = 'scale(1.05)';
+                  (e.target as HTMLElement).style.boxShadow = '0 12px 24px rgba(0, 0, 0, 0.4)';
+                }}
+                onMouseLeave={(e) => {
+                  (e.target as HTMLElement).style.transform = 'scale(1)';
+                  (e.target as HTMLElement).style.boxShadow = '0 8px 16px rgba(0, 0, 0, 0.3)';
+                }}
+              >
+                Get Started Free 💫
             </button>
           </div>
         </div>
-      </section>
+        </div>
+      </div>
+
+      {/* Simple Footer */}
+      <footer className="bg-gray-900 py-8">
+        <div className="max-w-6xl mx-auto px-6 text-center">
+          <p className="text-gray-400" style={{ fontFamily: 'Fredoka, sans-serif' }}>
+            © 2024 Talentix - Made with 💖 for job seekers everywhere!
+          </p>
+        </div>
+      </footer>
       
       <SignUpModal 
         isOpen={showSignUpModal} 
@@ -944,6 +1392,199 @@ function HomeContent() {
         isOpen={showSignInModal} 
         onClose={() => setShowSignInModal(false)} 
       />
+      
+      {/* What do we do? Modal - Simple Test */}
+      {showWhatWeDoModal ? (
+        <div 
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            zIndex: 9999,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '10px'
+          }}
+          onClick={() => setShowWhatWeDoModal(false)}
+        >
+          <div 
+            style={{
+              backgroundColor: 'white',
+              borderRadius: '20px',
+              padding: '20px',
+              maxWidth: '600px',
+              width: '100%',
+              maxHeight: '95vh',
+              overflow: 'auto',
+              position: 'relative'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Close button */}
+            <button
+              onClick={() => setShowWhatWeDoModal(false)}
+              style={{
+                position: 'absolute',
+                top: '15px',
+                right: '15px',
+                width: '40px',
+                height: '40px',
+                borderRadius: '50%',
+                backgroundColor: '#ef4444',
+                color: 'white',
+                border: 'none',
+                fontSize: '20px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+            >
+              ×
+            </button>
+
+            {/* Content */}
+            <div style={{ textAlign: 'center' }}>
+              <h2 
+                className="modal-title"
+                style={{ 
+                  fontSize: '36px', 
+                  fontWeight: 'bold', 
+                  marginBottom: '20px',
+                  fontFamily: "'Fredoka', sans-serif"
+                }}
+              >
+                What We Do 🎉
+              </h2>
+              
+              <p 
+                className="modal-description"
+                style={{ 
+                  fontSize: '18px', 
+                  marginBottom: '30px',
+                  lineHeight: '1.6'
+                }}
+              >
+                <strong>Talentix</strong> is a youth-led employment agency helping teenagers land their dream jobs through interactive workshops and powerful digital tools! 🚀
+              </p>
+
+              <h3 
+                className="modal-subtitle"
+                style={{ 
+                  fontSize: '24px', 
+                  fontWeight: 'bold', 
+                  marginBottom: '20px',
+                  fontFamily: "'Fredoka', sans-serif"
+                }}
+              >
+                ✨ Our Amazing Features
+              </h3>
+
+              {/* Simple feature list */}
+              <div 
+                className="modal-features-grid"
+                style={{ 
+                  display: 'grid', 
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', 
+                  gap: '15px',
+                  marginBottom: '30px'
+                }}
+              >
+                <div style={{ 
+                  backgroundColor: '#f3f4f6', 
+                  padding: '20px', 
+                  borderRadius: '15px',
+                  textAlign: 'center'
+                }}>
+                  <div style={{ fontSize: '30px', marginBottom: '10px' }}>📄</div>
+                  <h4 style={{ fontWeight: 'bold', marginBottom: '5px' }}>CV Reviewer</h4>
+                  <p style={{ fontSize: '14px', color: '#666' }}>AI-powered analysis</p>
+                </div>
+                
+                <div style={{ 
+                  backgroundColor: '#f3f4f6', 
+                  padding: '20px', 
+                  borderRadius: '15px',
+                  textAlign: 'center'
+                }}>
+                  <div style={{ fontSize: '30px', marginBottom: '10px' }}>🎤</div>
+                  <h4 style={{ fontWeight: 'bold', marginBottom: '5px' }}>Interview Practice</h4>
+                  <p style={{ fontSize: '14px', color: '#666' }}>Video prep & feedback</p>
+                </div>
+                
+                <div style={{ 
+                  backgroundColor: '#f3f4f6', 
+                  padding: '20px', 
+                  borderRadius: '15px',
+                  textAlign: 'center'
+                }}>
+                  <div style={{ fontSize: '30px', marginBottom: '10px' }}>🔍</div>
+                  <h4 style={{ fontWeight: 'bold', marginBottom: '5px' }}>Job Search</h4>
+                  <p style={{ fontSize: '14px', color: '#666' }}>Perfect opportunities</p>
+                </div>
+                
+                <div style={{ 
+                  backgroundColor: '#f3f4f6', 
+                  padding: '20px', 
+                  borderRadius: '15px',
+                  textAlign: 'center'
+                }}>
+                  <div style={{ fontSize: '30px', marginBottom: '10px' }}>🧭</div>
+                  <h4 style={{ fontWeight: 'bold', marginBottom: '5px' }}>Career Guidance</h4>
+                  <p style={{ fontSize: '14px', color: '#666' }}>Expert advice</p>
+                </div>
+                
+                <div style={{ 
+                  backgroundColor: '#f3f4f6', 
+                  padding: '20px', 
+                  borderRadius: '15px',
+                  textAlign: 'center'
+                }}>
+                  <div style={{ fontSize: '30px', marginBottom: '10px' }}>🏆</div>
+                  <h4 style={{ fontWeight: 'bold', marginBottom: '5px' }}>Talentix Points</h4>
+                  <p style={{ fontSize: '14px', color: '#666' }}>Earn rewards</p>
+                </div>
+                
+                <div style={{ 
+                  backgroundColor: '#f3f4f6', 
+                  padding: '20px', 
+                  borderRadius: '15px',
+                  textAlign: 'center'
+                }}>
+                  <div style={{ fontSize: '30px', marginBottom: '10px' }}>👥</div>
+                  <h4 style={{ fontWeight: 'bold', marginBottom: '5px' }}>Community</h4>
+                  <p style={{ fontSize: '14px', color: '#666' }}>Connect & share</p>
+                </div>
+              </div>
+
+              {/* Call to action */}
+              <button 
+                onClick={() => {
+                  setShowWhatWeDoModal(false);
+                  setShowSignUpModal(true);
+                }}
+                style={{
+                  backgroundColor: '#8b5cf6',
+                  color: 'white',
+                  padding: '15px 30px',
+                  borderRadius: '25px',
+                  border: 'none',
+                  fontSize: '18px',
+                  fontWeight: 'bold',
+                  cursor: 'pointer',
+                  fontFamily: "'Fredoka', sans-serif"
+                }}
+              >
+                Get Started Now! 🎯
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
       
       {/* Fun Animations for Job Cards */}
       <style jsx global>{`
@@ -966,6 +1607,109 @@ function HomeContent() {
         @keyframes sparkle {
           0%, 100% { opacity: 0.3; transform: scale(1); }
           50% { opacity: 0.8; transform: scale(1.2); }
+        }
+        
+        @keyframes shimmer {
+          0% { transform: translateX(-100%) skewX(-12deg); }
+          100% { transform: translateX(200%) skewX(-12deg); }
+        }
+        
+        .animate-shimmer {
+          animation: shimmer 2s infinite;
+        }
+        
+        @keyframes modalFadeIn {
+          0% { 
+            opacity: 0; 
+            transform: scale(0.9); 
+          }
+          100% { 
+            opacity: 1; 
+            transform: scale(1); 
+          }
+        }
+        
+        /* Mobile-specific modal fixes */
+        @media (max-width: 768px) {
+          .modal-title {
+            font-size: 28px !important;
+            margin-bottom: 15px !important;
+          }
+          
+          .modal-description {
+            font-size: 16px !important;
+            margin-bottom: 20px !important;
+            padding: 0 10px !important;
+          }
+          
+          .modal-subtitle {
+            font-size: 20px !important;
+            margin-bottom: 15px !important;
+          }
+          
+          .modal-features-grid {
+            grid-template-columns: repeat(2, 1fr) !important;
+            gap: 10px !important;
+          }
+          
+          .modal-features-grid > div {
+            padding: 15px !important;
+            font-size: 14px !important;
+          }
+          
+          .modal-features-grid h4 {
+            font-size: 14px !important;
+            margin-bottom: 3px !important;
+          }
+          
+          .modal-features-grid p {
+            font-size: 12px !important;
+          }
+          
+          .modal-features-grid > div > div:first-child {
+            font-size: 24px !important;
+            margin-bottom: 8px !important;
+          }
+        }
+        
+        @media (max-width: 480px) {
+          .modal-title {
+            font-size: 24px !important;
+            margin-bottom: 12px !important;
+          }
+          
+          .modal-description {
+            font-size: 14px !important;
+            margin-bottom: 18px !important;
+            padding: 0 5px !important;
+          }
+          
+          .modal-subtitle {
+            font-size: 18px !important;
+            margin-bottom: 12px !important;
+          }
+          
+          .modal-features-grid {
+            grid-template-columns: repeat(2, 1fr) !important;
+            gap: 8px !important;
+          }
+          
+          .modal-features-grid > div {
+            padding: 12px !important;
+          }
+          
+          .modal-features-grid h4 {
+            font-size: 13px !important;
+          }
+          
+          .modal-features-grid p {
+            font-size: 11px !important;
+          }
+          
+          .modal-features-grid > div > div:first-child {
+            font-size: 22px !important;
+            margin-bottom: 6px !important;
+          }
         }
       `}</style>
     </div>

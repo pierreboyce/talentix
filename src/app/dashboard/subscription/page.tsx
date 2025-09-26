@@ -26,6 +26,49 @@ export default function SubscriptionDashboard() {
     achievementBadges: 2
   })
 
+  // Button handlers
+  const handlePaymentMethod = async () => {
+    if (!user?.email) {
+      alert('Please sign in to manage payment methods');
+      return;
+    }
+
+    try {
+      // In a real implementation, you would get the customer ID from your database
+      // For now, we'll use a placeholder
+      const response = await fetch('/api/subscriptions/billing-portal', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ customerId: 'placeholder' }) // This should be the actual Stripe customer ID
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        window.location.href = data.url;
+      } else {
+        alert('Unable to open billing portal. Please try again later.');
+      }
+    } catch (error) {
+      console.error('Error opening billing portal:', error);
+      alert('Unable to open billing portal. Please try again later.');
+    }
+  }
+
+  const handleDownloadInvoices = () => {
+    alert('📄 Invoice download coming soon! This will generate and download your billing history.')
+  }
+
+  const handleChangePlan = () => {
+    setShowPricingModal(true)
+  }
+
+  const handleCancelSubscription = () => {
+    const confirmed = window.confirm('⚠️ Are you sure you want to cancel your subscription? You will lose access to Pro features at the end of your billing period.')
+    if (confirmed) {
+      alert('🚧 Subscription cancellation coming soon! This will process your cancellation request.')
+    }
+  }
+
   useEffect(() => {
     const loadUsageStats = async () => {
       if (typeof window === 'undefined' || !user?.email) return;
@@ -820,6 +863,7 @@ export default function SubscriptionDashboard() {
               gap: '16px'
             }}>
               <button
+                onClick={handlePaymentMethod}
                 className="settings-button"
                 style={{
                   backgroundColor: '#f3f4f6',
@@ -837,6 +881,7 @@ export default function SubscriptionDashboard() {
                 💳 Payment Method
               </button>
               <button
+                onClick={handleDownloadInvoices}
                 className="settings-button"
                 style={{
                   backgroundColor: '#f3f4f6',
@@ -854,6 +899,7 @@ export default function SubscriptionDashboard() {
                 📄 Download Invoices
               </button>
               <button
+                onClick={handleChangePlan}
                 className="settings-button"
                 style={{
                   backgroundColor: '#f3f4f6',
@@ -871,6 +917,7 @@ export default function SubscriptionDashboard() {
                 🔄 Change Plan
               </button>
               <button
+                onClick={handleCancelSubscription}
                 className="settings-button"
                 style={{
                   backgroundColor: '#fef2f2',

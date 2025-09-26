@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Chatbot from '../../components/Chatbot';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface Message {
   id: number;
@@ -15,14 +16,26 @@ export default function AIChat() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
-  const [userName, setUserName] = useState('');
+  const { user } = useAuth();
 
-  useEffect(() => {
-    const savedUser = localStorage.getItem('talentix_user');
-    if (savedUser) {
-      setUserName(savedUser);
+  // Get user's first name only (not full name for privacy)
+  const getUserName = () => {
+    if (!user) return '';
+    
+    // If user has a name, extract first name
+    if (user.name) {
+      return user.name.split(' ')[0];
     }
-  }, []);
+    
+    // Fallback to email username if no name
+    if (user.email) {
+      return user.email.split('@')[0];
+    }
+    
+    return '';
+  };
+
+  const userName = getUserName();
 
   const generateAIResponse = (userMessage: string) => {
     const responses = {

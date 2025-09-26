@@ -27,20 +27,21 @@ interface AppItem {
   restricted?: boolean; // For free tier limitations
 }
 
-const mainApps: AppItem[] = [
-  {
-    id: 'home',
-    name: 'Home',
-    emoji: '🏡',
-    href: '/dashboard',
-    color: 'bg-gradient-to-br from-blue-400 to-blue-600'
-  },
+// Reorganized Categories as Requested
+const jobToolsApps: AppItem[] = [
   {
     id: 'job-vacancies',
     name: 'Job Vacancies',
     emoji: '💼',
     href: '/search?q=jobs',
     color: 'bg-gradient-to-br from-green-400 to-green-600'
+  },
+  {
+    id: 'job-tracker',
+    name: 'Job Tracker',
+    emoji: '📊',
+    href: '/job-tracker',
+    color: 'bg-gradient-to-br from-teal-400 to-teal-600'
   },
   {
     id: 'cv-reviewer',
@@ -50,6 +51,16 @@ const mainApps: AppItem[] = [
     color: 'bg-gradient-to-br from-purple-400 to-purple-600',
     restricted: true
   },
+  {
+    id: 'cover-letter',
+    name: 'Cover Letter',
+    emoji: '✍️',
+    href: '/cover-letter',
+    color: 'bg-gradient-to-br from-indigo-400 to-indigo-600'
+  }
+];
+
+const careerSupportApps: AppItem[] = [
   {
     id: 'interview-prep',
     name: 'Interview Prep',
@@ -66,25 +77,12 @@ const mainApps: AppItem[] = [
     restricted: true
   },
   {
-    id: 'job-tracker',
-    name: 'Job Tracker',
-    emoji: '📊',
-    href: '/job-tracker',
-    color: 'bg-gradient-to-br from-teal-400 to-teal-600'
-  },
-  {
-    id: 'cover-letter',
-    name: 'Cover Letter',
-    emoji: '✍️',
-    href: '/cover-letter',
-    color: 'bg-gradient-to-br from-indigo-400 to-indigo-600'
-  },
-  {
-    id: 'talentix-points',
-    name: 'Talentix Points',
-    emoji: '🎯',
-    href: '/score',
-    color: 'bg-gradient-to-br from-orange-400 to-orange-600'
+    id: 'career-guidance',
+    name: 'Career Guidance',
+    emoji: '🎓',
+    href: '/career-guidance',
+    color: 'bg-gradient-to-br from-emerald-400 to-emerald-600',
+    restricted: true
   },
   {
     id: 'ai-chat',
@@ -92,14 +90,23 @@ const mainApps: AppItem[] = [
     emoji: '🤖',
     href: '/ai-chat',
     color: 'bg-gradient-to-br from-cyan-400 to-cyan-600'
+  }
+];
+
+const accountCompanyApps: AppItem[] = [
+  {
+    id: 'home',
+    name: 'Home',
+    emoji: '🏡',
+    href: '/dashboard',
+    color: 'bg-gradient-to-br from-blue-400 to-blue-600'
   },
   {
-    id: 'career-guidance',
-    name: 'Career Guidance',
-    emoji: '🎓',
-    href: '/career-guidance',
-    color: 'bg-gradient-to-br from-emerald-400 to-emerald-600',
-    restricted: true
+    id: 'talentix-points',
+    name: 'Talentix Points',
+    emoji: '🎯',
+    href: '/score',
+    color: 'bg-gradient-to-br from-orange-400 to-orange-600'
   },
   {
     id: 'subscription',
@@ -114,6 +121,27 @@ const mainApps: AppItem[] = [
     emoji: '⚙️',
     href: '/settings',
     color: 'bg-gradient-to-br from-gray-400 to-gray-600'
+  },
+  {
+    id: 'our-story',
+    name: 'Our Story',
+    emoji: '📖',
+    href: '/our-story',
+    color: 'bg-gradient-to-br from-yellow-400 to-yellow-600'
+  },
+  {
+    id: 'our-services',
+    name: 'Our Services',
+    emoji: '🛠️',
+    href: '/our-services',
+    color: 'bg-gradient-to-br from-purple-400 to-purple-600'
+  },
+  {
+    id: 'logout',
+    name: 'Sign Out',
+    emoji: '🚪',
+    href: '#',
+    color: 'bg-gradient-to-br from-red-400 to-red-600'
   }
 ];
 
@@ -160,7 +188,7 @@ export default function AppLauncher() {
   const { subscription } = useSubscription();
   const [mounted, setMounted] = useState(false);
 
-  // Add custom CSS for fade-in animation and handle scroll position
+  // Add custom CSS for fade-in animation and backdrop blur
   useEffect(() => {
     setMounted(true);
     const style = document.createElement('style');
@@ -179,6 +207,31 @@ export default function AppLauncher() {
       .animate-fadeIn {
         animation: fadeIn 0.3s ease-out forwards;
       }
+      
+      .app-launcher-backdrop {
+        backdrop-filter: blur(15px) brightness(0.8) saturate(120%) !important;
+        -webkit-backdrop-filter: blur(15px) brightness(0.8) saturate(120%) !important;
+        background: rgba(0, 0, 0, 0.7) !important;
+      }
+      
+      /* Force backdrop blur on body when menu is open */
+      body.app-launcher-open {
+        overflow: hidden;
+      }
+      
+      body.app-launcher-open::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        z-index: 2147483645;
+        pointer-events: none;
+      }
     `;
     document.head.appendChild(style);
 
@@ -194,25 +247,36 @@ export default function AppLauncher() {
     return () => {
       document.head.removeChild(style);
       window.removeEventListener('scroll', handleScroll);
+      // Cleanup body class on unmount
+      document.body.classList.remove('app-launcher-open');
     };
   }, []);
 
   const handleToggle = () => {
-    setIsOpen(!isOpen);
+    const newIsOpen = !isOpen;
+    setIsOpen(newIsOpen);
+    
+    // Add/remove body class for backdrop effect
+    if (newIsOpen) {
+      document.body.classList.add('app-launcher-open');
+    } else {
+      document.body.classList.remove('app-launcher-open');
+    }
   };
 
   const handleClose = () => {
     setIsOpen(false);
+    document.body.classList.remove('app-launcher-open');
   };
 
   const handleAppClick = (href: string, appId: string) => {
     setIsOpen(false);
+    document.body.classList.remove('app-launcher-open');
     
     // Special handling for logout
     if (appId === 'logout') {
       // Trigger global sign-out modal
       window.dispatchEvent(new Event('talentix-show-signout-modal'));
-      setIsOpen(false);
       return;
     }
     
@@ -235,6 +299,108 @@ export default function AppLauncher() {
     // For other apps, the Link component will handle navigation
   };
 
+  // Helper function to render app items
+  const renderAppItem = (app: AppItem) => {
+    // Handle placeholder (empty) items
+    if (app.id === 'placeholder') {
+      return <div key="placeholder" className="opacity-0"></div>;
+    }
+    
+    // Handle logout button
+    if (app.id === 'logout') {
+      return (
+        <button
+          key={app.id}
+          onClick={() => handleAppClick(app.href, app.id)}
+          className="group flex flex-col items-center p-4 rounded-2xl hover:bg-red-100 transition-all duration-300 hover:scale-105 hover:shadow-xl"
+          style={{ backdropFilter: 'blur(5px)' }}
+        >
+          <div className="w-24 h-24 rounded-2xl flex items-center justify-center mb-3 group-hover:scale-110 group-hover:rotate-12 transition-all duration-300 shadow-lg group-hover:shadow-xl relative">
+            <span className="text-[2.8rem] group-hover:animate-bounce">{app.emoji}</span>
+          </div>
+          <span className="text-[0.75rem] text-red-700 text-center font-medium leading-tight max-w-[100px] group-hover:text-red-800" style={{ fontWeight: '500', textShadow: '0 1px 2px rgba(0, 0, 0, 0.1)' }}>
+            {app.name}
+          </span>
+        </button>
+      );
+    }
+    
+    if (app.id === 'ai-chat') {
+      return (
+        <button
+          key={app.id}
+          onClick={() => handleAppClick(app.href, app.id)}
+          className="group flex flex-col items-center p-4 rounded-2xl hover:bg-white/30 transition-all duration-300 hover:scale-105 hover:shadow-xl"
+          style={{ backdropFilter: 'blur(5px)' }}
+        >
+          <div className="w-24 h-24 rounded-2xl flex items-center justify-center mb-3 group-hover:scale-110 group-hover:rotate-12 transition-all duration-300 shadow-lg group-hover:shadow-xl relative">
+            <span className="text-[2.8rem] group-hover:animate-bounce">{app.emoji}</span>
+          </div>
+          <span className="text-[0.75rem] text-gray-800 text-center font-medium leading-tight max-w-[100px] group-hover:text-gray-900" style={{ fontWeight: '500', textShadow: '0 1px 2px rgba(0, 0, 0, 0.1)' }}>
+            {app.name}
+          </span>
+          {app.restricted && subscription.tier === 'free' && (
+            <div className="absolute left-1/2 bottom-full mb-2 opacity-0 group-hover:opacity-100 transition-all duration-300 ease-out pointer-events-none"
+              style={{
+                zIndex: 2147483647,
+                transform: 'translateX(-50%) scale(0.9)',
+                background: 'linear-gradient(135deg, #fef3c7 0%, #fde047 50%, #facc15 100%)',
+                borderRadius: '12px',
+                padding: '6px 12px',
+                fontSize: '11px',
+                fontWeight: '700',
+                color: '#1f2937',
+                boxShadow: '0 4px 12px rgba(254, 243, 199, 0.6), 0 2px 4px rgba(0, 0, 0, 0.1)',
+                border: '1.5px solid rgba(255, 255, 255, 0.8)',
+                whiteSpace: 'nowrap',
+                fontFamily: 'Fredoka, sans-serif'
+              }}
+            >
+              Available with Talentix Pro ✨
+            </div>
+          )}
+        </button>
+      );
+    } else {
+      return (
+        <Link
+          key={app.id}
+          href={app.href}
+          onClick={() => handleAppClick(app.href, app.id)}
+          className="group flex flex-col items-center p-4 rounded-2xl hover:bg-white/30 transition-all duration-300 hover:scale-105 hover:shadow-xl"
+          style={{ backdropFilter: 'blur(5px)' }}
+        >
+          <div className="w-24 h-24 bg-white/80 rounded-2xl flex items-center justify-center mb-3 group-hover:scale-110 group-hover:rotate-12 transition-all duration-300 shadow-lg group-hover:shadow-xl relative">
+            <span className="text-[2.8rem] group-hover:animate-bounce">{app.emoji}</span>
+          </div>
+          <span className="text-[0.75rem] text-gray-800 text-center font-medium leading-tight max-w-[100px] group-hover:text-gray-900" style={{ fontWeight: '500', textShadow: '0 1px 2px rgba(0, 0, 0, 0.1)' }}>
+            {app.name}
+          </span>
+          {app.restricted && subscription.tier === 'free' && (
+            <div className="absolute left-1/2 bottom-full mb-2 opacity-0 group-hover:opacity-100 transition-all duration-300 ease-out pointer-events-none"
+              style={{
+                zIndex: 2147483647,
+                transform: 'translateX(-50%) scale(0.9)',
+                background: 'linear-gradient(135deg, #fef3c7 0%, #fde047 50%, #facc15 100%)',
+                borderRadius: '12px',
+                padding: '6px 12px',
+                fontSize: '11px',
+                fontWeight: '700',
+                color: '#1f2937',
+                boxShadow: '0 4px 12px rgba(254, 243, 199, 0.6), 0 2px 4px rgba(0, 0, 0, 0.1)',
+                border: '1.5px solid rgba(255, 255, 255, 0.8)',
+                whiteSpace: 'nowrap',
+                fontFamily: 'Fredoka, sans-serif'
+              }}
+            >
+              Available with Talentix Pro ✨
+            </div>
+          )}
+        </Link>
+      );
+    }
+  };
+
   return (
     <div className="relative">
       {/* 9 Dots Button - Positioned on the far right */}
@@ -255,20 +421,51 @@ export default function AppLauncher() {
       {/* Dropdown Menu (portaled to body to avoid clipping/stacking issues) */}
       {mounted && isOpen && createPortal(
         <>
-          {/* Backdrop */}
+          {/* Enhanced Backdrop with Blur and Darkening */}
           <div 
-            className="fixed inset-0 bg-black bg-opacity-20 transition-opacity duration-300"
-            style={{ zIndex: 2147483646 }}
+            className="fixed inset-0 app-launcher-backdrop transition-all duration-500 ease-out"
+            style={{ 
+              zIndex: 2147483646,
+            }}
             onClick={handleClose}
-          />
+          >
+            {/* Additional overlay for stronger darkening effect */}
+            <div 
+              className="absolute inset-0"
+              style={{
+                background: 'linear-gradient(135deg, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.5) 100%)',
+                mixBlendMode: 'multiply'
+              }}
+            />
+          </div>
+
           
+          {/* Exit Button - Overlapping Menu */}
+          <button
+            onClick={handleClose}
+            className="fixed top-4 left-4 px-6 py-3 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 shadow-xl hover:shadow-2xl group"
+            style={{
+              fontSize: '16px',
+              fontWeight: 'bold',
+              border: '3px solid rgba(255, 255, 255, 0.9)',
+              zIndex: 2147483649,
+              backgroundColor: '#dc2626',
+              boxShadow: '0 10px 25px rgba(220, 38, 38, 0.6)'
+            }}
+            aria-label="Exit menu"
+          >
+            <span className="group-hover:scale-110 transition-transform duration-300">Exit</span>
+          </button>
+
           {/* Menu - Fun & Playful Design */}
           <div 
-            className="w-[520px] h-[380px] overflow-hidden rounded-[2.5rem] animate-fadeIn"
+            className="overflow-hidden rounded-[2.5rem] animate-fadeIn"
             style={{
               position: 'fixed',
-              top: '80px', // Fixed position below header
-              left: '0px',
+              top: '10px', // Closer to top of screen
+              left: '2vw', // 2% margin on left (96% width + 2% left + 2% right = 100%)
+              width: '96vw', // 96% of viewport width
+              height: '95vh', // 95% of viewport height
               zIndex: 2147483647,
               background: 'linear-gradient(135deg, #fef3c7 0%, #fde047 25%, #facc15 50%, #f59e0b 75%, #d97706 100%)',
               boxShadow: '0 30px 60px -12px rgba(245, 158, 11, 0.4), 0 15px 50px -10px rgba(217, 119, 6, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
@@ -279,119 +476,86 @@ export default function AppLauncher() {
             {/* Floating Background Elements */}
             <div className="absolute inset-0 pointer-events-none">
               <div className="absolute top-4 left-8 text-4xl opacity-20 animate-bounce" style={{ animationDelay: '0s' }}>🎯</div>
-              <div className="absolute top-16 right-12 text-3xl opacity-15 animate-pulse" style={{ animationDelay: '1s' }}>💫</div>
+              <div className="absolute top-16 right-12 text-4xl opacity-15 animate-pulse" style={{ animationDelay: '1s' }}>💫</div>
               <div className="absolute bottom-20 left-12 text-5xl opacity-10 animate-bounce" style={{ animationDelay: '2s' }}>🚀</div>
               <div className="absolute bottom-8 right-16 text-4xl opacity-15 animate-pulse" style={{ animationDelay: '0.5s' }}>✨</div>
-              <div className="absolute top-32 left-20 text-3xl opacity-10 animate-bounce" style={{ animationDelay: '1.5s' }}>🎉</div>
+              <div className="absolute top-32 left-20 text-4xl opacity-10 animate-bounce" style={{ animationDelay: '1.5s' }}>🎉</div>
             </div>
-            {/* Main Apps Grid - 3 columns with emojis */}
-            <div className="px-8 py-8">
-              <div className="grid grid-cols-3 gap-4">
-                {mainApps.map((app) => (
-                  app.id === 'ai-chat' ? (
-                    <button
-                      key={app.id}
-                      onClick={() => handleAppClick(app.href, app.id)}
-                      className="group flex flex-col items-center p-3 rounded-2xl hover:bg-white/30 transition-all duration-300 hover:scale-105 hover:shadow-xl"
-                      style={{ backdropFilter: 'blur(5px)' }}
-                    >
-                      <div className="w-16 h-16 bg-white/80 rounded-2xl flex items-center justify-center mb-2 group-hover:scale-110 group-hover:rotate-12 transition-all duration-300 shadow-lg group-hover:shadow-xl relative">
-                        <span className="text-[2.2rem] group-hover:animate-bounce">{app.emoji}</span>
-                        {app.restricted && subscription.tier === 'free' && (
-                          <div className="absolute -top-1 -right-1 w-5 h-5 bg-amber-500 rounded-full flex items-center justify-center">
-                            <Lock className="w-3 h-3 text-white" />
-                          </div>
-                        )}
-                      </div>
-                      <span className="text-[0.72rem] text-gray-800 text-center font-black leading-tight max-w-[100px] group-hover:text-gray-900">
-                        {app.name}
-                      </span>
-                    </button>
-                  ) : (
-                    <Link
-                      key={app.id}
-                      href={app.href}
-                      onClick={() => handleAppClick(app.href, app.id)}
-                      className="group flex flex-col items-center p-3 rounded-2xl hover:bg-white/30 transition-all duration-300 hover:scale-105 hover:shadow-xl"
-                      style={{ backdropFilter: 'blur(5px)' }}
-                    >
-                      <div className="w-16 h-16 bg-white/80 rounded-2xl flex items-center justify-center mb-2 group-hover:scale-110 group-hover:rotate-12 transition-all duration-300 shadow-lg group-hover:shadow-xl relative">
-                        <span className="text-[2.2rem] group-hover:animate-bounce">{app.emoji}</span>
-                        {app.restricted && subscription.tier === 'free' && (
-                          <div className="absolute -top-1 -right-1 w-5 h-5 bg-amber-500 rounded-full flex items-center justify-center">
-                            <Lock className="w-3 h-3 text-white" />
-                          </div>
-                        )}
-                      </div>
-                      <span className="text-[0.72rem] text-gray-800 text-center font-black leading-tight max-w-[100px] group-hover:text-gray-900">
-                        {app.name}
-                      </span>
-                    </Link>
-                  )
-                ))}
+            
+
+            {/* Talentix Logo */}
+            <div className="flex justify-center items-center pt-6 pb-2">
+              <Image
+                src="/talentixborder.png"
+                alt="Talentix"
+                width={150}
+                height={50}
+                className="object-contain"
+              />
+            </div>
+
+            
+            {/* Categorized Apps Grid - Full Menu Layout */}
+            <div className="px-8 pt-8 pb-4 flex-1 flex flex-col" style={{ minHeight: 'calc(100% - 120px)' }}>
+              
+              {/* Account & Company Row - Special layout for 7 items */}
+              <div className="flex-1 mb-4">
+                <h3 className="text-3xl font-bold text-gray-800 mb-10 flex items-center gap-2">
+                  <span>👤</span> Account & Company
+                </h3>
+                <div className="space-y-3">
+                  {/* First row - 4 items */}
+                  <div className="grid grid-cols-4 gap-6">
+                    {accountCompanyApps.slice(0, 4).map((app) => renderAppItem(app))}
+                  </div>
+                  {/* Second row - 3 items left-aligned */}
+                  <div className="grid grid-cols-4 gap-6">
+                    {accountCompanyApps.slice(4, 7).map((app) => renderAppItem(app))}
+                    <div className="opacity-0"></div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Center X Button */}
+              <div className="flex justify-center items-center py-6">
+                <button
+                  onClick={handleClose}
+                  className="w-16 h-16 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 shadow-lg hover:shadow-xl"
+                  style={{
+                    fontSize: '24px',
+                    fontWeight: 'bold',
+                    border: '3px solid rgba(255, 255, 255, 0.9)',
+                  }}
+                  aria-label="Close menu"
+                >
+                  ✕
+                </button>
+              </div>
+
+              {/* Career Support Row */}
+              <div className="flex-1 mb-4">
+                <h3 className="text-3xl font-bold text-gray-800 mb-12 flex items-center gap-2">
+                  <span>🚀</span> Career Support
+                </h3>
+                <div className="grid grid-cols-4 gap-6 h-full">
+                  {careerSupportApps.map((app) => renderAppItem(app))}
+                </div>
+              </div>
+
+              {/* Job Tools Row */}
+              <div className="flex-1 mb-4">
+                <h3 className="text-3xl font-bold text-gray-800 mb-10 flex items-center gap-2">
+                  <span>🛠️</span> Job Tools
+                </h3>
+                <div className="grid grid-cols-4 gap-6 h-full">
+                  {jobToolsApps.map((app) => renderAppItem(app))}
+                </div>
               </div>
             </div>
 
-            {/* Fun Divider */}
-            <div className="px-8 py-3 flex items-center justify-center">
-              <div className="flex items-center gap-3">
-                <div className="h-px bg-white/40 flex-1 w-20"></div>
-                <span className="text-2xl animate-pulse">✨</span>
-                <div className="h-px bg-white/40 flex-1 w-20"></div>
-              </div>
-            </div>
-
-            {/* Auth Section */}
-            <div className="px-8 py-4">
-              <h4 className="text-[0.8rem] font-black text-gray-800 mb-3 flex items-center gap-2">
-                <span>👤</span> Account
-              </h4>
-              <div className="grid grid-cols-2 gap-4">
-                {(user ? loggedInApps : authApps).map((app) => (
-                  app.id === 'logout' ? (
-                    <button
-                      key={app.id}
-                      onClick={() => handleAppClick(app.href, app.id)}
-                      className="group flex items-center p-4 rounded-xl hover:bg-gray-50 transition-colors border border-gray-200 hover:border-gray-300 w-full text-left"
-                    >
-                      <div className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center mr-4 group-hover:scale-105 transition-transform shadow-lg relative">
-                        <span className="text-[1.75rem]">{app.emoji}</span>
-                        {app.restricted && subscription.tier === 'free' && (
-                          <div className="absolute -top-1 -right-1 w-4 h-4 bg-amber-500 rounded-full flex items-center justify-center">
-                            <Lock className="w-2.5 h-2.5 text-white" />
-                          </div>
-                        )}
-                      </div>
-                      <span className="text-[0.65rem] text-gray-700 font-black">
-                        {app.name}
-                      </span>
-                    </button>
-                  ) : (
-                    <Link
-                      key={app.id}
-                      href={app.href}
-                      onClick={() => handleAppClick(app.href, app.id)}
-                      className="group flex items-center p-4 rounded-xl hover:bg-gray-50 transition-colors border border-gray-200 hover:border-gray-300"
-                    >
-                      <div className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center mr-4 group-hover:scale-105 transition-transform shadow-lg relative">
-                        <span className="text-[1.75rem]">{app.emoji}</span>
-                        {app.restricted && subscription.tier === 'free' && (
-                          <div className="absolute -top-1 -right-1 w-4 h-4 bg-amber-500 rounded-full flex items-center justify-center">
-                            <Lock className="w-2.5 h-2.5 text-white" />
-                          </div>
-                        )}
-                      </div>
-                      <span className="text-[0.65rem] text-gray-700 font-black">
-                        {app.name}
-                      </span>
-                    </Link>
-                  )
-                ))}
-              </div>
-            </div>
 
             {/* Fun Footer */}
-            <div className="px-8 py-4 bg-white/20 border-t border-white/30" style={{ backdropFilter: 'blur(5px)' }}>
+            <div className="px-12 py-5 bg-white/20 border-t border-white/30" style={{ backdropFilter: 'blur(5px)' }}>
               <p className="text-[0.8rem] text-gray-800 text-center font-bold flex items-center justify-center gap-2">
                 <span>⚡</span> Powered by Talentix <span>🚀</span>
               </p>

@@ -148,8 +148,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
 
       // Create new user
+      const now = typeof window !== 'undefined' ? Date.now() : 0;
       const userData = {
-        id: `user_${Date.now()}`,
+        id: `user_${now}`,
         name: credentials.name,
         email: credentials.email,
         password: credentials.password,
@@ -162,8 +163,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       const session = {
         user: userData,
-        expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // 24 hours
-        token: `token_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+        expires: new Date(now + 24 * 60 * 60 * 1000).toISOString(), // 24 hours
+        token: `token_${now}_${typeof window !== 'undefined' ? Math.random().toString(36).substr(2, 9) : 'server'}`
       };
 
       // Store user data
@@ -252,6 +253,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
       // Use consistent redirect URIs that match what's registered in OAuth providers
       // Always use non-www version to match registered URIs
       let baseUrl = process.env.NEXT_PUBLIC_BASE_URL || window.location.origin;
+      
+      // FORCE production URL if we detect we're on the production domain
+      if (window.location.hostname === 'talentix.co.uk' || window.location.hostname === 'www.talentix.co.uk') {
+        baseUrl = 'https://talentix.co.uk';
+        console.log('🔗 FORCED production baseUrl for OAuth:', baseUrl);
+      }
+      
       if (baseUrl.includes('://www.')) {
         baseUrl = baseUrl.replace('://www.', '://');
       }
@@ -268,6 +276,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
       
       // Build OAuth URL
       console.log(`🔗 ${provider} OAuth redirect URI:`, redirectUris[provider]);
+      console.log(`🔗 NEXT_PUBLIC_BASE_URL:`, process.env.NEXT_PUBLIC_BASE_URL);
+      console.log(`🔗 window.location.origin:`, window.location.origin);
+      console.log(`🔗 Final baseUrl used:`, baseUrl);
+      
       const baseParams: Record<string, string> = {
         client_id: clientIds[provider],
         redirect_uri: redirectUris[provider],
@@ -289,6 +301,18 @@ export function AuthProvider({ children }: AuthProviderProps) {
       console.log(`🔐 Redirecting to ${provider} OAuth:`, oauthUrl);
       console.log(`🔐 OAuth parameters:`, Object.fromEntries(params.entries()));
       console.log(`🔐 Expected callback URL:`, redirectUris[provider]);
+      
+      // Add extra debugging for Microsoft
+      if (provider === 'microsoft') {
+        console.log('🔧 Microsoft OAuth Debug:', {
+          clientId: clientIds[provider],
+          redirectUri: redirectUris[provider],
+          fullUrl: oauthUrl,
+          baseUrl,
+          windowOrigin: window.location.origin,
+          hostname: window.location.hostname
+        });
+      }
       
       // Redirect to OAuth provider
       window.location.href = oauthUrl;

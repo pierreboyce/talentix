@@ -85,6 +85,22 @@ export function SubscriptionProvider({ children }: SubscriptionProviderProps) {
 
   // Fetch subscription data
   const refreshSubscription = async () => {
+    // Check for debug tier first
+    if (typeof window !== 'undefined') {
+      const debugTier = localStorage.getItem('debug_subscription_tier') as SubscriptionTier;
+      if (debugTier && (debugTier === 'free' || debugTier === 'pro' || debugTier === 'enterprise')) {
+        setSubscription({
+          id: debugTier,
+          tier: debugTier,
+          status: 'active',
+          currentPeriodEnd: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
+          cancelAtPeriodEnd: false
+        });
+        setIsLoading(false);
+        return;
+      }
+    }
+
     if (!user) {
       // For non-authenticated users, default to free tier
       setSubscription({

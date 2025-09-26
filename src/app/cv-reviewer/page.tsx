@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
+import { useDeviceDetection } from '../../hooks/useDeviceDetection';
 import { useRouter } from 'next/navigation';
 import { Upload, Download, Edit3, FileText, Star, CheckCircle, AlertCircle } from 'lucide-react';
 import { usePoints } from '../../contexts/PointsContext';
@@ -77,13 +79,26 @@ export default function CVReviewer() {
   const { updateQuestProgress } = useQuests(); // Use quest system
   const { canAccess, subscription } = useSubscription();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { isMobile } = useDeviceDetection();
   
-  const [currentView, setCurrentView] = useState<'upload' | 'feedback' | 'edit'>('upload');
+  const [currentView, setCurrentView] = useState<'upload' | 'feedback' | 'edit'>(() => {
+    // Check URL parameters for view
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const viewParam = params.get('view');
+      if (viewParam === 'upload' || viewParam === 'feedback' || viewParam === 'edit') {
+        console.log('🔗 URL parameter set view to:', viewParam);
+        return viewParam;
+      }
+    }
+    return 'upload';
+  });
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [cvText, setCvText] = useState('');
   const [feedback, setFeedback] = useState<CVFeedback | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [dailyUsage, setDailyUsage] = useState(0); // Track CV reviews today
+  const [showProPopup, setShowProPopup] = useState(false); // Show Pro upgrade popup
   
   // Initialize daily usage from localStorage (user-specific)
   useEffect(() => {
@@ -126,8 +141,7 @@ export default function CVReviewer() {
     }
   });
 
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
+  const processFile = async (file: File) => {
     const supportedTypes = [
       'application/pdf',
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // .docx
@@ -136,6 +150,7 @@ export default function CVReviewer() {
     ];
     
     if (file && (supportedTypes.includes(file.type) || file.type.startsWith('text/'))) {
+      console.log('🔥 Processing file:', file.name, 'Type:', file.type, 'Size:', file.size);
       setUploadedFile(file);
       
       try {
@@ -291,19 +306,151 @@ export default function CVReviewer() {
           }
         });
       }
+    } else {
+      console.error('🔥 Unsupported file type:', file?.type);
+      alert('Please upload a supported file type: PDF, Word document (.doc/.docx), or text file (.txt)');
     }
   };
 
-  const handleAnalyze = async () => {
-    if (!cvText) return;
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      console.log('🔥 File selected via input:', file.name);
+      await processFile(file);
+    }
+  };
+
+  // Drag and drop handlers for mobile
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleDragEnter = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleDrop = async (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     
-    // Check subscription limits for free tier users
-    if (subscription.tier === 'free' && dailyUsage >= 1) {
-      // Trigger pricing modal for upgrade
-      window.dispatchEvent(new CustomEvent('openPricingModal'));
+    const files = Array.from(e.dataTransfer.files);
+    if (files.length > 0) {
+      const file = files[0];
+      console.log('🔥 File dropped:', file.name);
+      await processFile(file);
+    }
+  };
+
+  // Emergency analyze function with complete isolation
+  const emergencyAnalyze = async () => {
+    
+    if (!cvText) {
+      alert('❌ No CV text available! Please upload a file first.');
       return;
     }
     
+    if (isAnalyzing) {
+      return;
+    }
+    
+    // Check subscription limits
+    if (subscription.tier === 'free' && dailyUsage >= 1) {
+      alert('💰 Free tier limit reached! Upgrade to Pro for unlimited CV reviews.');
+      return;
+    }
+    
+    setIsAnalyzing(true);
+    
+    try {
+      const response = await fetch('/api/cv/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cvText })
+      });
+      
+      console.log('📡 Emergency API Response status:', response.status);
+      
+      if (response.ok) {
+        const result = await response.json();
+        console.log('✅ Emergency CV analysis result:', result);
+        setFeedback(result);
+        
+        // Force immediate view switch
+        console.log('🔄 Emergency view switch to feedback...');
+        setCurrentView('feedback');
+        
+        // Award points
+        if (result.points) {
+          addPoints(result.points, `CV analysis scored ${result.score}/5`);
+        }
+        
+        // Update quest progress
+        updateQuestProgress('cv_analysis', 1);
+        if (result.score >= 4) {
+          updateQuestProgress('cv_optimizer', 1);
+        }
+        
+        // Track usage
+        if (user?.email) {
+          const today = new Date().toDateString();
+          const cvUsageKey = `cv_reviews_${today}_${user.email}`;
+          const currentUsage = parseInt(localStorage.getItem(cvUsageKey) || '0');
+          const newUsage = currentUsage + 1;
+          localStorage.setItem(cvUsageKey, newUsage.toString());
+          
+          const totalKey = `total_cv_reviews_${user.email}`;
+          const totalReviews = parseInt(localStorage.getItem(totalKey) || '0');
+          localStorage.setItem(totalKey, (totalReviews + 1).toString());
+          
+          localStorage.setItem(`last_cv_update_${user.email}`, new Date().toISOString());
+          setDailyUsage(newUsage);
+        }
+        
+        // Auto-switch to feedback view after successful analysis
+        setTimeout(() => {
+          setCurrentView('feedback');
+        }, 100);
+        alert('✅ Analysis complete! View switched to feedback.');
+      } else {
+        alert('❌ Analysis failed. Please try again.');
+      }
+    } catch (error) {
+      alert('❌ Analysis error. Please check your connection.');
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
+  const handleAnalyze = async (e?: React.MouseEvent) => {
+    // Prevent navigation interference on mobile
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    
+    console.log('🔥 ANALYZE BUTTON CLICKED!', { isMobile, cvText: !!cvText });
+    
+    if (!cvText) {
+      console.log('❌ No CV text available for analysis');
+      return;
+    }
+    
+    // Check subscription limits for free tier users
+    if (subscription.tier === 'free' && dailyUsage >= 1) {
+      console.log('💰 Free tier limit reached, showing Pro popup');
+      // Show Pro upgrade popup
+      setShowProPopup(true);
+      return;
+    }
+    
+    console.log('🚀 Starting CV analysis...');
     setIsAnalyzing(true);
     try {
       const response = await fetch('/api/cv/analyze', {
@@ -312,10 +459,19 @@ export default function CVReviewer() {
         body: JSON.stringify({ cvText })
       });
       
+      console.log('📡 API Response status:', response.status);
+      
       if (response.ok) {
         const result = await response.json();
+        console.log('✅ CV analysis result received:', result);
         setFeedback(result);
-        setCurrentView('feedback');
+        
+        // Force view change with timeout to prevent navigation interference
+        console.log('🔄 Switching to feedback view...');
+        setTimeout(() => {
+          setCurrentView('feedback');
+          console.log('✅ View switched to feedback');
+        }, 100);
         
         // Award points based on CV analysis
         if (result.points) {
@@ -530,30 +686,96 @@ export default function CVReviewer() {
   };
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      background: 'linear-gradient(135deg, #fef3c7 0%, #fbbf24 50%, #f59e0b 100%)',
-      display: 'flex'
-    }}>
-      <style jsx>{`
+    <>
+      <div style={{
+        minHeight: '100vh',
+        background: 'linear-gradient(135deg, #fef3c7 0%, #fbbf24 50%, #f59e0b 100%)',
+      }}>
+      <style>{`
         .cv-upload-button:hover {
           background-color: #1d4ed8 !important;
         }
         .cv-analyze-button:not(:disabled):hover {
           background-color: #15803d !important;
         }
+        
+        /* Mobile responsive styles */
+        @media (max-width: 767px) {
+          .cv-mobile-nav {
+            position: sticky !important;
+            top: 60px !important; /* Space for mobile navigation */
+            width: 100% !important;
+            height: auto !important;
+            min-height: 60px !important;
+            z-index: 50 !important; /* Lower than mobile nav */
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
+            margin-bottom: 0 !important;
+            padding-bottom: 8px !important;
+          }
+          .cv-mobile-content {
+            margin-left: 0 !important;
+            padding: 16px !important;
+            padding-top: 32px !important; /* Increased space below sticky nav */
+            margin-top: 16px !important;
+          }
+          .cv-mobile-nav-tabs {
+            display: flex !important;
+            overflow-x: auto !important;
+            -webkit-overflow-scrolling: touch !important;
+            scrollbar-width: none !important;
+          }
+          .cv-mobile-nav-tabs::-webkit-scrollbar {
+            display: none !important;
+          }
+          .cv-mobile-tab {
+            min-width: 120px !important;
+            padding: 12px 16px !important;
+            font-size: 13px !important;
+            white-space: nowrap !important;
+          }
+          .cv-mobile-card {
+            padding: 20px !important;
+            margin-bottom: 16px !important;
+          }
+          .cv-mobile-form-grid {
+            grid-template-columns: 1fr !important;
+            gap: 12px !important;
+          }
+          .cv-mobile-input {
+            padding: 12px !important;
+            font-size: 16px !important; /* Prevent zoom on iOS */
+          }
+          .cv-mobile-button {
+            padding: 14px 20px !important;
+            font-size: 16px !important;
+            width: 100% !important;
+            margin-bottom: 8px !important;
+          }
+        }
+        
+        /* Desktop styles */
+        @media (min-width: 768px) {
+          .cv-desktop-sidebar {
+            width: 280px !important;
+            position: fixed !important;
+            height: 100vh !important;
+          }
+          .cv-desktop-content {
+            margin-left: 280px !important;
+            padding: 32px 48px !important;
+          }
+        }
       `}</style>
-      {/* Left Sidebar */}
-      <div style={{
-        width: '280px',
+      
+      {/* Navigation - Responsive */}
+      <div className="cv-mobile-nav cv-desktop-sidebar" style={{
         backgroundColor: '#1f2937',
-        position: 'fixed',
-        height: '100vh',
         padding: '24px',
         display: 'flex',
         flexDirection: 'column',
-        gap: '24px'
+        gap: '16px'
       }}>
+        {/* Header */}
         <div style={{
           display: 'flex',
           alignItems: 'center',
@@ -561,9 +783,9 @@ export default function CVReviewer() {
           borderBottom: '1px solid #374151',
           paddingBottom: '16px'
         }}>
-          <FileText style={{ width: '24px', height: '24px', color: '#fbbf24' }} />
+          <FileText style={{ width: '20px', height: '20px', color: '#fbbf24' }} />
           <h1 style={{
-            fontSize: '20px',
+            fontSize: isMobile ? '16px' : '20px',
             fontWeight: 'bold',
             color: '#ffffff',
             margin: '0'
@@ -572,173 +794,213 @@ export default function CVReviewer() {
           </h1>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          <h3 style={{ fontSize: '12px', fontWeight: '600', color: '#9ca3af', textTransform: 'uppercase', margin: '0' }}>
-            PROCESS
-          </h3>
-          
-          <button
-            onClick={() => setCurrentView('upload')}
+        {/* Navigation Tabs - Mobile horizontal scroll, Desktop vertical */}
+        <div 
+          className="cv-mobile-nav-tabs" 
+          style={{
+            display: isMobile ? 'flex' : 'block',
+            gap: isMobile ? '8px' : '8px',
+            flexDirection: isMobile ? 'row' : 'column'
+          }}
+        >
+          <a
+            href="/cv-reviewer?view=upload"
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '12px',
-              padding: '12px 16px',
+              gap: '8px',
+              padding: isMobile ? '10px 12px' : '12px 16px',
               backgroundColor: currentView === 'upload' ? '#374151' : 'transparent',
               color: currentView === 'upload' ? '#fbbf24' : '#d1d5db',
               border: 'none',
               borderRadius: '8px',
-              cursor: 'pointer',
-              fontSize: '14px',
+              fontSize: isMobile ? '13px' : '14px',
               fontWeight: '500',
-              width: '100%',
               textAlign: 'left',
+              textDecoration: 'none',
               transition: 'all 0.2s ease'
             }}
-            onMouseEnter={(e) => {
-              if (currentView !== 'upload') {
-                e.currentTarget.style.backgroundColor = '#374151';
-                e.currentTarget.style.color = '#ffffff';
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (currentView !== 'upload') {
-                e.currentTarget.style.backgroundColor = 'transparent';
-                e.currentTarget.style.color = '#d1d5db';
-              }
-            }}
           >
-            <Upload style={{ width: '18px', height: '18px' }} />
-            Upload CV
-          </button>
+            <Upload style={{ width: '16px', height: '16px' }} />
+            Upload
+          </a>
+
+
+          {feedback ? (
+            <a
+              href="/cv-reviewer?view=feedback"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: isMobile ? '10px 12px' : '12px 16px',
+                backgroundColor: currentView === 'feedback' ? '#374151' : 'transparent',
+                color: currentView === 'feedback' ? '#fbbf24' : '#d1d5db',
+                border: 'none',
+                borderRadius: '8px',
+                fontSize: isMobile ? '13px' : '14px',
+                fontWeight: '500',
+                textAlign: 'left',
+                textDecoration: 'none',
+                transition: 'all 0.2s ease'
+              }}
+            >
+              <Star style={{ width: '16px', height: '16px' }} />
+              Feedback
+            </a>
+          ) : (
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: isMobile ? '10px 12px' : '12px 16px',
+                backgroundColor: 'transparent',
+                color: '#6b7280',
+                border: 'none',
+                borderRadius: '8px',
+                fontSize: isMobile ? '13px' : '14px',
+                fontWeight: '500',
+                textAlign: 'left',
+                opacity: 0.5
+              }}
+            >
+              <Star style={{ width: '16px', height: '16px' }} />
+              Feedback
+            </div>
+          )}
 
           <button
-            onClick={() => feedback && setCurrentView('feedback')}
+            className="cv-mobile-tab"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              feedback && setCurrentView('edit');
+            }}
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '12px',
-              padding: '12px 16px',
-              backgroundColor: currentView === 'feedback' ? '#374151' : 'transparent',
-              color: currentView === 'feedback' ? '#fbbf24' : feedback ? '#d1d5db' : '#6b7280',
-              border: 'none',
-              borderRadius: '8px',
-              cursor: feedback ? 'pointer' : 'not-allowed',
-              fontSize: '14px',
-              fontWeight: '500',
-              width: '100%',
-              textAlign: 'left',
-              transition: 'all 0.2s ease',
-              opacity: feedback ? 1 : 0.5
-            }}
-            onMouseEnter={(e) => {
-              if (currentView !== 'feedback' && feedback) {
-                e.currentTarget.style.backgroundColor = '#374151';
-                e.currentTarget.style.color = '#ffffff';
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (currentView !== 'feedback' && feedback) {
-                e.currentTarget.style.backgroundColor = 'transparent';
-                e.currentTarget.style.color = '#d1d5db';
-              }
-            }}
-          >
-            <Star style={{ width: '18px', height: '18px' }} />
-            AI Feedback
-          </button>
-
-          <button
-            onClick={() => feedback && setCurrentView('edit')}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '12px',
-              padding: '12px 16px',
+              gap: '8px',
+              padding: isMobile ? '10px 12px' : '12px 16px',
               backgroundColor: currentView === 'edit' ? '#374151' : 'transparent',
               color: currentView === 'edit' ? '#fbbf24' : feedback ? '#d1d5db' : '#6b7280',
               border: 'none',
               borderRadius: '8px',
               cursor: feedback ? 'pointer' : 'not-allowed',
-              fontSize: '14px',
+              fontSize: isMobile ? '13px' : '14px',
               fontWeight: '500',
-              width: '100%',
               textAlign: 'left',
               transition: 'all 0.2s ease',
               opacity: feedback ? 1 : 0.5
             }}
-            onMouseEnter={(e) => {
-              if (currentView !== 'edit' && feedback) {
-                e.currentTarget.style.backgroundColor = '#374151';
-                e.currentTarget.style.color = '#ffffff';
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (currentView !== 'edit' && feedback) {
-                e.currentTarget.style.backgroundColor = 'transparent';
-                e.currentTarget.style.color = '#d1d5db';
-              }
-            }}
           >
-            <Edit3 style={{ width: '18px', height: '18px' }} />
-            Edit & Export
+            <Edit3 style={{ width: '16px', height: '16px' }} />
+            Edit
           </button>
         </div>
 
-        <div style={{ marginTop: 'auto' }}>
-          <button
-            onClick={() => router.push('/dashboard')}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '12px',
-              padding: '12px 16px',
-              backgroundColor: 'transparent',
-              color: '#d1d5db',
-              border: '1px solid #374151',
-              borderRadius: '8px',
-              cursor: 'pointer',
-              fontSize: '14px',
-              fontWeight: '500',
-              width: '100%',
-              textAlign: 'left',
-              transition: 'all 0.2s ease'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = '#374151';
-              e.currentTarget.style.color = '#ffffff';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = 'transparent';
-              e.currentTarget.style.color = '#d1d5db';
-            }}
-          >
-            ← Back to Dashboard
-          </button>
-        </div>
+        {/* Back to Dashboard - Hidden on mobile in nav, shown in content */}
+        {!isMobile && (
+          <div style={{ marginTop: 'auto' }}>
+            <button
+              onClick={async (e) => {
+                console.log('🔥 DASHBOARD BUTTON CLICKED!!! 🔥');
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('🔙 CV Reviewer: Back button clicked on mobile');
+                console.log('🔙 Current URL:', window.location.href);
+                
+                // Force navigation
+                console.log('🔙 Attempting navigation to dashboard...');
+                window.location.href = '/dashboard';
+                
+                // Backup navigation after delay
+                setTimeout(() => {
+                  console.log('🔙 Backup navigation...');
+                  window.location.replace('/dashboard');
+                }, 100);
+              }}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                padding: '12px 16px',
+                backgroundColor: 'transparent',
+                color: '#d1d5db',
+                border: '1px solid #374151',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                fontSize: '14px',
+                fontWeight: '500',
+                width: '100%',
+                textAlign: 'left',
+                transition: 'all 0.2s ease'
+              }}
+            >
+              ← Back to Dashboard
+            </button>
+          </div>
+        )}
       </div>
 
+
+
       {/* Main Content */}
-      <div style={{
-        marginLeft: '280px',
-        flex: 1,
-        padding: '32px 48px'
-      }}>
+      <div className="cv-mobile-content cv-desktop-content">
         {currentView === 'upload' && (
-          <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-            <div style={{ marginBottom: '32px' }}>
+          <div style={{ maxWidth: isMobile ? '100%' : '800px', margin: '0 auto' }}>
+            {/* Mobile Back Button */}
+            {isMobile && (
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  console.log('🔥 MOBILE DASHBOARD BUTTON CLICKED!!! 🔥');
+                  window.location.href = '/dashboard';
+                }}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '16px 20px',
+                  backgroundColor: '#ff0000',
+                  color: '#ffffff',
+                  border: '3px solid #000000',
+                  borderRadius: '12px',
+                  cursor: 'pointer',
+                  fontSize: '18px',
+                  fontWeight: 'bold',
+                  marginBottom: '20px',
+                  marginTop: '20px',
+                  boxShadow: '0 4px 8px rgba(0,0,0,0.3)',
+                  zIndex: '99999',
+                  position: 'relative',
+                  pointerEvents: 'auto'
+                }}
+              >
+                ← Back to Dashboard
+              </button>
+            )}
+            
+            <div style={{ 
+              marginBottom: isMobile ? '20px' : '32px',
+              marginTop: isMobile ? '32px' : '0',
+              paddingTop: isMobile ? '16px' : '0'
+            }}>
               <h1 style={{
-                fontSize: '36px',
+                fontSize: isMobile ? '24px' : '36px',
                 fontWeight: 'bold',
                 color: '#1f2937',
-                margin: '0 0 8px 0'
+                margin: '0 0 8px 0',
+                textAlign: isMobile ? 'center' : 'left'
               }}>
                 CV Analysis & Enhancement
               </h1>
               <p style={{
-                fontSize: '18px',
+                fontSize: isMobile ? '16px' : '18px',
                 color: '#4b5563',
-                margin: '0 0 16px 0'
+                margin: '0 0 16px 0',
+                textAlign: isMobile ? 'center' : 'left'
               }}>
                 Upload your CV to get AI-powered feedback and improvements
               </p>
@@ -777,29 +1039,33 @@ export default function CVReviewer() {
               )}
             </div>
 
-            <div style={{
+            <div className="cv-mobile-card" style={{
               backgroundColor: '#ffffff',
               borderRadius: '16px',
-              padding: '48px',
+              padding: isMobile ? '24px' : '48px',
               boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
               border: '2px solid #e5e7eb',
               textAlign: 'center'
             }}>
               <div style={{
-                width: '80px',
-                height: '80px',
+                width: isMobile ? '60px' : '80px',
+                height: isMobile ? '60px' : '80px',
                 backgroundColor: '#dbeafe',
                 borderRadius: '50%',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                margin: '0 auto 24px auto'
+                margin: '0 auto 20px auto'
               }}>
-                <Upload style={{ width: '40px', height: '40px', color: '#2563eb' }} />
+                <Upload style={{ 
+                  width: isMobile ? '30px' : '40px', 
+                  height: isMobile ? '30px' : '40px', 
+                  color: '#2563eb' 
+                }} />
               </div>
 
               <h3 style={{
-                fontSize: '24px',
+                fontSize: isMobile ? '20px' : '24px',
                 fontWeight: 'bold',
                 color: '#1f2937',
                 margin: '0 0 12px 0'
@@ -808,9 +1074,9 @@ export default function CVReviewer() {
               </h3>
               
               <p style={{
-                fontSize: '16px',
+                fontSize: isMobile ? '14px' : '16px',
                 color: '#6b7280',
-                margin: '0 0 32px 0'
+                margin: '0 0 24px 0'
               }}>
                 Support for PDF and text files. Get detailed feedback in seconds.
               </p>
@@ -822,24 +1088,187 @@ export default function CVReviewer() {
                 onChange={handleFileUpload}
                 style={{ display: 'none' }}
               />
+              
+              {/* MOBILE-ONLY: Completely isolated file upload */}
+              {isMobile && (
+                <div style={{ 
+                  marginBottom: '20px',
+                  position: 'relative',
+                  zIndex: 10000,
+                  isolation: 'isolate'
+                }}>
+                  {/* WARNING MESSAGE */}
+                  <div style={{
+                    marginBottom: '16px',
+                    padding: '12px',
+                    backgroundColor: '#fef2f2',
+                    border: '1px solid #fecaca',
+                    borderRadius: '8px',
+                    textAlign: 'center'
+                  }}>
+                    <p style={{
+                      fontSize: '13px',
+                      color: '#dc2626',
+                      fontWeight: '600',
+                      margin: '0 0 4px 0'
+                    }}>
+                      🚨 Mobile File Upload Issue Detected
+                    </p>
+                    <p style={{
+                      fontSize: '11px',
+                      color: '#7f1d1d',
+                      margin: '0'
+                    }}>
+                      If buttons redirect you, try the isolated file input below
+                    </p>
+                  </div>
+
+                  {/* ISOLATED FILE INPUT - No event bubbling */}
+                  <div style={{
+                    marginBottom: '16px',
+                    padding: '20px',
+                    backgroundColor: '#f0f9ff',
+                    border: '3px solid #3b82f6',
+                    borderRadius: '12px',
+                    textAlign: 'center',
+                    boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)'
+                  }}>
+                    <p style={{
+                      fontSize: '16px',
+                      color: '#1e40af',
+                      marginBottom: '16px',
+                      fontWeight: '700'
+                    }}>
+                      📱 MOBILE FILE UPLOAD (Isolated)
+                    </p>
+                    <div style={{
+                      position: 'relative',
+                      display: 'inline-block',
+                      isolation: 'isolate'
+                    }}>
+                      <input
+                        type="file"
+                        accept=".pdf,.txt,.doc,.docx"
+                        onChange={(e) => {
+                          console.log('🔥 ISOLATED FILE INPUT TRIGGERED!');
+                          const event = e as any;
+                          event.stopPropagation();
+                          event.preventDefault();
+                          handleFileUpload(e);
+                        }}
+                        onClick={(e) => {
+                          console.log('🔥 ISOLATED FILE INPUT CLICKED!');
+                          e.stopPropagation();
+                        }}
+                        style={{
+                          width: '100%',
+                          minWidth: '280px',
+                          padding: '16px',
+                          border: '2px solid #1e40af',
+                          borderRadius: '8px',
+                          backgroundColor: '#ffffff',
+                          fontSize: '16px',
+                          cursor: 'pointer',
+                          fontWeight: '600',
+                          color: '#1e40af',
+                          boxShadow: '0 2px 8px rgba(30, 64, 175, 0.2)'
+                        }}
+                      />
+                    </div>
+                    <p style={{
+                      fontSize: '12px',
+                      color: '#6b7280',
+                      marginTop: '12px',
+                      margin: '12px 0 0 0'
+                    }}>
+                      ✅ This input is isolated from navigation conflicts<br/>
+                      📄 Supports: PDF, Word (.doc/.docx), Text files
+                    </p>
+                  </div>
+
+                  {/* ALTERNATIVE: Text input for testing */}
+                  <div style={{
+                    padding: '16px',
+                    backgroundColor: '#f9fafb',
+                    border: '2px dashed #6b7280',
+                    borderRadius: '8px',
+                    textAlign: 'center'
+                  }}>
+                    <p style={{
+                      fontSize: '14px',
+                      color: '#374151',
+                      marginBottom: '12px',
+                      fontWeight: '600'
+                    }}>
+                      📝 Alternative: Paste CV Text
+                    </p>
+                    <textarea
+                      placeholder="If file upload doesn't work, paste your CV text here..."
+                      onChange={(e) => {
+                        if (e.target.value.trim()) {
+                          setCvText(e.target.value);
+                          setUploadedFile(new File([e.target.value], 'pasted-cv.txt', { type: 'text/plain' }));
+                          console.log('🔥 CV text pasted manually');
+                        }
+                      }}
+                      style={{
+                        width: '100%',
+                        minHeight: '120px',
+                        padding: '12px',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '6px',
+                        fontSize: '14px',
+                        resize: 'vertical',
+                        fontFamily: 'monospace'
+                      }}
+                    />
+                    <p style={{
+                      fontSize: '11px',
+                      color: '#6b7280',
+                      marginTop: '8px',
+                      margin: '8px 0 0 0'
+                    }}>
+                      This bypasses all file upload issues
+                    </p>
+                  </div>
+                </div>
+              )}
 
               <button
-                onClick={() => fileInputRef.current?.click()}
-                className="cv-upload-button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  
+                  console.log('🔥 FILE UPLOAD BUTTON CLICKED ON MOBILE:', isMobile);
+                  console.log('🔥 Current URL:', window.location.href);
+                  console.log('🔥 File input ref:', fileInputRef.current);
+                  
+                  if (fileInputRef.current) {
+                    console.log('🔥 Attempting to trigger file input...');
+                    fileInputRef.current.click();
+                    console.log('🔥 File input clicked!');
+                  } else {
+                    console.error('🔥 File input ref is null!');
+                  }
+                }}
+                className="cv-upload-button cv-mobile-button"
                 style={{
                   backgroundColor: '#2563eb',
                   color: '#ffffff',
                   border: 'none',
                   borderRadius: '12px',
-                  padding: '16px 32px',
+                  padding: isMobile ? '14px 24px' : '16px 32px',
                   fontSize: '16px',
                   fontWeight: '600',
                   cursor: 'pointer',
                   transition: 'all 0.2s ease',
-                  marginBottom: '24px'
+                  marginBottom: '20px',
+                  width: isMobile ? '100%' : 'auto',
+                  position: 'relative',
+                  zIndex: 1000
                 }}
               >
-                Choose File
+                {isMobile ? '📱 Choose File (Mobile)' : 'Choose File'}
               </button>
 
               {uploadedFile && (
@@ -890,24 +1319,39 @@ export default function CVReviewer() {
                     </div>
                   )}
                   
+
                   <button
-                    onClick={handleAnalyze}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
+                      
+                      if (isAnalyzing) {
+                        return;
+                      }
+                      
+                      emergencyAnalyze();
+                    }}
                     disabled={isAnalyzing}
-                    className="cv-analyze-button"
                     style={{
-                      backgroundColor: '#16a34a',
+                      backgroundColor: '#dc2626',
                       color: '#ffffff',
-                      border: 'none',
-                      borderRadius: '8px',
-                      padding: '12px 24px',
-                      fontSize: '14px',
-                      fontWeight: '600',
+                      border: '3px solid #ffffff',
+                      borderRadius: '12px',
+                      padding: isMobile ? '16px 32px' : '14px 28px',
+                      fontSize: isMobile ? '18px' : '16px',
+                      fontWeight: '700',
                       cursor: isAnalyzing ? 'not-allowed' : 'pointer',
                       transition: 'all 0.2s ease',
-                      opacity: isAnalyzing ? 0.7 : 1
+                      opacity: isAnalyzing ? 0.7 : 1,
+                      width: isMobile ? '100%' : 'auto',
+                      position: 'relative',
+                      zIndex: 10000,
+                      boxShadow: '0 4px 12px rgba(220, 38, 38, 0.4)',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.5px'
                     }}
                   >
-                    {isAnalyzing ? 'Analyzing...' : 'Analyze with AI'}
+                    🚨 {isAnalyzing ? 'ANALYZING...' : 'ANALYZE WITH AI'}
                   </button>
                 </div>
               )}
@@ -916,52 +1360,107 @@ export default function CVReviewer() {
         )}
 
         {currentView === 'feedback' && feedback && (
-          <div style={{ maxWidth: '900px', margin: '0 auto' }}>
-            <div style={{ marginBottom: '32px' }}>
+          <div style={{ maxWidth: isMobile ? '100%' : '900px', margin: '0 auto' }}>
+            {/* Mobile Back Button */}
+            {isMobile && (
+              <button
+                onClick={() => {
+                  alert('Dashboard button clicked!');
+                  console.log('🔥 DASHBOARD CLICKED! 🔥');
+                  window.location.href = '/dashboard';
+                }}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '16px 20px',
+                  backgroundColor: '#ff0000',
+                  color: '#ffffff',
+                  border: '3px solid #000000',
+                  borderRadius: '12px',
+                  cursor: 'pointer',
+                  fontSize: '18px',
+                  fontWeight: 'bold',
+                  marginBottom: '20px',
+                  marginTop: '20px',
+                  boxShadow: '0 4px 8px rgba(0,0,0,0.3)',
+                  zIndex: '99999',
+                  position: 'relative',
+                  pointerEvents: 'auto'
+                }}
+              >
+                ← Back to Dashboard
+              </button>
+            )}
+            
+            <div style={{ 
+              marginBottom: isMobile ? '20px' : '32px',
+              marginTop: isMobile ? '32px' : '0',
+              paddingTop: isMobile ? '16px' : '0'
+            }}>
               <h1 style={{
-                fontSize: '36px',
+                fontSize: isMobile ? '24px' : '36px',
                 fontWeight: 'bold',
                 color: '#1f2937',
-                margin: '0 0 8px 0'
+                margin: '0 0 8px 0',
+                textAlign: isMobile ? 'center' : 'left'
               }}>
                 AI Feedback Results
               </h1>
               <p style={{
-                fontSize: '18px',
+                fontSize: isMobile ? '16px' : '18px',
                 color: '#4b5563',
-                margin: '0'
+                margin: '0',
+                textAlign: isMobile ? 'center' : 'left'
               }}>
                 Detailed analysis and improvement suggestions for your CV
               </p>
             </div>
 
             {/* Overall Score */}
-            <div style={{
+            <div className="cv-mobile-card" style={{
               backgroundColor: '#ffffff',
               borderRadius: '16px',
-              padding: '32px',
+              padding: isMobile ? '20px' : '32px',
               boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
               border: '2px solid #e5e7eb',
-              marginBottom: '24px'
+              marginBottom: isMobile ? '16px' : '24px'
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '16px' }}>
+              <div style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: isMobile ? '12px' : '16px', 
+                marginBottom: '16px',
+                flexDirection: isMobile ? 'column' : 'row',
+                textAlign: isMobile ? 'center' : 'left'
+              }}>
                 <div style={{
-                  fontSize: '48px',
+                  fontSize: isMobile ? '36px' : '48px',
                   fontWeight: 'bold',
                   color: feedback.score >= 4 ? '#16a34a' : feedback.score >= 3 ? '#fbbf24' : '#dc2626'
                 }}>
                   {feedback.score}/5
                 </div>
                 <div>
-                  <h3 style={{ fontSize: '20px', fontWeight: 'bold', color: '#1f2937', margin: '0 0 4px 0' }}>
+                  <h3 style={{ 
+                    fontSize: isMobile ? '18px' : '20px', 
+                    fontWeight: 'bold', 
+                    color: '#1f2937', 
+                    margin: '0 0 4px 0' 
+                  }}>
                     Overall Score
                   </h3>
-                  <div style={{ display: 'flex', gap: '4px' }}>
+                  <div style={{ display: 'flex', gap: '4px', justifyContent: isMobile ? 'center' : 'flex-start' }}>
                     {renderStars(feedback.score)}
                   </div>
                 </div>
               </div>
-              <p style={{ fontSize: '16px', color: '#4b5563', margin: '0' }}>
+              <p style={{ 
+                fontSize: isMobile ? '14px' : '16px', 
+                color: '#4b5563', 
+                margin: '0',
+                textAlign: isMobile ? 'center' : 'left'
+              }}>
                 {feedback.overallFeedback}
               </p>
             </div>
@@ -1006,39 +1505,63 @@ export default function CVReviewer() {
             </div>
 
             {/* Strengths and Improvements */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
-              <div style={{
+            <div className="cv-mobile-form-grid" style={{ 
+              display: 'grid', 
+              gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', 
+              gap: isMobile ? '16px' : '24px' 
+            }}>
+              <div className="cv-mobile-card" style={{
                 backgroundColor: '#ffffff',
                 borderRadius: '12px',
-                padding: '24px',
+                padding: isMobile ? '16px' : '24px',
                 boxShadow: '0 2px 4px -1px rgba(0, 0, 0, 0.1)',
                 border: '1px solid #e5e7eb'
               }}>
-                <h4 style={{ fontSize: '18px', fontWeight: 'bold', color: '#16a34a', margin: '0 0 16px 0' }}>
+                <h4 style={{ 
+                  fontSize: isMobile ? '16px' : '18px', 
+                  fontWeight: 'bold', 
+                  color: '#16a34a', 
+                  margin: '0 0 16px 0' 
+                }}>
                   Strengths
                 </h4>
                 <ul style={{ margin: '0', paddingLeft: '16px' }}>
                   {feedback.strengths.map((strength, i) => (
-                    <li key={i} style={{ fontSize: '14px', color: '#4b5563', marginBottom: '8px' }}>
+                    <li key={i} style={{ 
+                      fontSize: isMobile ? '13px' : '14px', 
+                      color: '#4b5563', 
+                      marginBottom: '8px',
+                      lineHeight: '1.4'
+                    }}>
                       {strength}
                     </li>
                   ))}
                 </ul>
               </div>
 
-              <div style={{
+              <div className="cv-mobile-card" style={{
                 backgroundColor: '#ffffff',
                 borderRadius: '12px',
-                padding: '24px',
+                padding: isMobile ? '16px' : '24px',
                 boxShadow: '0 2px 4px -1px rgba(0, 0, 0, 0.1)',
                 border: '1px solid #e5e7eb'
               }}>
-                <h4 style={{ fontSize: '18px', fontWeight: 'bold', color: '#dc2626', margin: '0 0 16px 0' }}>
+                <h4 style={{ 
+                  fontSize: isMobile ? '16px' : '18px', 
+                  fontWeight: 'bold', 
+                  color: '#dc2626', 
+                  margin: '0 0 16px 0' 
+                }}>
                   Areas for Improvement
                 </h4>
                 <ul style={{ margin: '0', paddingLeft: '16px' }}>
                   {feedback.improvements.map((improvement, i) => (
-                    <li key={i} style={{ fontSize: '14px', color: '#4b5563', marginBottom: '8px' }}>
+                    <li key={i} style={{ 
+                      fontSize: isMobile ? '13px' : '14px', 
+                      color: '#4b5563', 
+                      marginBottom: '8px',
+                      lineHeight: '1.4'
+                    }}>
                       {improvement}
                     </li>
                   ))}
@@ -1049,41 +1572,94 @@ export default function CVReviewer() {
         )}
 
         {currentView === 'edit' && (
-          <div style={{ maxWidth: '900px', margin: '0 auto' }}>
-            <div style={{ marginBottom: '32px' }}>
+          <div style={{ maxWidth: isMobile ? '100%' : '900px', margin: '0 auto' }}>
+            {/* Mobile Back Button */}
+            {isMobile && (
+              <button
+                onClick={() => {
+                  alert('Dashboard button clicked!');
+                  console.log('🔥 DASHBOARD CLICKED! 🔥');
+                  window.location.href = '/dashboard';
+                }}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '16px 20px',
+                  backgroundColor: '#ff0000',
+                  color: '#ffffff',
+                  border: '3px solid #000000',
+                  borderRadius: '12px',
+                  cursor: 'pointer',
+                  fontSize: '18px',
+                  fontWeight: 'bold',
+                  marginBottom: '20px',
+                  marginTop: '20px',
+                  boxShadow: '0 4px 8px rgba(0,0,0,0.3)',
+                  zIndex: '99999',
+                  position: 'relative',
+                  pointerEvents: 'auto'
+                }}
+              >
+                ← Back to Dashboard
+              </button>
+            )}
+            
+            <div style={{ 
+              marginBottom: isMobile ? '20px' : '32px',
+              marginTop: isMobile ? '32px' : '0',
+              paddingTop: isMobile ? '16px' : '0'
+            }}>
               <h1 style={{
-                fontSize: '36px',
+                fontSize: isMobile ? '24px' : '36px',
                 fontWeight: 'bold',
                 color: '#1f2937',
-                margin: '0 0 8px 0'
+                margin: '0 0 8px 0',
+                textAlign: isMobile ? 'center' : 'left'
               }}>
                 Edit Your CV
               </h1>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '8px' }}>
+              <div style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: isMobile ? 'center' : 'space-between', 
+                marginTop: '8px' 
+              }}>
                 <p style={{
-                  fontSize: '18px',
+                  fontSize: isMobile ? '16px' : '18px',
                   color: '#4b5563',
-                  margin: '0'
+                  margin: '0',
+                  textAlign: isMobile ? 'center' : 'left'
                 }}>
                   Use our professional template to enhance your CV
                 </p>
-
               </div>
             </div>
 
-            <div style={{
+            <div className="cv-mobile-card" style={{
               backgroundColor: '#ffffff',
               borderRadius: '16px',
-              padding: '40px',
+              padding: isMobile ? '20px' : '40px',
               boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
               border: '2px solid #e5e7eb'
             }}>
               {/* Personal Information Section */}
-              <div style={{ marginBottom: '32px' }}>
-                <h3 style={{ fontSize: '20px', fontWeight: 'bold', color: '#1f2937', marginBottom: '16px', borderBottom: '2px solid #e5e7eb', paddingBottom: '8px' }}>
+              <div style={{ marginBottom: isMobile ? '24px' : '32px' }}>
+                <h3 style={{ 
+                  fontSize: isMobile ? '18px' : '20px', 
+                  fontWeight: 'bold', 
+                  color: '#1f2937', 
+                  marginBottom: '16px', 
+                  borderBottom: '2px solid #e5e7eb', 
+                  paddingBottom: '8px' 
+                }}>
                   Personal Information
                 </h3>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                <div className="cv-mobile-form-grid" style={{ 
+                  display: 'grid', 
+                  gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', 
+                  gap: isMobile ? '12px' : '16px' 
+                }}>
                   <div>
                     <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', color: '#374151', marginBottom: '4px' }}>
                       Name
@@ -1092,7 +1668,15 @@ export default function CVReviewer() {
                       type="text"
                       value={cvTemplate.personalInfo.name}
                       onChange={(e) => setCvTemplate({...cvTemplate, personalInfo: {...cvTemplate.personalInfo, name: e.target.value}})}
-                      style={{ width: '100%', padding: '10px 12px', border: '1px solid #d1d5db', borderRadius: '6px', fontSize: '14px' }}
+                      className="cv-mobile-input"
+                      style={{ 
+                        width: '100%', 
+                        padding: isMobile ? '12px' : '10px 12px', 
+                        border: '1px solid #d1d5db', 
+                        borderRadius: '6px', 
+                        fontSize: isMobile ? '16px' : '14px',
+                        boxSizing: 'border-box'
+                      }}
                     />
                   </div>
                   <div>
@@ -1103,7 +1687,15 @@ export default function CVReviewer() {
                       type="email"
                       value={cvTemplate.personalInfo.email}
                       onChange={(e) => setCvTemplate({...cvTemplate, personalInfo: {...cvTemplate.personalInfo, email: e.target.value}})}
-                      style={{ width: '100%', padding: '10px 12px', border: '1px solid #d1d5db', borderRadius: '6px', fontSize: '14px' }}
+                      className="cv-mobile-input"
+                      style={{ 
+                        width: '100%', 
+                        padding: isMobile ? '12px' : '10px 12px', 
+                        border: '1px solid #d1d5db', 
+                        borderRadius: '6px', 
+                        fontSize: isMobile ? '16px' : '14px',
+                        boxSizing: 'border-box'
+                      }}
                     />
                   </div>
                   <div>
@@ -1114,7 +1706,15 @@ export default function CVReviewer() {
                       type="text"
                       value={cvTemplate.personalInfo.address}
                       onChange={(e) => setCvTemplate({...cvTemplate, personalInfo: {...cvTemplate.personalInfo, address: e.target.value}})}
-                      style={{ width: '100%', padding: '10px 12px', border: '1px solid #d1d5db', borderRadius: '6px', fontSize: '14px' }}
+                      className="cv-mobile-input"
+                      style={{ 
+                        width: '100%', 
+                        padding: isMobile ? '12px' : '10px 12px', 
+                        border: '1px solid #d1d5db', 
+                        borderRadius: '6px', 
+                        fontSize: isMobile ? '16px' : '14px',
+                        boxSizing: 'border-box'
+                      }}
                     />
                   </div>
                   <div>
@@ -1125,7 +1725,15 @@ export default function CVReviewer() {
                       type="text"
                       value={cvTemplate.personalInfo.mobile}
                       onChange={(e) => setCvTemplate({...cvTemplate, personalInfo: {...cvTemplate.personalInfo, mobile: e.target.value}})}
-                      style={{ width: '100%', padding: '10px 12px', border: '1px solid #d1d5db', borderRadius: '6px', fontSize: '14px' }}
+                      className="cv-mobile-input"
+                      style={{ 
+                        width: '100%', 
+                        padding: isMobile ? '12px' : '10px 12px', 
+                        border: '1px solid #d1d5db', 
+                        borderRadius: '6px', 
+                        fontSize: isMobile ? '16px' : '14px',
+                        boxSizing: 'border-box'
+                      }}
                     />
                   </div>
                 </div>
@@ -1551,19 +2159,27 @@ export default function CVReviewer() {
                 </div>
               </div>
               
-              <div style={{ display: 'flex', gap: '16px', paddingTop: '24px', borderTop: '1px solid #e5e7eb' }}>
+              <div style={{ 
+                display: 'flex', 
+                gap: isMobile ? '12px' : '16px', 
+                paddingTop: '24px', 
+                borderTop: '1px solid #e5e7eb',
+                flexDirection: isMobile ? 'column' : 'row'
+              }}>
                 <button
                   onClick={() => setCurrentView('feedback')}
+                  className="cv-mobile-button"
                   style={{
                     backgroundColor: '#6b7280',
                     color: '#ffffff',
                     border: 'none',
                     borderRadius: '8px',
-                    padding: '12px 24px',
-                    fontSize: '14px',
+                    padding: isMobile ? '14px 24px' : '12px 24px',
+                    fontSize: isMobile ? '16px' : '14px',
                     fontWeight: '600',
                     cursor: 'pointer',
-                    transition: 'all 0.2s ease'
+                    transition: 'all 0.2s ease',
+                    width: isMobile ? '100%' : 'auto'
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.backgroundColor = '#4b5563';
@@ -1577,19 +2193,22 @@ export default function CVReviewer() {
 
                 <button
                   onClick={handleExport}
+                  className="cv-mobile-button"
                   style={{
                     display: 'flex',
                     alignItems: 'center',
+                    justifyContent: 'center',
                     gap: '8px',
                     backgroundColor: '#16a34a',
                     color: '#ffffff',
                     border: 'none',
                     borderRadius: '8px',
-                    padding: '12px 24px',
-                    fontSize: '14px',
+                    padding: isMobile ? '14px 24px' : '12px 24px',
+                    fontSize: isMobile ? '16px' : '14px',
                     fontWeight: '600',
                     cursor: 'pointer',
-                    transition: 'all 0.2s ease'
+                    transition: 'all 0.2s ease',
+                    width: isMobile ? '100%' : 'auto'
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.backgroundColor = '#15803d';
@@ -1607,6 +2226,160 @@ export default function CVReviewer() {
           </div>
         )}
       </div>
+
+      {/* Available with Talentix Pro Popup */}
+      {showProPopup && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 9999,
+          backdropFilter: 'blur(4px)'
+        }}>
+          <div style={{
+            background: 'linear-gradient(135deg, #fde047 0%, #facc15 50%, #eab308 100%)',
+            borderRadius: '24px',
+            padding: isMobile ? '24px' : '32px',
+            maxWidth: '420px',
+            width: '95%',
+            textAlign: 'center',
+            boxShadow: '0 25px 50px rgba(0,0,0,0.25), 0 10px 25px rgba(245, 158, 11, 0.3)',
+            position: 'relative',
+            fontFamily: 'Fredoka, sans-serif',
+            border: '2px solid rgba(255, 255, 255, 0.2)',
+            backdropFilter: 'blur(10px)'
+          }}>
+            {/* Close Button */}
+            <button
+              onClick={() => setShowProPopup(false)}
+              style={{
+                position: 'absolute',
+                top: '16px',
+                right: '16px',
+                background: 'rgba(255,255,255,0.2)',
+                border: 'none',
+                borderRadius: '50%',
+                width: '32px',
+                height: '32px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                fontSize: '18px',
+                color: '#374151',
+                fontWeight: 'bold'
+              }}
+            >
+              ×
+            </button>
+
+            {/* Content */}
+            <div style={{ fontSize: '4rem', marginBottom: '16px' }}>📄</div>
+            
+            <h2 style={{
+              fontSize: isMobile ? '1.5rem' : '1.8rem',
+              fontWeight: 'bold',
+              color: '#111827',
+              marginBottom: '12px',
+              lineHeight: 1.2
+            }}>
+              Available with Talentix Pro! ✨
+            </h2>
+            
+            <p style={{
+              fontSize: isMobile ? '1rem' : '1.1rem',
+              color: '#374151',
+              marginBottom: '24px',
+              lineHeight: 1.6
+            }}>
+              You've reached your daily limit of <strong>1 CV review</strong>. 
+              Upgrade to Talentix Pro for unlimited CV reviews and more!
+            </p>
+
+            {/* Action Buttons */}
+            <div style={{ display: 'flex', gap: isMobile ? '8px' : '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
+              <button
+                onClick={() => {
+                  setShowProPopup(false);
+                  window.dispatchEvent(new CustomEvent('openPricingModal'));
+                }}
+                style={{
+                  background: 'linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%)',
+                  color: 'white',
+                  padding: isMobile ? '12px 20px' : '14px 24px',
+                  borderRadius: '16px',
+                  border: 'none',
+                  fontWeight: 'bold',
+                  fontSize: isMobile ? '0.9rem' : '1rem',
+                  cursor: 'pointer',
+                  boxShadow: '0 8px 25px rgba(139, 92, 246, 0.3)',
+                  transition: 'all 0.3s ease',
+                  fontFamily: 'Fredoka, sans-serif',
+                  minHeight: '44px'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                  e.currentTarget.style.boxShadow = '0 12px 35px rgba(139, 92, 246, 0.4)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = '0 8px 25px rgba(139, 92, 246, 0.3)';
+                }}
+              >
+                🚀 Upgrade to Pro - £3.99/month
+              </button>
+              
+              <button
+                onClick={() => setShowProPopup(false)}
+                style={{
+                  background: 'rgba(255,255,255,0.15)',
+                  color: '#374151',
+                  padding: isMobile ? '12px 20px' : '14px 24px',
+                  borderRadius: '16px',
+                  border: '2px solid rgba(255, 255, 255, 0.3)',
+                  fontWeight: 'bold',
+                  fontSize: isMobile ? '0.9rem' : '1rem',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  fontFamily: 'Fredoka, sans-serif',
+                  minHeight: '44px',
+                  backdropFilter: 'blur(10px)'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'rgba(255,255,255,0.25)';
+                  e.currentTarget.style.transform = 'translateY(-1px)';
+                  e.currentTarget.style.boxShadow = '0 4px 15px rgba(0,0,0,0.1)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'rgba(255,255,255,0.15)';
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = 'none';
+                }}
+              >
+                Maybe Later
+              </button>
+            </div>
+
+            {/* Small print */}
+            <p style={{
+              fontSize: '0.875rem',
+              color: '#6B7280',
+              marginTop: '16px',
+              marginBottom: 0
+            }}>
+              Come back tomorrow for another free review!
+            </p>
+          </div>
+        </div>
+      )}
+
     </div>
+    </>
   );
 }

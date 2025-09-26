@@ -1,10 +1,15 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { Bell, Search, User, Settings, MapPin, Clock, Star, ExternalLink, FileText, Users, Trophy } from 'lucide-react';
+import { Bell, Search, User, Settings, MapPin, Clock, Star, ExternalLink, FileText, Users, Trophy, Camera } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { usePoints } from '../../contexts/PointsContext';
+import { useSubscription } from '../../contexts/SubscriptionContext';
+import { useDeviceDetection } from '../../hooks/useDeviceDetection';
+import DashboardMobile from '../../components/DashboardMobile';
+import ClientOnly from '../../components/ClientOnly';
+import ProBanner from '../../components/ProBanner';
 import EmojiPickerModal from '../../components/EmojiPickerModal';
 import NameEditModal from '../../components/NameEditModal';
 
@@ -56,6 +61,8 @@ export default function Dashboard() {
   const { user, session, loading, signOut, updateUser, refreshUser } = useAuth();
   const router = useRouter();
   const { points: userPoints, setPoints } = usePoints(); // Use shared points context
+  const { subscription } = useSubscription();
+  const { isMobile } = useDeviceDetection();
 
   // All state hooks must be at the top
   const [greeting, setGreeting] = useState('');
@@ -64,6 +71,9 @@ export default function Dashboard() {
   const [showNameEdit, setShowNameEdit] = useState(false);
   const [displayEmoji, setDisplayEmoji] = useState<string>(user?.emoji || '😊');
   const [dailyTip, setDailyTip] = useState<string>('');
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  // Removed mobile conditional rendering to prevent hydration issues
 
   // Event handler functions to avoid inline handlers
   const handleEmojiPickerOpen = () => setShowEmojiPicker(true);
@@ -72,6 +82,7 @@ export default function Dashboard() {
   const handleSearchNavigation = () => router.push('/search');
   const handleCVReviewerNavigation = () => router.push('/cv-reviewer');
   const handleInterviewPrepNavigation = () => router.push('/interview-prep');
+  const handleVideoInterviewNavigation = () => router.push('/video-interview');
   const handleSettingsNavigation = () => router.push('/settings');
   const handleCareerGuidanceNavigation = () => router.push('/career-guidance');
   const handleOurStoryNavigation = () => router.push('/our-story');
@@ -500,6 +511,54 @@ export default function Dashboard() {
     );
   }
 
+  // Render mobile version if on mobile device
+  if (isMobile) {
+    return (
+      <ClientOnly fallback={
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-400 mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading...</p>
+          </div>
+        </div>
+      }>
+        <DashboardMobile
+          user={user}
+          greeting={greeting}
+          userName={userName}
+          displayEmoji={displayEmoji}
+          dailyTip={dailyTip}
+          userPoints={userPoints}
+          getCurrentLevel={getCurrentLevel}
+          getNextLevel={getNextLevel}
+          levels={levels}
+          handleEmojiPickerOpen={handleEmojiPickerOpen}
+          handleNameEditOpen={handleNameEditOpen}
+          handlePointsNavigation={handlePointsNavigation}
+          handleScrollLeft={handleScrollLeft}
+          handleScrollRight={handleScrollRight}
+          scrollContainerRef={scrollContainerRef}
+        />
+        
+        {/* Mobile Modals */}
+        <EmojiPickerModal
+          isOpen={showEmojiPicker}
+          onClose={() => setShowEmojiPicker(false)}
+          onEmojiSelect={handleEmojiSelect}
+          currentEmoji={displayEmoji}
+        />
+
+        <NameEditModal
+          isOpen={showNameEdit}
+          onClose={() => setShowNameEdit(false)}
+          onNameSave={handleNameSave}
+          currentName={userName}
+        />
+      </ClientOnly>
+    );
+  }
+
+  // Desktop version
   return (
     <div className="min-h-screen bg-gray-50 pt-4 dashboard-container" style={{ scrollBehavior: 'smooth' }}>
       <style jsx global>{`
@@ -678,17 +737,97 @@ export default function Dashboard() {
                 </form>
               </div>
               
-              <button className="relative p-3 text-gray-400 hover:text-gray-500">
-                <Bell className="w-6 h-6" />
-                <span className="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-400 ring-2 ring-white" />
+              {/* Debug Subscription Toggle */}
+              <button
+                onClick={() => {
+                  // Toggle between free and pro
+                  const newTier = subscription?.tier === 'free' ? 'pro' : 'free';
+                  localStorage.setItem('debug_subscription_tier', newTier);
+                  window.location.reload();
+                }}
+                className="px-3 py-2 bg-purple-500 hover:bg-purple-600 text-white text-xs font-bold rounded-lg transition-all duration-200 hover:scale-105"
+                style={{ fontFamily: 'Fredoka, sans-serif' }}
+              >
+                Debug: {subscription?.tier === 'free' ? 'Switch to Pro' : 'Switch to Free'}
               </button>
-              <div className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-yellow-400 rounded-full flex items-center justify-center">
-                  <User className="w-4 h-4 text-white" />
+
+              {/* Playful Profile Section */}
+              <div className="flex items-center space-x-3 group cursor-pointer">
+                <div 
+                  className="relative transition-all duration-300 group-hover:scale-110 group-hover:rotate-6"
+                  style={{
+                    width: '44px',
+                    height: '44px',
+                    background: 'linear-gradient(135deg, #8b5cf6 0%, #a855f7 50%, #c084fc 100%)',
+                    borderRadius: '16px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    boxShadow: '0 4px 15px rgba(139, 92, 246, 0.3)',
+                    border: '3px solid rgba(255, 255, 255, 0.8)',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.boxShadow = '0 8px 25px rgba(139, 92, 246, 0.5)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.boxShadow = '0 4px 15px rgba(139, 92, 246, 0.3)';
+                  }}
+                >
+                  <span style={{ fontSize: '20px' }}>👤</span>
                 </div>
-                <span className="text-sm font-medium text-gray-700">
-                  {userName}
-                </span>
+                <div className="flex items-center space-x-2">
+                  <span 
+                    className="transition-all duration-300 group-hover:scale-105"
+                    style={{
+                      fontSize: '16px',
+                      fontWeight: '800',
+                      fontFamily: 'Fredoka, sans-serif',
+                      background: 'linear-gradient(135deg, #1f2937, #4b5563, #6b7280)',
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent',
+                      backgroundClip: 'text',
+                      textShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+                    }}
+                  >
+                    {userName}
+                  </span>
+                  {/* Pro Badge - Show if user has Pro subscription */}
+                  {subscription?.tier === 'pro' && (
+                    <div 
+                      className="relative transition-all duration-300 hover:scale-110 animate-pulse"
+                      style={{
+                        background: 'linear-gradient(135deg, #f59e0b 0%, #f97316 50%, #ea580c 100%)',
+                        borderRadius: '12px',
+                        padding: '4px 10px',
+                        boxShadow: '0 3px 12px rgba(245, 158, 11, 0.4)',
+                        border: '2px solid rgba(255, 255, 255, 0.9)',
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.transform = 'scale(1.1) translateY(-1px)';
+                        e.currentTarget.style.boxShadow = '0 6px 20px rgba(245, 158, 11, 0.6)';
+                        e.currentTarget.style.background = 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #f97316 100%)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = 'scale(1)';
+                        e.currentTarget.style.boxShadow = '0 3px 12px rgba(245, 158, 11, 0.4)';
+                        e.currentTarget.style.background = 'linear-gradient(135deg, #f59e0b 0%, #f97316 50%, #ea580c 100%)';
+                      }}
+                    >
+                      <span 
+                        style={{
+                          fontSize: '11px',
+                          fontWeight: '900',
+                          fontFamily: 'Fredoka, sans-serif',
+                          color: 'white',
+                          textShadow: '0 1px 2px rgba(0, 0, 0, 0.3)',
+                          letterSpacing: '0.5px',
+                        }}
+                      >
+                        PRO
+                      </span>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -928,11 +1067,12 @@ export default function Dashboard() {
         background: 'linear-gradient(135deg, #fef3c7 0%, #fbbf24 50%, #f59e0b 100%)', 
         padding: '40px 0' 
       }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 48px' }}>
+        <div className="responsive-container" style={{ maxWidth: '1200px', margin: '0 auto' }}>
           <div style={{ position: 'relative' }}>
-            {/* Navigation Arrows */}
+            {/* Navigation Arrows - Desktop only */}
             <button 
               onClick={handleScrollLeft}
+              className="desktop-show"
               style={{
                 position: 'absolute',
                 left: '-20px',
@@ -951,13 +1091,13 @@ export default function Dashboard() {
                 boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
                 transition: 'all 0.2s ease'
               }}
-              className="dashboard-input"
             >
               <span style={{ fontSize: '20px', color: '#374151' }}>←</span>
             </button>
 
             <button 
               onClick={handleScrollRight}
+              className="desktop-show"
               style={{
                 position: 'absolute',
                 right: '-20px',
@@ -976,24 +1116,23 @@ export default function Dashboard() {
                 boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
                 transition: 'all 0.2s ease'
               }}
-              className="dashboard-input"
             >
               <span style={{ fontSize: '20px', color: '#374151' }}>→</span>
             </button>
 
-            {/* Horizontal scroll container */}
+            {/* Feature cards container - responsive */}
             <div 
               id="feature-cards-container"
+              className="feature-cards-responsive"
               style={{ 
                 display: 'flex', 
                 overflowX: 'auto', 
-                gap: '24px', 
+                gap: '16px', 
                 paddingBottom: '16px',
                 scrollSnapType: 'x mandatory',
                 msOverflowStyle: 'none',
                 scrollbarWidth: 'none'
               }}
-              className="scrollbar-hide"
             >
               
               {/* Job Search Feature Card */}
@@ -1059,9 +1198,11 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              {/* CV Reviewer Feature Card */}
-              <div 
-                onClick={handleCVReviewerNavigation}
+              {/* CV Reviewer Feature Card with Pro Banner */}
+              <div style={{ position: 'relative', flexShrink: 0 }}>
+                <ProBanner />
+                <div 
+                  onClick={handleCVReviewerNavigation}
                 style={{
                   flexShrink: 0,
                   width: '350px',
@@ -1119,6 +1260,7 @@ export default function Dashboard() {
                   <span style={{ fontSize: '14px', color: '#ffffff', fontWeight: '600' }}>
                     Review Now →
                   </span>
+                </div>
                 </div>
               </div>
 
@@ -1182,6 +1324,72 @@ export default function Dashboard() {
                   <span style={{ fontSize: '14px', color: '#ffffff', fontWeight: '600' }}>
                     Start Now →
                   </span>
+                </div>
+              </div>
+
+              {/* Video Interview Feature Card with Pro Banner */}
+              <div style={{ position: 'relative', flexShrink: 0 }}>
+                <ProBanner />
+                <div 
+                  onClick={handleVideoInterviewNavigation}
+                style={{
+                  flexShrink: 0,
+                  width: '350px',
+                  background: 'linear-gradient(135deg, #fce7f3 0%, #ec4899 100%)',
+                  borderRadius: '20px',
+                  padding: '32px',
+                  boxShadow: '0 8px 25px rgba(236, 72, 153, 0.3)',
+                  border: '3px solid #ec4899',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  scrollSnapAlign: 'start',
+                  position: 'relative',
+                  overflow: 'hidden'
+                }}
+                className="dashboard-feature-card video-interview"
+              >
+                <div style={{ position: 'absolute', top: '10px', right: '10px', fontSize: '2rem', opacity: '0.3' }}>🎬</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '24px' }}>
+                  <div style={{
+                    width: '64px',
+                    height: '64px',
+                    borderRadius: '16px',
+                    backgroundColor: '#ffffff',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)'
+                  }}>
+                    <Camera style={{ width: '32px', height: '32px', color: '#ec4899' }} />
+                  </div>
+                  <div>
+                    <h3 style={{ fontSize: '24px', fontWeight: 'bold', color: '#ffffff', margin: '0 0 4px 0' }}>
+                      Video Interview
+                    </h3>
+                    <p style={{ fontSize: '14px', color: '#fce7f3', margin: '0' }}>
+                      🎥 Practice on camera
+                    </p>
+                  </div>
+                </div>
+                <p style={{ fontSize: '16px', color: '#ffffff', lineHeight: '1.5', marginBottom: '24px' }}>
+                  Practice video interviews with AI questions and get comfortable being on camera! 📹
+                </p>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{
+                    padding: '8px 16px',
+                    backgroundColor: '#ffffff',
+                    color: '#ec4899',
+                    fontSize: '12px',
+                    fontWeight: '700',
+                    borderRadius: '20px',
+                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
+                  }}>
+                    📹 Record & Review
+                  </span>
+                  <span style={{ fontSize: '14px', color: '#ffffff', fontWeight: '600' }}>
+                    Practice Now →
+                  </span>
+                </div>
                 </div>
               </div>
 

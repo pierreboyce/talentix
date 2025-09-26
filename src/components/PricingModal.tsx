@@ -2,6 +2,9 @@
 
 import React, { useState } from 'react';
 import { useSubscription } from '@/contexts/SubscriptionContext';
+import { useAuth } from '../contexts/AuthContext';
+import { useToast } from './Toast';
+import { LoadingButton } from './LoadingSpinner';
 
 interface PricingTier {
   id: string;
@@ -87,50 +90,65 @@ interface PricingModalProps {
 
 export default function PricingModal({ isOpen, onClose }: PricingModalProps) {
   const { subscription } = useSubscription();
+  const { user } = useAuth();
+  const { showToast } = useToast();
   const [isYearly, setIsYearly] = useState(false);
+  const [loadingTier, setLoadingTier] = useState<string | null>(null);
 
   if (!isOpen) return null;
 
   const handleSubscribe = async (tier: PricingTier) => {
     if (tier.id === 'free') {
-      console.log('Free tier selected');
+      showToast('You\'re already on the free tier!', 'info');
       return;
     }
 
     if (tier.id === 'enterprise') {
-      console.log('Enterprise contact requested');
+      showToast('Please contact us for Enterprise pricing', 'info');
       return;
     }
 
-    console.log(`Subscribing to ${tier.name}`);
+    if (!user?.email) {
+      showToast('Please sign in to subscribe', 'warning');
+      return;
+    }
+
+    setLoadingTier(tier.id);
     
     try {
       const priceId = isYearly ? tier.yearlyPriceId : tier.priceId;
-      console.log('Using priceId:', priceId);
       
+      if (!priceId) {
+        throw new Error('Price ID not configured for this tier');
+      }
+
       const response = await fetch('/api/subscriptions/create-checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ priceId })
+        body: JSON.stringify({ priceId, userEmail: user.email })
       });
       
-      console.log('Response status:', response.status);
-      
-      if (response.ok) {
-        const data = await response.json();
-        console.log('Response data:', data);
-        if (data.url) {
-          console.log('Redirecting to:', data.url);
-          window.location.href = data.url;
-        } else {
-          console.error('No URL in response');
-        }
-      } else {
+      if (!response.ok) {
         const errorData = await response.json();
-        console.error('API error:', errorData);
+        throw new Error(errorData.error || 'Failed to create checkout session');
+      }
+
+      const data = await response.json();
+      
+      if (data.url) {
+        showToast('Redirecting to payment...', 'success');
+        window.location.href = data.url;
+      } else {
+        throw new Error('No checkout URL received');
       }
     } catch (error) {
       console.error('Subscription error:', error);
+      showToast(
+        error instanceof Error ? error.message : 'Failed to start subscription process',
+        'error'
+      );
+    } finally {
+      setLoadingTier(null);
     }
   };
 
@@ -255,12 +273,15 @@ export default function PricingModal({ isOpen, onClose }: PricingModalProps) {
         style={{
           position: 'fixed',
           inset: 0,
-          background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(59, 130, 246, 0.1) 30%, rgba(6, 214, 160, 0.1) 60%, rgba(251, 191, 36, 0.1) 100%)',
-          backdropFilter: 'blur(12px)',
+          width: '100vw',
+          height: '100vh',
+          background: 'rgba(0, 0, 0, 0.3)',
+          backdropFilter: 'blur(12px) saturate(0.8)',
+          WebkitBackdropFilter: 'blur(12px) saturate(0.8)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          zIndex: 1000,
+          zIndex: 9999999,
           padding: '20px'
         }}
         onClick={onClose}
@@ -275,6 +296,7 @@ export default function PricingModal({ isOpen, onClose }: PricingModalProps) {
             maxHeight: '95vh',
             overflowY: 'auto',
             position: 'relative',
+            zIndex: 10000000,
             boxShadow: '0 50px 100px -20px rgba(0, 0, 0, 0.25)',
             border: '2px solid rgba(255, 255, 255, 0.3)'
           }}
@@ -575,8 +597,10 @@ export default function PricingModal({ isOpen, onClose }: PricingModalProps) {
                 </ul>
 
                 {/* CTA Button */}
-                <button
+                <LoadingButton
                   onClick={() => handleSubscribe(tier)}
+                  isLoading={loadingTier === tier.id}
+                  loadingText="Processing..."
                   className={tier.id === 'free' ? 'fun-button' : tier.id === 'pro' ? 'pro-button' : 'enterprise-button'}
                   style={{
                     width: '100%',
@@ -592,7 +616,7 @@ export default function PricingModal({ isOpen, onClose }: PricingModalProps) {
                   }}
                 >
                   {tier.buttonText}
-                </button>
+                </LoadingButton>
               </div>
             ))}
           </div>

@@ -23,6 +23,20 @@ export async function GET(request: NextRequest) {
     }
 
     // Exchange code for access token
+    let baseUrl = process.env.NEXTAUTH_URL || request.nextUrl.origin;
+    
+    // FORCE production URL if we detect production domain
+    if (request.nextUrl.hostname === 'talentix.co.uk' || request.nextUrl.hostname === 'www.talentix.co.uk') {
+      baseUrl = 'https://talentix.co.uk';
+      console.log(`🔗 FORCED production baseUrl for token exchange:`, baseUrl);
+    }
+    
+    const redirectUri = `${baseUrl}/api/auth/callback/google`;
+    console.log(`🔗 Token exchange redirect_uri:`, redirectUri);
+    console.log(`🔗 NEXTAUTH_URL:`, process.env.NEXTAUTH_URL);
+    console.log(`🔗 request.nextUrl.origin:`, request.nextUrl.origin);
+    console.log(`🔗 request.nextUrl.hostname:`, request.nextUrl.hostname);
+    
     const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
       method: 'POST',
       headers: {
@@ -33,7 +47,7 @@ export async function GET(request: NextRequest) {
         client_secret: process.env.GOOGLE_CLIENT_SECRET!,
         code,
         grant_type: 'authorization_code',
-        redirect_uri: `${process.env.NEXTAUTH_URL || request.nextUrl.origin}/api/auth/callback/google`,
+        redirect_uri: redirectUri,
       }),
     });
 

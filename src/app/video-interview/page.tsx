@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../contexts/AuthContext';
 import { usePoints } from '../../contexts/PointsContext';
@@ -120,28 +120,6 @@ export default function VideoInterviewPage(): React.ReactElement {
     }
   }, [user, loading, router]);
 
-  // Timer effect
-  useEffect(() => {
-    if (timeLeft > 0 && (stage === 'planning' || stage === 'recording')) {
-      timerRef.current = setTimeout(() => {
-        setTimeLeft(timeLeft - 1);
-      }, 1000);
-      } else if (timeLeft === 0) {
-        if (stage === 'planning') {
-          setStage('recording');
-          setTimeLeft(30);
-          startRecording();
-        } else if (stage === 'recording' && isRecording) {
-          stopRecording();
-        }
-      }
-    
-    return () => {
-      if (timerRef.current) {
-        clearTimeout(timerRef.current);
-      }
-    };
-  }, [timeLeft, stage, isRecording]);
 
   // Handle video source switching
   useEffect(() => {
@@ -161,15 +139,28 @@ export default function VideoInterviewPage(): React.ReactElement {
       };
     } else if ((stage === 'planning' || stage === 'recording') && streamRef.current && videoRef.current) {
       console.log('🎬 Switching to live camera mode');
+      console.log('🎬 Stream active:', streamRef.current.active);
+      console.log('🎬 Video tracks:', streamRef.current.getVideoTracks().length);
+      console.log('🎬 Audio tracks:', streamRef.current.getAudioTracks().length);
+      
       // Clear any existing src
       videoRef.current.src = '';
       // Set the live stream
       videoRef.current.srcObject = streamRef.current;
+      
+      // Try to play the video
+      videoRef.current.play().then(() => {
+        console.log('✅ Live video preview started');
+      }).catch((playError) => {
+        console.warn('⚠️ Live video preview autoplay failed:', playError.message);
+      });
+    } else if ((stage === 'planning' || stage === 'recording') && !streamRef.current) {
+      console.error('❌ No stream available for live camera mode');
     }
   }, [stage, recordedBlob]);
 
-  const getRandomQuestion = () => {
-    // Check subscription limits for free tier users before getting new question (user-specific)
+  const checkCanUseVideoInterview = () => {
+    // Check subscription limits for free tier users (user-specific)
     if (!user?.email) {
       console.error('User email not available for usage tracking');
       return false;
@@ -182,7 +173,17 @@ export default function VideoInterviewPage(): React.ReactElement {
       return false;
     }
     
-    // Track usage in localStorage (user-specific)
+    return true;
+  };
+
+  const getRandomQuestionAndTrackUsage = () => {
+    // Only increment usage when user actually gets a question
+    if (!user?.email) {
+      console.error('User email not available for usage tracking');
+      return;
+    }
+    
+    const currentUsage = parseInt(localStorage.getItem(`video_interview_questions_used_${user.email}`) || '0');
     const newUsage = currentUsage + 1;
     localStorage.setItem(`video_interview_questions_used_${user.email}`, newUsage.toString());
     setQuestionsUsed(newUsage);
@@ -192,15 +193,17 @@ export default function VideoInterviewPage(): React.ReactElement {
     
     const randomIndex = Math.floor(Math.random() * interviewQuestions.length);
     setCurrentQuestion(interviewQuestions[randomIndex]);
-    return true;
   };
 
   const startPractice = async () => {
-    // Use getRandomQuestion which now includes paywall check
-    const canProceed = getRandomQuestion();
+    // Check if user can use video interview feature
+    const canProceed = checkCanUseVideoInterview();
     if (!canProceed) {
       return; // Paywall triggered, stop here
     }
+
+    // Get random question and track usage
+    getRandomQuestionAndTrackUsage();
     
     setStage('planning');
     setTimeLeft(60);
@@ -236,6 +239,19 @@ export default function VideoInterviewPage(): React.ReactElement {
       
       streamRef.current = stream;
       
+      // Immediately connect video element to stream
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        console.log('📹 Video element connected to stream immediately');
+        
+        // Try to play the video to ensure it's working
+        videoRef.current.play().then(() => {
+          console.log('✅ Video preview started successfully');
+        }).catch((playError) => {
+          console.warn('⚠️ Video preview autoplay failed (this is normal):', playError.message);
+        });
+      }
+      
       console.log('📹 Camera initialized successfully');
     } catch (error) {
       console.error('Error accessing camera:', error);
@@ -256,10 +272,11 @@ export default function VideoInterviewPage(): React.ReactElement {
     }
   };
 
-  const startRecording = async () => {
+  const startRecording = useCallback(async () => {
     try {
       if (!streamRef.current) {
         console.error('No camera stream available');
+        alert('Camera not available. Please ensure camera access is granted and try again.');
         return;
       }
 
@@ -274,6 +291,14 @@ export default function VideoInterviewPage(): React.ReactElement {
       }
       if (videoTracks.length === 0) {
         console.warn('⚠️ No video tracks found in stream');
+        alert('Camera not available. Please ensure camera access is granted and try again.');
+        return;
+      }
+
+      // Ensure video element is connected to stream
+      if (videoRef.current && streamRef.current) {
+        videoRef.current.srcObject = streamRef.current;
+        console.log('📹 Video element connected to stream');
       }
 
       // Configure MediaRecorder with compression for smaller file size
@@ -321,16 +346,49 @@ export default function VideoInterviewPage(): React.ReactElement {
       console.log('🎬 Recording started with options:', options);
     } catch (error) {
       console.error('Error starting recording:', error);
-      alert('Unable to start recording. Please try again.');
+      alert('Unable to start recording. Please check your camera permissions and try again.');
     }
-  };
+  }, []);
 
-  const stopRecording = () => {
+  const stopRecording = useCallback(() => {
+    console.log('🛑 Stopping recording...');
     if (mediaRecorderRef.current && isRecording) {
-      mediaRecorderRef.current.stop();
-      setIsRecording(false);
+      console.log('🛑 MediaRecorder state:', mediaRecorderRef.current.state);
+      try {
+        mediaRecorderRef.current.stop();
+        setIsRecording(false);
+        console.log('✅ Recording stopped successfully');
+      } catch (error) {
+        console.error('❌ Error stopping recording:', error);
+        setIsRecording(false); // Reset state even if stop fails
+      }
+    } else {
+      console.log('⚠️ No active recording to stop');
     }
-  };
+  }, [isRecording]);
+
+  // Timer effect - moved after function declarations to avoid hoisting issues
+  useEffect(() => {
+    if (timeLeft > 0 && (stage === 'planning' || stage === 'recording')) {
+      timerRef.current = setTimeout(() => {
+        setTimeLeft(timeLeft - 1);
+      }, 1000);
+      } else if (timeLeft === 0) {
+        if (stage === 'planning') {
+          setStage('recording');
+          setTimeLeft(30);
+          startRecording();
+        } else if (stage === 'recording' && isRecording) {
+          stopRecording();
+        }
+      }
+    
+    return () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+      }
+    };
+  }, [timeLeft, stage, isRecording, startRecording, stopRecording]);
 
   const submitForFeedback = async () => {
     if (!recordedBlob) {
@@ -702,7 +760,11 @@ export default function VideoInterviewPage(): React.ReactElement {
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
                   <button
-                    onClick={getRandomQuestion}
+                    onClick={() => {
+                      if (checkCanUseVideoInterview()) {
+                        getRandomQuestionAndTrackUsage();
+                      }
+                    }}
                     style={{
                       display: 'flex',
                       alignItems: 'center',
@@ -1470,10 +1532,11 @@ export default function VideoInterviewPage(): React.ReactElement {
                         setTimeLeft(60);
                         
                         // 3. Get new question (with paywall check)
-                        const canProceed = getRandomQuestion();
+                        const canProceed = checkCanUseVideoInterview();
                         if (!canProceed) {
                           return; // Paywall triggered, stop here
                         }
+                        getRandomQuestionAndTrackUsage();
                         
                         // 4. Go to planning stage
                         setStage('planning');

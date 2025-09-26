@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Fredoka } from "next/font/google";
 import "./globals.css";
 import Navigation from "../components/Navigation";
+import NavigationMobile from "../components/NavigationMobile";
 import ChatbotClientWrapper from "../components/ChatbotClientWrapper";
 import SessionWrapper from "../components/SessionWrapper";
 import { PointsProvider } from "../contexts/PointsContext";
@@ -10,6 +11,8 @@ import { ChatbotProvider } from "../contexts/ChatbotContext";
 import { SubscriptionProvider } from "../contexts/SubscriptionContext";
 import PointsNotification from "../components/PointsNotification";
 import GlobalModalManager from "../components/GlobalModalManager";
+import ErrorBoundary from "../components/ErrorBoundary";
+import { ToastProvider } from "../components/Toast";
 
 const inter = Inter({ subsets: ["latin"] });
 const fredoka = Fredoka({ 
@@ -20,8 +23,15 @@ const fredoka = Fredoka({
 });
 
 export const metadata: Metadata = {
-  title: "Talentix - Get Your First Job, The Smart Way",
-  description: "Talentix helps teenagers land their first job with AI-powered CV reviews, real job listings, expert advice, and more.",
+  title: "Talentix",
+  description: "Helping you get your first job. For teenagers by teenagers...",
+};
+
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
 };
 
 export default function RootLayout({
@@ -38,23 +48,34 @@ export default function RootLayout({
         <meta name="theme-color" content="#fde047" />
       </head>
       <body className={`${inter.className} ${fredoka.className}`}>
-        <SessionWrapper>
-          <SubscriptionProvider>
-            <PointsProvider>
-              <QuestProvider>
-                <ChatbotProvider>
-                  <Navigation />
-                <div className="min-h-screen bg-white text-black">
-                {children}
-                </div>
-                <PointsNotification />
-                <ChatbotClientWrapper />
-                <GlobalModalManager />
-                </ChatbotProvider>
-              </QuestProvider>
-            </PointsProvider>
-          </SubscriptionProvider>
-        </SessionWrapper>
+        <ErrorBoundary>
+          <ToastProvider>
+            <SessionWrapper>
+              <SubscriptionProvider>
+                <PointsProvider>
+                  <QuestProvider>
+                    <ChatbotProvider>
+                      {/* Desktop Navigation - shown only on desktop */}
+                      <div className="desktop-nav">
+                        <Navigation />
+                      </div>
+                      {/* Mobile Navigation - shown only on mobile */}
+                      <div className="mobile-nav">
+                        <NavigationMobile />
+                      </div>
+                    <div className="min-h-screen bg-white text-black">
+                    {children}
+                    </div>
+                    <PointsNotification />
+                    <ChatbotClientWrapper />
+                    <GlobalModalManager />
+                    </ChatbotProvider>
+                  </QuestProvider>
+                </PointsProvider>
+              </SubscriptionProvider>
+            </SessionWrapper>
+          </ToastProvider>
+        </ErrorBoundary>
       </body>
     </html>
   );

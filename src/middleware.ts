@@ -13,7 +13,7 @@ export function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
-  // Password gate middleware
+  // Password gate middleware - ENABLED
   // cookie that unlocks site after correct password
   const hasAccess = request.cookies.get('talentix_access')?.value === 'authenticated'
 

@@ -1,9 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { ArrowLeft, Shuffle, Star, Mic, MicOff, Send } from 'lucide-react';
+import { ArrowLeft, Shuffle, Star, Mic, MicOff, Send, Menu, X } from 'lucide-react';
 import { usePoints } from '../../contexts/PointsContext';
 import { useQuests } from '../../contexts/QuestContext';
+import { useDeviceDetection } from '../../hooks/useDeviceDetection';
 
 // Question database
 const questionDatabase = {
@@ -107,6 +108,7 @@ interface FeedbackHistory {
 export default function InterviewPrepPage() {
   const { addPoints } = usePoints(); // Use shared points context
   const { updateQuestProgress } = useQuests(); // Use quest system
+  const { isMobile, isTablet } = useDeviceDetection(); // Device detection
   const [currentView, setCurrentView] = useState<'categories' | 'flashcards' | 'progress' | 'feedback'>('categories');
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [questions, setQuestions] = useState<string[]>([]);
@@ -119,6 +121,7 @@ export default function InterviewPrepPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [progressData, setProgressData] = useState<ProgressData>({});
   const [feedbackHistory, setFeedbackHistory] = useState<FeedbackHistory[]>([]);
+  const [sidebarOpen, setSidebarOpen] = useState(false); // Mobile sidebar state
 
   const selectCategory = (categoryId: string) => {
     setSelectedCategory(categoryId);
@@ -344,139 +347,224 @@ export default function InterviewPrepPage() {
     ));
   };
 
-  if ((currentView as string) === 'categories') {
-    return (
-      <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #fef3c7 0%, #fbbf24 50%, #f59e0b 100%)', display: 'flex' }}>
-        {/* Left Sidebar - Quizlet Style */}
-        <div style={{
-          width: '280px',
-          backgroundColor: '#1f2937',
-          color: '#ffffff',
-          padding: '24px 0',
-          position: 'fixed',
-          height: '100vh',
-          overflowY: 'auto'
+  // Mobile Sidebar Component
+  const renderSidebar = () => (
+    <div style={{
+      width: isMobile ? '100%' : '280px',
+      backgroundColor: '#1f2937',
+      color: '#ffffff',
+      padding: isMobile ? '16px' : '24px 0',
+      position: isMobile ? 'fixed' : 'fixed',
+      height: '100vh',
+      overflowY: 'auto',
+      zIndex: isMobile ? 1000 : 'auto',
+      transform: isMobile ? (sidebarOpen ? 'translateX(0)' : 'translateX(-100%)') : 'translateX(0)',
+      transition: 'transform 0.3s ease'
+    }}>
+      {/* Mobile Close Button */}
+      {isMobile && (
+        <button
+          onClick={() => setSidebarOpen(false)}
+          style={{
+            position: 'absolute',
+            top: '16px',
+            right: '16px',
+            background: 'none',
+            border: 'none',
+            color: '#ffffff',
+            cursor: 'pointer',
+            padding: '8px'
+          }}
+        >
+          <X style={{ width: '24px', height: '24px' }} />
+        </button>
+      )}
+
+      {/* Logo/Title */}
+      <div style={{ padding: isMobile ? '0 0 24px 0' : '0 24px', marginBottom: isMobile ? '24px' : '32px' }}>
+        <h1 style={{ 
+          fontSize: isMobile ? '20px' : '24px', 
+          fontWeight: 'bold', 
+          color: '#fbbf24',
+          margin: '0',
+          fontFamily: "'Fredoka', 'Inter', sans-serif"
         }}>
-          {/* Logo/Title */}
-          <div style={{ padding: '0 24px', marginBottom: '32px' }}>
-            <h1 style={{ 
-              fontSize: '24px', 
-              fontWeight: 'bold', 
-              color: '#fbbf24',
-              margin: '0',
-              fontFamily: "'Fredoka', 'Inter', sans-serif"
-            }}>
-              🎤 Interview Prep
-            </h1>
+          🎤 Interview Prep
+        </h1>
+      </div>
+
+      {/* Navigation Menu */}
+      <nav style={{ padding: isMobile ? '0' : '0 16px' }}>
+        <div style={{ marginBottom: isMobile ? '24px' : '32px' }}>
+          <h3 style={{ 
+            fontSize: '12px', 
+            fontWeight: '600', 
+            color: '#9ca3af', 
+            textTransform: 'uppercase', 
+            letterSpacing: '0.05em',
+            marginBottom: '12px',
+            padding: isMobile ? '0' : '0 8px'
+          }}>
+            Practice
+          </h3>
+          <div 
+            onClick={() => {
+              setCurrentView('categories');
+              if (isMobile) setSidebarOpen(false);
+            }}
+            style={{
+              backgroundColor: (currentView as string) === 'categories' ? '#374151' : 'transparent',
+              borderRadius: '8px',
+              padding: '12px 16px',
+              marginBottom: '8px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              cursor: 'pointer'
+            }}
+          >
+            <span style={{ fontSize: '18px' }}>📚</span>
+            <span style={{ fontWeight: '500', fontSize: isMobile ? '14px' : '16px' }}>Question Sets</span>
           </div>
-
-          {/* Navigation Menu */}
-          <nav style={{ padding: '0 16px' }}>
-            <div style={{ marginBottom: '32px' }}>
-              <h3 style={{ 
-                fontSize: '14px', 
-                fontWeight: '600', 
-                color: '#9ca3af', 
-                textTransform: 'uppercase', 
-                letterSpacing: '0.05em',
-                marginBottom: '16px',
-                padding: '0 8px'
-              }}>
-                Practice
-              </h3>
-              <div 
-                onClick={() => setCurrentView('categories')}
-                style={{
-                  backgroundColor: (currentView as string) === 'categories' ? '#374151' : 'transparent',
-                  borderRadius: '8px',
-                  padding: '12px 16px',
-                  marginBottom: '8px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '12px',
-                  cursor: 'pointer'
-                }}
-                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#374151'}
-                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = (currentView as string) === 'categories' ? '#374151' : 'transparent'}
-              >
-                <span style={{ fontSize: '20px' }}>📚</span>
-                <span style={{ fontWeight: '500' }}>Question Sets</span>
-              </div>
-              <div 
-                onClick={() => setCurrentView('progress')}
-                style={{
-                  backgroundColor: (currentView as string) === 'progress' ? '#374151' : 'transparent',
-                  padding: '12px 16px',
-                  marginBottom: '8px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '12px',
-                  cursor: 'pointer',
-                  borderRadius: '8px'
-                }}
-                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#374151'}
-                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = (currentView as string) === 'progress' ? '#374151' : 'transparent'}
-              >
-                <span style={{ fontSize: '20px' }}>📊</span>
-                <span style={{ fontWeight: '500' }}>Progress</span>
-              </div>
-              <div style={{
-                padding: '12px 16px',
-                marginBottom: '8px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                cursor: 'pointer',
-                borderRadius: '8px'
-              }}
-              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#374151'}
-              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-              >
-                <span style={{ fontSize: '20px' }}>⚙️</span>
-                <span style={{ fontWeight: '500' }}>Settings</span>
-              </div>
-            </div>
-
-            <div>
-              <h3 style={{ 
-                fontSize: '14px', 
-                fontWeight: '600', 
-                color: '#9ca3af', 
-                textTransform: 'uppercase', 
-                letterSpacing: '0.05em',
-                marginBottom: '16px',
-                padding: '0 8px'
-              }}>
-                Tools
-              </h3>
-              <div 
-                onClick={() => setCurrentView('feedback')}
-                style={{
-                  backgroundColor: (currentView as string) === 'feedback' ? '#374151' : 'transparent',
-                  padding: '12px 16px',
-                  marginBottom: '8px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '12px',
-                  cursor: 'pointer',
-                  borderRadius: '8px'
-                }}
-                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#374151'}
-                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = (currentView as string) === 'feedback' ? '#374151' : 'transparent'}
-              >
-                <span style={{ fontSize: '20px' }}>🤖</span>
-                <span style={{ fontWeight: '500' }}>AI Feedback</span>
-              </div>
-            </div>
-          </nav>
+          <div 
+            onClick={() => {
+              setCurrentView('progress');
+              if (isMobile) setSidebarOpen(false);
+            }}
+            style={{
+              backgroundColor: (currentView as string) === 'progress' ? '#374151' : 'transparent',
+              padding: '12px 16px',
+              marginBottom: '8px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              cursor: 'pointer',
+              borderRadius: '8px'
+            }}
+          >
+            <span style={{ fontSize: '18px' }}>📊</span>
+            <span style={{ fontWeight: '500', fontSize: isMobile ? '14px' : '16px' }}>Progress</span>
+          </div>
         </div>
 
+        <div>
+          <h3 style={{ 
+            fontSize: '12px', 
+            fontWeight: '600', 
+            color: '#9ca3af', 
+            textTransform: 'uppercase', 
+            letterSpacing: '0.05em',
+            marginBottom: '12px',
+            padding: isMobile ? '0' : '0 8px'
+          }}>
+            Tools
+          </h3>
+          <div 
+            onClick={() => {
+              setCurrentView('feedback');
+              if (isMobile) setSidebarOpen(false);
+            }}
+            style={{
+              backgroundColor: (currentView as string) === 'feedback' ? '#374151' : 'transparent',
+              padding: '12px 16px',
+              marginBottom: '8px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              cursor: 'pointer',
+              borderRadius: '8px'
+            }}
+          >
+            <span style={{ fontSize: '18px' }}>🤖</span>
+            <span style={{ fontWeight: '500', fontSize: isMobile ? '14px' : '16px' }}>AI Feedback</span>
+          </div>
+        </div>
+      </nav>
+    </div>
+  );
+
+  if ((currentView as string) === 'categories') {
+    return (
+      <div style={{ 
+        minHeight: '100vh', 
+        background: 'linear-gradient(135deg, #fef3c7 0%, #fbbf24 50%, #f59e0b 100%)', 
+        display: 'flex',
+        width: isMobile ? '100vw' : 'auto',
+        maxWidth: isMobile ? '100vw' : 'none',
+        overflow: isMobile ? 'hidden' : 'auto'
+      }}>
+        {/* Sidebar */}
+        {renderSidebar()}
+
+        {/* Mobile Overlay */}
+        {isMobile && sidebarOpen && (
+          <div
+            onClick={() => setSidebarOpen(false)}
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
+              backgroundColor: 'rgba(0, 0, 0, 0.5)',
+              zIndex: 999
+            }}
+          />
+        )}
+
         {/* Main Content */}
-        <div style={{ marginLeft: '280px', flex: 1, padding: '32px 48px' }}>
+        <div style={{ 
+          marginLeft: isMobile ? '0' : '280px', 
+          flex: 1, 
+          padding: isMobile ? '0 8px' : '32px 48px',
+          paddingTop: isMobile ? '40px' : '32px',
+          width: isMobile ? '100vw' : 'auto',
+          maxWidth: isMobile ? '100vw' : 'none',
+          boxSizing: 'border-box'
+        }}>
+          {/* Mobile Header with Menu Button */}
+          {isMobile && (
+            <div style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              backgroundColor: '#1f2937',
+              padding: '12px 16px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              zIndex: 100
+            }}>
+              <button
+                onClick={() => setSidebarOpen(true)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: '#ffffff',
+                  cursor: 'pointer',
+                  padding: '8px'
+                }}
+              >
+                <Menu style={{ width: '24px', height: '24px' }} />
+              </button>
+              <h1 style={{
+                fontSize: '18px',
+                fontWeight: 'bold',
+                color: '#fbbf24',
+                margin: '0',
+                fontFamily: "'Fredoka', 'Inter', sans-serif"
+              }}>
+                Interview Prep
+              </h1>
+              <div style={{ width: '40px' }} /> {/* Spacer */}
+            </div>
+          )}
+
           {/* Header */}
-          <div style={{ marginBottom: '40px' }}>
+          <div style={{ marginBottom: isMobile ? '24px' : '40px' }}>
             <h1 style={{ 
-              fontSize: '48px', 
+              fontSize: isMobile ? '28px' : '48px', 
               fontWeight: 'bold', 
               color: '#1f2937', 
               margin: '0 0 8px 0',
@@ -485,7 +573,7 @@ export default function InterviewPrepPage() {
               Interview Preparation
             </h1>
             <p style={{ 
-              fontSize: '20px', 
+              fontSize: isMobile ? '16px' : '20px', 
               color: '#4b5563', 
               margin: '0',
               fontWeight: '400'
@@ -495,18 +583,22 @@ export default function InterviewPrepPage() {
           </div>
 
           {/* Search Bar */}
-          <div style={{ marginBottom: '48px' }}>
+          <div style={{ 
+            marginBottom: isMobile ? '16px' : '48px',
+            margin: isMobile ? '0 0 16px 0' : '0 auto 48px auto',
+            maxWidth: isMobile ? '100%' : '600px'
+          }}>
             <div style={{
               backgroundColor: '#ffffff',
               borderRadius: '12px',
-              padding: '16px 24px',
+              padding: isMobile ? '12px 16px' : '16px 24px',
               boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
               display: 'flex',
               alignItems: 'center',
-              gap: '16px',
-              maxWidth: '600px'
+              gap: isMobile ? '12px' : '16px',
+              margin: isMobile ? '0' : '0'
             }}>
-              <span style={{ fontSize: '20px', color: '#6b7280' }}>🔍</span>
+              <span style={{ fontSize: isMobile ? '18px' : '20px', color: '#6b7280' }}>🔍</span>
               <input
                 type="text"
                 value={searchQuery}
@@ -516,29 +608,32 @@ export default function InterviewPrepPage() {
                   flex: 1,
                   border: 'none',
                   outline: 'none',
-                  fontSize: '16px',
+                  fontSize: isMobile ? '14px' : '16px',
                   backgroundColor: 'transparent'
                 }}
               />
             </div>
           </div>
 
-          {/* Question Categories - Quizlet Flashcard Style */}
+          {/* Question Categories - Responsive Grid */}
           <div>
             <h2 style={{ 
-              fontSize: '24px', 
+              fontSize: isMobile ? '20px' : '24px', 
               fontWeight: 'bold', 
               color: '#1f2937', 
-              marginBottom: '24px',
-              margin: '0 0 24px 0'
+              marginBottom: isMobile ? '16px' : '24px',
+              margin: isMobile ? '0 0 16px 0' : '0 0 16px 0'
             }}>
               Question Categories
             </h2>
             <div style={{ 
               display: 'grid', 
-              gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', 
-              gap: '24px',
-              maxWidth: '1200px'
+              gridTemplateColumns: isMobile ? '1fr' : isTablet ? 'repeat(2, 1fr)' : 'repeat(auto-fill, minmax(320px, 1fr))', 
+              gap: isMobile ? '12px' : '24px',
+              maxWidth: isMobile ? '100%' : '1200px',
+              padding: isMobile ? '0' : '0',
+              margin: isMobile ? '0' : '0 auto',
+              width: isMobile ? '100%' : 'auto'
             }}>
               {categories
                 .filter(category => 
@@ -552,13 +647,13 @@ export default function InterviewPrepPage() {
                   style={{
                     backgroundColor: '#ffffff',
                     borderRadius: '16px',
-                    padding: '32px 24px',
+                    padding: isMobile ? '20px 16px' : '32px 24px',
                     boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
                     cursor: 'pointer',
                     transition: 'all 0.3s ease',
                     border: '2px solid transparent',
                     position: 'relative',
-                    minHeight: '200px',
+                    minHeight: isMobile ? '160px' : '200px',
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'center',
@@ -566,31 +661,35 @@ export default function InterviewPrepPage() {
                     textAlign: 'center'
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = 'translateY(-4px)';
-                    e.currentTarget.style.boxShadow = '0 10px 25px -3px rgba(0, 0, 0, 0.1)';
-                    e.currentTarget.style.borderColor = '#fbbf24';
+                    if (!isMobile) {
+                      e.currentTarget.style.transform = 'translateY(-4px)';
+                      e.currentTarget.style.boxShadow = '0 10px 25px -3px rgba(0, 0, 0, 0.1)';
+                      e.currentTarget.style.borderColor = '#fbbf24';
+                    }
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = 'translateY(0)';
-                    e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1)';
-                    e.currentTarget.style.borderColor = 'transparent';
+                    if (!isMobile) {
+                      e.currentTarget.style.transform = 'translateY(0)';
+                      e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1)';
+                      e.currentTarget.style.borderColor = 'transparent';
+                    }
                   }}
                 >
-                  <div style={{ fontSize: '64px', marginBottom: '16px' }}>{category.icon}</div>
+                  <div style={{ fontSize: isMobile ? '48px' : '64px', marginBottom: isMobile ? '12px' : '16px' }}>{category.icon}</div>
                   <h3 style={{ 
-                    fontSize: '24px', 
+                    fontSize: isMobile ? '18px' : '24px', 
                     fontWeight: 'bold', 
                     color: '#1f2937', 
-                    marginBottom: '12px',
-                    margin: '0 0 12px 0'
+                    marginBottom: isMobile ? '8px' : '12px',
+                    margin: '0 0 8px 0'
                   }}>
                     {category.name}
                   </h3>
                   <p style={{ 
-                    fontSize: '16px', 
+                    fontSize: isMobile ? '14px' : '16px', 
                     color: '#6b7280', 
-                    marginBottom: '16px',
-                    margin: '0 0 16px 0',
+                    marginBottom: isMobile ? '12px' : '16px',
+                    margin: '0 0 12px 0',
                     lineHeight: '1.5'
                   }}>
                     {category.description}
@@ -598,9 +697,9 @@ export default function InterviewPrepPage() {
                   <div style={{
                     backgroundColor: '#fef3c7',
                     color: '#92400e',
-                    padding: '8px 16px',
+                    padding: isMobile ? '6px 12px' : '8px 16px',
                     borderRadius: '20px',
-                    fontSize: '14px',
+                    fontSize: isMobile ? '12px' : '14px',
                     fontWeight: '600'
                   }}>
                     {questionDatabase[category.id as keyof typeof questionDatabase].length} questions
@@ -616,113 +715,85 @@ export default function InterviewPrepPage() {
 
   if (currentView === 'progress') {
     return (
-      <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #fef3c7 0%, #fbbf24 50%, #f59e0b 100%)', display: 'flex' }}>
-        {/* Same Sidebar */}
-        <div style={{
-          width: '280px',
-          backgroundColor: '#1f2937',
-          color: '#ffffff',
-          padding: '24px 0',
-          position: 'fixed',
-          height: '100vh',
-          overflowY: 'auto'
-        }}>
-          <div style={{ padding: '0 24px', marginBottom: '32px' }}>
-            <h1 style={{ 
-              fontSize: '24px', 
-              fontWeight: 'bold', 
-              color: '#fbbf24',
-              margin: '0',
-              fontFamily: "'Fredoka', 'Inter', sans-serif"
-            }}>
-              🎤 Interview Prep
-            </h1>
-          </div>
+      <div style={{ 
+        minHeight: '100vh', 
+        background: 'linear-gradient(135deg, #fef3c7 0%, #fbbf24 50%, #f59e0b 100%)', 
+        display: 'flex',
+        width: isMobile ? '100vw' : 'auto',
+        maxWidth: isMobile ? '100vw' : 'none',
+        overflow: isMobile ? 'hidden' : 'auto'
+      }}>
+        {/* Sidebar */}
+        {renderSidebar()}
 
-          <nav style={{ padding: '0 16px' }}>
-            <div style={{ marginBottom: '32px' }}>
-              <h3 style={{ 
-                fontSize: '14px', 
-                fontWeight: '600', 
-                color: '#9ca3af', 
-                textTransform: 'uppercase', 
-                letterSpacing: '0.05em',
-                marginBottom: '16px',
-                padding: '0 8px'
-              }}>
-                Practice
-              </h3>
-              <div 
-                onClick={() => setCurrentView('categories')}
-                style={{
-                  backgroundColor: (currentView as string) === 'categories' ? '#374151' : 'transparent',
-                  borderRadius: '8px',
-                  padding: '12px 16px',
-                  marginBottom: '8px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '12px',
-                  cursor: 'pointer'
-                }}
-              >
-                <span style={{ fontSize: '20px' }}>📚</span>
-                <span style={{ fontWeight: '500' }}>Question Sets</span>
-              </div>
-              <div 
-                onClick={() => setCurrentView('progress')}
-                style={{
-                  backgroundColor: (currentView as string) === 'progress' ? '#374151' : 'transparent',
-                  padding: '12px 16px',
-                  marginBottom: '8px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '12px',
-                  cursor: 'pointer',
-                  borderRadius: '8px'
-                }}
-              >
-                <span style={{ fontSize: '20px' }}>📊</span>
-                <span style={{ fontWeight: '500' }}>Progress</span>
-              </div>
-            </div>
-
-            <div>
-              <h3 style={{ 
-                fontSize: '14px', 
-                fontWeight: '600', 
-                color: '#9ca3af', 
-                textTransform: 'uppercase', 
-                letterSpacing: '0.05em',
-                marginBottom: '16px',
-                padding: '0 8px'
-              }}>
-                Tools
-              </h3>
-              <div 
-                onClick={() => setCurrentView('feedback')}
-                style={{
-                  backgroundColor: (currentView as string) === 'feedback' ? '#374151' : 'transparent',
-                  padding: '12px 16px',
-                  marginBottom: '8px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '12px',
-                  cursor: 'pointer',
-                  borderRadius: '8px'
-                }}
-              >
-                <span style={{ fontSize: '20px' }}>🤖</span>
-                <span style={{ fontWeight: '500' }}>AI Feedback</span>
-              </div>
-            </div>
-          </nav>
-        </div>
+        {/* Mobile Overlay */}
+        {isMobile && sidebarOpen && (
+          <div
+            onClick={() => setSidebarOpen(false)}
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
+              backgroundColor: 'rgba(0, 0, 0, 0.5)',
+              zIndex: 999
+            }}
+          />
+        )}
 
         {/* Progress Content */}
-        <div style={{ marginLeft: '280px', flex: 1, padding: '32px 48px' }}>
-          <div style={{ marginBottom: '40px' }}>
+        <div style={{ 
+          marginLeft: isMobile ? '0' : '280px', 
+          flex: 1, 
+          padding: isMobile ? '0 8px' : '32px 48px',
+          paddingTop: isMobile ? '40px' : '32px',
+          width: isMobile ? '100vw' : 'auto',
+          maxWidth: isMobile ? '100vw' : 'none',
+          boxSizing: 'border-box'
+        }}>
+          {/* Mobile Header */}
+          {isMobile && (
+            <div style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              backgroundColor: '#1f2937',
+              padding: '12px 16px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              zIndex: 100
+            }}>
+              <button
+                onClick={() => setSidebarOpen(true)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: '#ffffff',
+                  cursor: 'pointer',
+                  padding: '8px'
+                }}
+              >
+                <Menu style={{ width: '24px', height: '24px' }} />
+              </button>
+              <h1 style={{
+                fontSize: '18px',
+                fontWeight: 'bold',
+                color: '#fbbf24',
+                margin: '0',
+                fontFamily: "'Fredoka', 'Inter', sans-serif"
+              }}>
+                Progress
+              </h1>
+              <div style={{ width: '40px' }} />
+            </div>
+          )}
+
+          <div style={{ marginBottom: isMobile ? '24px' : '40px' }}>
             <h1 style={{ 
-              fontSize: '48px', 
+              fontSize: isMobile ? '28px' : '48px', 
               fontWeight: 'bold', 
               color: '#1f2937', 
               margin: '0 0 8px 0',
@@ -731,7 +802,7 @@ export default function InterviewPrepPage() {
               Your Progress
             </h1>
             <p style={{ 
-              fontSize: '20px', 
+              fontSize: isMobile ? '16px' : '20px', 
               color: '#4b5563', 
               margin: '0',
               fontWeight: '400'
@@ -743,9 +814,12 @@ export default function InterviewPrepPage() {
           {/* Progress Cards */}
           <div style={{ 
             display: 'grid', 
-            gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', 
-            gap: '24px',
-            maxWidth: '1200px'
+            gridTemplateColumns: isMobile ? '1fr' : isTablet ? 'repeat(2, 1fr)' : 'repeat(auto-fill, minmax(350px, 1fr))', 
+            gap: isMobile ? '12px' : '24px',
+            maxWidth: isMobile ? '100%' : '1200px',
+            padding: isMobile ? '0' : '0',
+            margin: isMobile ? '0' : '0 auto',
+            width: isMobile ? '100%' : 'auto'
           }}>
             {categories.map((category) => {
               const progress = progressData[category.id] || {
@@ -761,13 +835,13 @@ export default function InterviewPrepPage() {
                 <div key={category.id} style={{
                   backgroundColor: '#ffffff',
                   borderRadius: '16px',
-                  padding: '24px',
+                  padding: isMobile ? '20px 16px' : '24px',
                   boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
                   border: '2px solid #e5e7eb'
                 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
-                    <span style={{ fontSize: '32px' }}>{category.icon}</span>
-                    <h3 style={{ fontSize: '20px', fontWeight: 'bold', color: '#1f2937', margin: '0' }}>
+                    <span style={{ fontSize: isMobile ? '28px' : '32px' }}>{category.icon}</span>
+                    <h3 style={{ fontSize: isMobile ? '18px' : '20px', fontWeight: 'bold', color: '#1f2937', margin: '0' }}>
                       {category.name}
                     </h3>
                   </div>
@@ -775,8 +849,8 @@ export default function InterviewPrepPage() {
                   {/* Progress Bar */}
                   <div style={{ marginBottom: '16px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                      <span style={{ fontSize: '14px', color: '#6b7280' }}>Progress</span>
-                      <span style={{ fontSize: '14px', fontWeight: '600', color: '#1f2937' }}>
+                      <span style={{ fontSize: isMobile ? '12px' : '14px', color: '#6b7280' }}>Progress</span>
+                      <span style={{ fontSize: isMobile ? '12px' : '14px', fontWeight: '600', color: '#1f2937' }}>
                         {progress.questionsAnswered}/{progress.totalQuestions} questions
                       </span>
                     </div>
@@ -797,20 +871,20 @@ export default function InterviewPrepPage() {
                   </div>
                   
                   {/* Stats */}
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: isMobile ? '12px' : '16px' }}>
                     <div>
-                      <p style={{ fontSize: '12px', color: '#6b7280', margin: '0 0 4px 0', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                      <p style={{ fontSize: isMobile ? '10px' : '12px', color: '#6b7280', margin: '0 0 4px 0', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                         Average Score
                       </p>
-                      <p style={{ fontSize: '24px', fontWeight: 'bold', color: '#1f2937', margin: '0' }}>
+                      <p style={{ fontSize: isMobile ? '20px' : '24px', fontWeight: 'bold', color: '#1f2937', margin: '0' }}>
                         {progress.averageScore > 0 ? `${progress.averageScore.toFixed(1)}/5` : 'N/A'}
                       </p>
                     </div>
                     <div>
-                      <p style={{ fontSize: '12px', color: '#6b7280', margin: '0 0 4px 0', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                      <p style={{ fontSize: isMobile ? '10px' : '12px', color: '#6b7280', margin: '0 0 4px 0', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                         Last Practiced
                       </p>
-                      <p style={{ fontSize: '14px', fontWeight: '500', color: '#1f2937', margin: '0' }}>
+                      <p style={{ fontSize: isMobile ? '12px' : '14px', fontWeight: '500', color: '#1f2937', margin: '0' }}>
                         {progress.lastPracticed 
                           ? progress.lastPracticed.toLocaleDateString()
                           : 'Never'
@@ -824,13 +898,14 @@ export default function InterviewPrepPage() {
                     style={{
                       width: '100%',
                       marginTop: '16px',
-                      padding: '12px',
+                      padding: isMobile ? '10px' : '12px',
                       backgroundColor: '#fbbf24',
                       color: '#1f2937',
                       border: 'none',
                       borderRadius: '8px',
                       fontWeight: '600',
-                      cursor: 'pointer'
+                      cursor: 'pointer',
+                      fontSize: isMobile ? '14px' : '16px'
                     }}
                   >
                     Continue Practice
@@ -846,113 +921,84 @@ export default function InterviewPrepPage() {
 
   if ((currentView as string) === 'feedback') {
     return (
-      <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #fef3c7 0%, #fbbf24 50%, #f59e0b 100%)', display: 'flex' }}>
-        {/* Same Sidebar */}
-        <div style={{
-          width: '280px',
-          backgroundColor: '#1f2937',
-          color: '#ffffff',
-          padding: '24px 0',
-          position: 'fixed',
-          height: '100vh',
-          overflowY: 'auto'
-        }}>
-          <div style={{ padding: '0 24px', marginBottom: '32px' }}>
-            <h1 style={{ 
-              fontSize: '24px', 
-              fontWeight: 'bold', 
-              color: '#fbbf24',
-              margin: '0',
-              fontFamily: "'Fredoka', 'Inter', sans-serif"
-            }}>
-              🎤 Interview Prep
-            </h1>
-          </div>
+      <div style={{ 
+        minHeight: '100vh', 
+        background: 'linear-gradient(135deg, #fef3c7 0%, #fbbf24 50%, #f59e0b 100%)', 
+        display: 'flex',
+        width: isMobile ? '100vw' : 'auto',
+        maxWidth: isMobile ? '100vw' : 'none',
+        overflow: isMobile ? 'hidden' : 'auto'
+      }}>
+        {/* Sidebar */}
+        {renderSidebar()}
 
-          <nav style={{ padding: '0 16px' }}>
-            <div style={{ marginBottom: '32px' }}>
-              <h3 style={{ 
-                fontSize: '14px', 
-                fontWeight: '600', 
-                color: '#9ca3af', 
-                textTransform: 'uppercase', 
-                letterSpacing: '0.05em',
-                marginBottom: '16px',
-                padding: '0 8px'
-              }}>
-                Practice
-              </h3>
-              <div 
-                onClick={() => setCurrentView('categories')}
-                style={{
-                  backgroundColor: (currentView as string) === 'categories' ? '#374151' : 'transparent',
-                  borderRadius: '8px',
-                  padding: '12px 16px',
-                  marginBottom: '8px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '12px',
-                  cursor: 'pointer'
-                }}
-              >
-                <span style={{ fontSize: '20px' }}>📚</span>
-                <span style={{ fontWeight: '500' }}>Question Sets</span>
-              </div>
-              <div 
-                onClick={() => setCurrentView('progress')}
-                style={{
-                  backgroundColor: (currentView as string) === 'progress' ? '#374151' : 'transparent',
-                  padding: '12px 16px',
-                  marginBottom: '8px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '12px',
-                  cursor: 'pointer',
-                  borderRadius: '8px'
-                }}
-              >
-                <span style={{ fontSize: '20px' }}>📊</span>
-                <span style={{ fontWeight: '500' }}>Progress</span>
-              </div>
-            </div>
-
-            <div>
-              <h3 style={{ 
-                fontSize: '14px', 
-                fontWeight: '600', 
-                color: '#9ca3af', 
-                textTransform: 'uppercase', 
-                letterSpacing: '0.05em',
-                marginBottom: '16px',
-                padding: '0 8px'
-              }}>
-                Tools
-              </h3>
-              <div 
-                onClick={() => setCurrentView('feedback')}
-                style={{
-                  backgroundColor: (currentView as string) === 'feedback' ? '#374151' : 'transparent',
-                  padding: '12px 16px',
-                  marginBottom: '8px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '12px',
-                  cursor: 'pointer',
-                  borderRadius: '8px'
-                }}
-              >
-                <span style={{ fontSize: '20px' }}>🤖</span>
-                <span style={{ fontWeight: '500' }}>AI Feedback</span>
-              </div>
-            </div>
-          </nav>
-        </div>
+        {/* Mobile Overlay */}
+        {isMobile && sidebarOpen && (
+          <div
+            onClick={() => setSidebarOpen(false)}
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
+              backgroundColor: 'rgba(0, 0, 0, 0.5)',
+              zIndex: 999
+            }}
+          />
+        )}
 
         {/* Feedback History Content */}
-        <div style={{ marginLeft: '280px', flex: 1, padding: '32px 48px' }}>
-          <div style={{ marginBottom: '40px' }}>
+        <div style={{ 
+          marginLeft: isMobile ? '0' : '280px', 
+          flex: 1, 
+          padding: isMobile ? '0 8px' : '32px 48px',
+          paddingTop: isMobile ? '40px' : '32px',
+          width: isMobile ? '100vw' : 'auto',
+          maxWidth: isMobile ? '100vw' : 'none',
+          boxSizing: 'border-box'
+        }}>
+          {/* Mobile Header */}
+          {isMobile && (
+            <div style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              backgroundColor: '#1f2937',
+              padding: '12px 16px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              zIndex: 100
+            }}>
+              <button
+                onClick={() => setSidebarOpen(true)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: '#ffffff',
+                  cursor: 'pointer',
+                  padding: '8px'
+                }}
+              >
+                <Menu style={{ width: '24px', height: '24px' }} />
+              </button>
+              <h1 style={{
+                fontSize: '18px',
+                fontWeight: 'bold',
+                color: '#fbbf24',
+                margin: '0',
+                fontFamily: "'Fredoka', 'Inter', sans-serif"
+              }}>
+                AI Feedback
+              </h1>
+              <div style={{ width: '40px' }} />
+            </div>
+          )}
+          <div style={{ marginBottom: isMobile ? '24px' : '40px' }}>
             <h1 style={{ 
-              fontSize: '48px', 
+              fontSize: isMobile ? '28px' : '48px', 
               fontWeight: 'bold', 
               color: '#1f2937', 
               margin: '0 0 8px 0',
@@ -961,7 +1007,7 @@ export default function InterviewPrepPage() {
               AI Feedback History
             </h1>
             <p style={{ 
-              fontSize: '20px', 
+              fontSize: isMobile ? '16px' : '20px', 
               color: '#4b5563', 
               margin: '0',
               fontWeight: '400'
@@ -974,94 +1020,102 @@ export default function InterviewPrepPage() {
             <div style={{
               backgroundColor: '#ffffff',
               borderRadius: '16px',
-              padding: '48px',
+              padding: isMobile ? '24px 6px' : '48px',
               textAlign: 'center',
               boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
             }}>
-              <span style={{ fontSize: '64px', marginBottom: '16px', display: 'block' }}>🤖</span>
-              <h3 style={{ fontSize: '24px', fontWeight: 'bold', color: '#1f2937', marginBottom: '8px' }}>
+              <span style={{ fontSize: isMobile ? '48px' : '64px', marginBottom: '16px', display: 'block' }}>🤖</span>
+              <h3 style={{ fontSize: isMobile ? '20px' : '24px', fontWeight: 'bold', color: '#1f2937', marginBottom: '8px' }}>
                 No feedback yet
               </h3>
-              <p style={{ fontSize: '16px', color: '#6b7280', marginBottom: '24px' }}>
+              <p style={{ fontSize: isMobile ? '14px' : '16px', color: '#6b7280', marginBottom: '24px' }}>
                 Start practicing with our question sets to receive AI-powered feedback
               </p>
               <button
                 onClick={() => setCurrentView('categories')}
                 style={{
-                  padding: '12px 24px',
+                  padding: isMobile ? '10px 20px' : '12px 24px',
                   backgroundColor: '#fbbf24',
                   color: '#1f2937',
                   border: 'none',
                   borderRadius: '8px',
                   fontWeight: '600',
-                  cursor: 'pointer'
+                  cursor: 'pointer',
+                  fontSize: isMobile ? '14px' : '16px'
                 }}
               >
                 Start Practicing
               </button>
             </div>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? '16px' : '24px' }}>
               {feedbackHistory.map((feedback) => (
                 <div key={feedback.id} style={{
                   backgroundColor: '#ffffff',
                   borderRadius: '16px',
-                  padding: '24px',
+                  padding: isMobile ? '16px 6px' : '24px',
                   boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
                   border: '2px solid #e5e7eb'
                 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
+                  <div style={{ 
+                    display: 'flex', 
+                    justifyContent: 'space-between', 
+                    alignItems: 'flex-start', 
+                    marginBottom: '16px',
+                    flexDirection: isMobile ? 'column' : 'row',
+                    gap: isMobile ? '12px' : '0'
+                  }}>
                     <div>
-                      <h3 style={{ fontSize: '18px', fontWeight: 'bold', color: '#1f2937', margin: '0 0 4px 0' }}>
+                      <h3 style={{ fontSize: isMobile ? '16px' : '18px', fontWeight: 'bold', color: '#1f2937', margin: '0 0 4px 0' }}>
                         {categories.find(c => c.id === feedback.category)?.name} Question
                       </h3>
-                      <p style={{ fontSize: '14px', color: '#6b7280', margin: '0' }}>
+                      <p style={{ fontSize: isMobile ? '12px' : '14px', color: '#6b7280', margin: '0' }}>
                         {feedback.timestamp.toLocaleDateString()} at {feedback.timestamp.toLocaleTimeString()}
                       </p>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                       {renderStars(feedback.evaluation.score)}
-                      <span style={{ fontSize: '16px', fontWeight: 'bold', color: '#1f2937' }}>
+                      <span style={{ fontSize: isMobile ? '14px' : '16px', fontWeight: 'bold', color: '#1f2937' }}>
                         {feedback.evaluation.score}/5
                       </span>
                     </div>
                   </div>
                   
                   <div style={{ marginBottom: '16px' }}>
-                    <h4 style={{ fontSize: '14px', fontWeight: '600', color: '#1f2937', margin: '0 0 8px 0' }}>
+                    <h4 style={{ fontSize: isMobile ? '12px' : '14px', fontWeight: '600', color: '#1f2937', margin: '0 0 8px 0' }}>
                       Question:
                     </h4>
-                    <p style={{ fontSize: '16px', color: '#374151', margin: '0', fontStyle: 'italic' }}>
+                    <p style={{ fontSize: isMobile ? '14px' : '16px', color: '#374151', margin: '0', fontStyle: 'italic' }}>
                       "{feedback.question}"
                     </p>
                   </div>
                   
                   <div style={{ marginBottom: '16px' }}>
-                    <h4 style={{ fontSize: '14px', fontWeight: '600', color: '#1f2937', margin: '0 0 8px 0' }}>
+                    <h4 style={{ fontSize: isMobile ? '12px' : '14px', fontWeight: '600', color: '#1f2937', margin: '0 0 8px 0' }}>
                       Your Answer:
                     </h4>
-                    <p style={{ fontSize: '14px', color: '#4b5563', margin: '0', lineHeight: '1.5' }}>
+                    <p style={{ fontSize: isMobile ? '12px' : '14px', color: '#4b5563', margin: '0', lineHeight: '1.5' }}>
                       {feedback.answer}
                     </p>
                   </div>
                   
                   <div style={{ marginBottom: '16px' }}>
-                    <h4 style={{ fontSize: '14px', fontWeight: '600', color: '#1f2937', margin: '0 0 8px 0' }}>
+                    <h4 style={{ fontSize: isMobile ? '12px' : '14px', fontWeight: '600', color: '#1f2937', margin: '0 0 8px 0' }}>
                       AI Feedback:
                     </h4>
-                    <p style={{ fontSize: '14px', color: '#374151', margin: '0', lineHeight: '1.5' }}>
+                    <p style={{ fontSize: isMobile ? '12px' : '14px', color: '#374151', margin: '0', lineHeight: '1.5' }}>
                       {feedback.evaluation.feedback}
                     </p>
                   </div>
                   
                   {feedback.evaluation.strengths.length > 0 && (
                     <div style={{ marginBottom: '16px' }}>
-                      <h4 style={{ fontSize: '14px', fontWeight: '600', color: '#059669', margin: '0 0 8px 0' }}>
+                      <h4 style={{ fontSize: isMobile ? '12px' : '14px', fontWeight: '600', color: '#059669', margin: '0 0 8px 0' }}>
                         Strengths:
                       </h4>
-                      <ul style={{ margin: '0', paddingLeft: '20px' }}>
+                      <ul style={{ margin: '0', paddingLeft: isMobile ? '16px' : '20px' }}>
                         {feedback.evaluation.strengths.map((strength, index) => (
-                          <li key={index} style={{ fontSize: '14px', color: '#065f46', marginBottom: '4px' }}>
+                          <li key={index} style={{ fontSize: isMobile ? '12px' : '14px', color: '#065f46', marginBottom: '4px' }}>
                             {strength}
                           </li>
                         ))}
@@ -1070,12 +1124,12 @@ export default function InterviewPrepPage() {
                   )}
                   
                   <div>
-                    <h4 style={{ fontSize: '14px', fontWeight: '600', color: '#dc2626', margin: '0 0 8px 0' }}>
+                    <h4 style={{ fontSize: isMobile ? '12px' : '14px', fontWeight: '600', color: '#dc2626', margin: '0 0 8px 0' }}>
                       Areas for Improvement:
                     </h4>
-                    <ul style={{ margin: '0', paddingLeft: '20px' }}>
+                    <ul style={{ margin: '0', paddingLeft: isMobile ? '16px' : '20px' }}>
                       {feedback.evaluation.improvements.map((improvement, index) => (
-                        <li key={index} style={{ fontSize: '14px', color: '#991b1b', marginBottom: '4px' }}>
+                        <li key={index} style={{ fontSize: isMobile ? '12px' : '14px', color: '#991b1b', marginBottom: '4px' }}>
                           {improvement}
                         </li>
                       ))}
@@ -1094,76 +1148,165 @@ export default function InterviewPrepPage() {
     const currentCategory = categories.find(c => c.id === selectedCategory);
     
     return (
-      <div style={{ minHeight: '100vh', backgroundColor: '#e5e7eb', padding: '32px 0' }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 16px' }}>
-          {/* Header */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '48px' }}>
+      <div style={{ 
+        minHeight: '100vh', 
+        backgroundColor: '#e5e7eb', 
+        padding: isMobile ? '0 8px' : '32px 0',
+        paddingTop: isMobile ? '40px' : '32px',
+        width: isMobile ? '100vw' : 'auto',
+        maxWidth: isMobile ? '100vw' : 'none',
+        boxSizing: 'border-box',
+        overflow: isMobile ? 'hidden' : 'auto'
+      }}>
+        {/* Mobile Header */}
+        {isMobile && (
+          <div style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            backgroundColor: '#1f2937',
+            padding: '12px 16px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            zIndex: 100
+          }}>
             <button
               onClick={() => setCurrentView('categories')}
-              style={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: '12px', 
-                color: '#374151', 
-                fontSize: '18px',
-                fontWeight: '600',
-                fontFamily: 'inherit',
+              style={{
                 background: 'none',
                 border: 'none',
+                color: '#ffffff',
                 cursor: 'pointer',
-                padding: '12px 16px',
-                borderRadius: '8px',
-                transition: 'all 0.2s ease'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = '#f3f4f6';
-                e.currentTarget.style.color = '#111827';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'transparent';
-                e.currentTarget.style.color = '#374151';
+                padding: '8px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
               }}
             >
-              <ArrowLeft style={{ width: '24px', height: '24px' }} />
-              Back to Categories
+              <ArrowLeft style={{ width: '20px', height: '20px' }} />
+              <span style={{ fontSize: '14px' }}>Back</span>
             </button>
-            <div style={{ textAlign: 'center' }}>
-              <h1 style={{ fontSize: '36px', fontWeight: 'bold', color: '#111827', marginBottom: '8px', margin: '0' }}>
-                {currentCategory?.name} Questions
-              </h1>
-              <p style={{ color: '#6b7280', fontSize: '20px', margin: '0' }}>
-                Question {currentQuestionIndex + 1} of {questions.length}
-              </p>
-            </div>
+            <h1 style={{
+              fontSize: '16px',
+              fontWeight: 'bold',
+              color: '#fbbf24',
+              margin: '0',
+              fontFamily: "'Fredoka', 'Inter', sans-serif"
+            }}>
+              {currentCategory?.name}
+            </h1>
             <button
               onClick={shuffleQuestions}
               style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                padding: '12px 24px',
-                backgroundColor: '#fde047',
-                color: '#000',
-                fontWeight: 'bold',
-                borderRadius: '9999px',
+                background: 'none',
                 border: 'none',
-                cursor: 'pointer'
+                color: '#ffffff',
+                cursor: 'pointer',
+                padding: '8px'
               }}
             >
               <Shuffle style={{ width: '20px', height: '20px' }} />
-              Shuffle
             </button>
           </div>
+        )}
 
-          {/* QUIZLET-STYLE FLASHCARD */}
-          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '48px' }}>
-            <div style={{ width: '100%', maxWidth: '900px' }}>
+        <div style={{ 
+          maxWidth: isMobile ? '100%' : '1200px', 
+          margin: '0 auto', 
+          padding: isMobile ? '0' : '0 16px',
+          width: isMobile ? '100%' : 'auto'
+        }}>
+          {/* Desktop Header */}
+          {!isMobile && (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '48px' }}>
+              <button
+                onClick={() => setCurrentView('categories')}
+                style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '12px', 
+                  color: '#374151', 
+                  fontSize: '18px',
+                  fontWeight: '600',
+                  fontFamily: 'inherit',
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: '12px 16px',
+                  borderRadius: '8px',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = '#f3f4f6';
+                  e.currentTarget.style.color = '#111827';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                  e.currentTarget.style.color = '#374151';
+                }}
+              >
+                <ArrowLeft style={{ width: '24px', height: '24px' }} />
+                Back to Categories
+              </button>
+              <div style={{ textAlign: 'center' }}>
+                <h1 style={{ fontSize: '36px', fontWeight: 'bold', color: '#111827', marginBottom: '8px', margin: '0' }}>
+                  {currentCategory?.name} Questions
+                </h1>
+                <p style={{ color: '#6b7280', fontSize: '20px', margin: '0' }}>
+                  Question {currentQuestionIndex + 1} of {questions.length}
+                </p>
+              </div>
+              <button
+                onClick={shuffleQuestions}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  padding: '12px 24px',
+                  backgroundColor: '#fde047',
+                  color: '#000',
+                  fontWeight: 'bold',
+                  borderRadius: '9999px',
+                  border: 'none',
+                  cursor: 'pointer'
+                }}
+              >
+                <Shuffle style={{ width: '20px', height: '20px' }} />
+                Shuffle
+              </button>
+            </div>
+          )}
+
+          {/* Mobile Question Counter */}
+          {isMobile && (
+            <div style={{ 
+              textAlign: 'center', 
+              marginBottom: '16px',
+              padding: '8px 16px',
+              backgroundColor: 'rgba(255, 255, 255, 0.9)',
+              borderRadius: '20px',
+              display: 'inline-block',
+              margin: '0 auto 16px auto',
+              fontSize: '14px',
+              color: '#374151',
+              fontWeight: '600'
+            }}>
+              Question {currentQuestionIndex + 1} of {questions.length}
+              {isShuffled && <span style={{ color: '#8b5cf6', marginLeft: '8px' }}>🔀</span>}
+            </div>
+          )}
+
+          {/* FLASHCARD */}
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: isMobile ? '24px' : '48px', margin: isMobile ? '0 0 24px 0' : '0 auto 48px auto' }}>
+            <div style={{ width: '100%', maxWidth: isMobile ? '100%' : '900px' }}>
               <div style={{
                 backgroundColor: '#ffffff',
                 borderRadius: '16px',
                 boxShadow: '0 10px 25px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
-                padding: '48px 32px',
-                minHeight: '350px',
+                padding: isMobile ? '20px 16px' : '48px 32px',
+                minHeight: isMobile ? '280px' : '350px',
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
@@ -1172,9 +1315,9 @@ export default function InterviewPrepPage() {
                 border: '3px solid #fde047'
               }}>
                 {/* Question */}
-                <div style={{ textAlign: 'center', marginBottom: '32px', width: '100%' }}>
+                <div style={{ textAlign: 'center', marginBottom: isMobile ? '20px' : '32px', width: '100%' }}>
                   <h2 style={{ 
-                    fontSize: '42px', 
+                    fontSize: isMobile ? '20px' : '42px', 
                     fontWeight: 'bold', 
                     color: '#111827', 
                     lineHeight: '1.2',
@@ -1188,16 +1331,16 @@ export default function InterviewPrepPage() {
                 </div>
                 
                 {/* Answer Section */}
-                <div style={{ width: '100%', maxWidth: '700px' }}>
+                <div style={{ width: '100%', maxWidth: isMobile ? '100%' : '700px' }}>
                   <div style={{
                     backgroundColor: '#f9fafb',
                     borderRadius: '12px',
-                    padding: '24px',
+                    padding: isMobile ? '12px 8px' : '24px',
                     border: '2px solid #e5e7eb'
                   }}>
                     <label style={{ 
                       display: 'block', 
-                      fontSize: '14px', 
+                      fontSize: isMobile ? '12px' : '14px', 
                       fontWeight: '600', 
                       color: '#374151', 
                       marginBottom: '12px' 
@@ -1211,24 +1354,38 @@ export default function InterviewPrepPage() {
                       placeholder="Type your answer here... Be specific and use examples where possible."
                       style={{
                         width: '100%',
-                        height: '120px',
-                        padding: '16px',
+                        height: isMobile ? '80px' : '120px',
+                        padding: isMobile ? '12px' : '16px',
                         border: '1px solid #d1d5db',
                         borderRadius: '8px',
                         resize: 'none',
-                        fontSize: '16px',
+                        fontSize: isMobile ? '14px' : '16px',
                         marginBottom: '16px',
                         boxSizing: 'border-box',
                         fontFamily: 'inherit'
                       }}
                     />
                     
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+                    <div style={{ 
+                      display: 'flex', 
+                      justifyContent: 'space-between', 
+                      alignItems: 'center', 
+                      flexWrap: 'wrap', 
+                      gap: isMobile ? '8px' : '12px',
+                      flexDirection: isMobile ? 'column' : 'row'
+                    }}>
+                      <div style={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        gap: isMobile ? '8px' : '12px', 
+                        flexWrap: 'wrap',
+                        justifyContent: isMobile ? 'center' : 'flex-start',
+                        width: isMobile ? '100%' : 'auto'
+                      }}>
                         <button
                           onClick={isRecording ? stopRecording : startRecording}
                           style={{
-                            padding: '12px',
+                            padding: isMobile ? '10px' : '12px',
                             borderRadius: '8px',
                             border: 'none',
                             cursor: 'pointer',
@@ -1240,9 +1397,9 @@ export default function InterviewPrepPage() {
                           }}
                           title={isRecording ? 'Stop recording' : 'Start voice input'}
                         >
-                          {isRecording ? <MicOff style={{ width: '20px', height: '20px' }} /> : <Mic style={{ width: '20px', height: '20px' }} />}
+                          {isRecording ? <MicOff style={{ width: isMobile ? '16px' : '20px', height: isMobile ? '16px' : '20px' }} /> : <Mic style={{ width: isMobile ? '16px' : '20px', height: isMobile ? '16px' : '20px' }} />}
                         </button>
-                        <span style={{ fontSize: '14px', color: '#6b7280' }}>
+                        <span style={{ fontSize: isMobile ? '12px' : '14px', color: '#6b7280' }}>
                           {userAnswer.length} characters
                         </span>
                         {isRecording && (
@@ -1254,7 +1411,7 @@ export default function InterviewPrepPage() {
                               borderRadius: '50%',
                               animation: 'pulse 2s infinite'
                             }}></div>
-                            <span style={{ fontSize: '14px', fontWeight: '500' }}>Recording...</span>
+                            <span style={{ fontSize: isMobile ? '12px' : '14px', fontWeight: '500' }}>Recording...</span>
                           </div>
                         )}
                       </div>
@@ -1265,13 +1422,16 @@ export default function InterviewPrepPage() {
                           display: 'flex',
                           alignItems: 'center',
                           gap: '8px',
-                          padding: '12px 24px',
+                          padding: isMobile ? '10px 16px' : '12px 24px',
                           borderRadius: '8px',
                           fontWeight: '600',
                           border: 'none',
                           cursor: !userAnswer.trim() || isEvaluating ? 'not-allowed' : 'pointer',
                           backgroundColor: !userAnswer.trim() || isEvaluating ? '#f3f4f6' : '#fde047',
-                          color: !userAnswer.trim() || isEvaluating ? '#9ca3af' : '#000'
+                          color: !userAnswer.trim() || isEvaluating ? '#9ca3af' : '#000',
+                          fontSize: isMobile ? '14px' : '16px',
+                          width: isMobile ? '100%' : 'auto',
+                          justifyContent: 'center'
                         }}
                       >
                         {isEvaluating ? (
@@ -1301,57 +1461,78 @@ export default function InterviewPrepPage() {
           </div>
 
           {/* Navigation Controls */}
-          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '48px', gap: '48px' }}>
+          <div style={{ 
+            display: 'flex', 
+            justifyContent: 'center', 
+            alignItems: 'center', 
+            marginBottom: isMobile ? '24px' : '48px', 
+            gap: isMobile ? '20px' : '48px',
+            padding: isMobile ? '0 4px' : '0'
+          }}>
             <button
-              onClick={previousQuestion}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                previousQuestion();
+              }}
               disabled={currentQuestionIndex === 0}
               style={{
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                width: '80px',
-                height: '80px',
+                width: isMobile ? '50px' : '80px',
+                height: isMobile ? '50px' : '80px',
                 borderRadius: '50%',
-                fontSize: '32px',
+                fontSize: isMobile ? '20px' : '32px',
                 fontWeight: 'bold',
                 border: 'none',
                 cursor: currentQuestionIndex === 0 ? 'not-allowed' : 'pointer',
                 backgroundColor: currentQuestionIndex === 0 ? '#6b7280' : '#fde047',
                 color: currentQuestionIndex === 0 ? '#9ca3af' : '#000',
-                boxShadow: currentQuestionIndex === 0 ? 'none' : '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                boxShadow: currentQuestionIndex === 0 ? 'none' : '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                zIndex: 1000,
+                position: 'relative'
               }}
             >
               ←
             </button>
             
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '64px', fontWeight: 'bold', color: '#fde047', margin: '0' }}>
-                {currentQuestionIndex + 1} / {questions.length}
-              </div>
-              {isShuffled && (
-                <div style={{ color: '#8b5cf6', fontSize: '18px', fontWeight: 'bold', marginTop: '8px' }}>
-                  🔀 SHUFFLED MODE
+            {!isMobile && (
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: '64px', fontWeight: 'bold', color: '#fde047', margin: '0' }}>
+                  {currentQuestionIndex + 1} / {questions.length}
                 </div>
-              )}
-            </div>
+                {isShuffled && (
+                  <div style={{ color: '#8b5cf6', fontSize: '18px', fontWeight: 'bold', marginTop: '8px' }}>
+                    🔀 SHUFFLED MODE
+                  </div>
+                )}
+              </div>
+            )}
             
             <button
-              onClick={nextQuestion}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                nextQuestion();
+              }}
               disabled={currentQuestionIndex === questions.length - 1}
               style={{
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                width: '80px',
-                height: '80px',
+                width: isMobile ? '50px' : '80px',
+                height: isMobile ? '50px' : '80px',
                 borderRadius: '50%',
-                fontSize: '32px',
+                fontSize: isMobile ? '20px' : '32px',
                 fontWeight: 'bold',
                 border: 'none',
                 cursor: currentQuestionIndex === questions.length - 1 ? 'not-allowed' : 'pointer',
                 backgroundColor: currentQuestionIndex === questions.length - 1 ? '#6b7280' : '#fde047',
                 color: currentQuestionIndex === questions.length - 1 ? '#9ca3af' : '#000',
-                boxShadow: currentQuestionIndex === questions.length - 1 ? 'none' : '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                boxShadow: currentQuestionIndex === questions.length - 1 ? 'none' : '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                zIndex: 1000,
+                position: 'relative'
               }}
             >
               →
@@ -1364,55 +1545,94 @@ export default function InterviewPrepPage() {
               backgroundColor: '#ffffff',
               borderRadius: '16px',
               boxShadow: '0 10px 25px -3px rgba(0, 0, 0, 0.1)',
-              padding: '32px',
-              marginBottom: '64px',
+              padding: isMobile ? '20px' : '32px',
+              marginBottom: isMobile ? '32px' : '64px',
               border: '3px solid #fde047',
-              maxWidth: '900px',
+              maxWidth: isMobile ? '100%' : '900px',
               marginLeft: 'auto',
               marginRight: 'auto'
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
-                <h3 style={{ fontSize: '24px', fontWeight: 'bold', color: '#111827', margin: '0' }}>AI Evaluation</h3>
+              <div style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '12px', 
+                marginBottom: '24px',
+                flexDirection: isMobile ? 'column' : 'row',
+                textAlign: isMobile ? 'center' : 'left'
+              }}>
+                <h3 style={{ fontSize: isMobile ? '20px' : '24px', fontWeight: 'bold', color: '#111827', margin: '0' }}>AI Evaluation</h3>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   {renderStars(evaluation.score)}
-                  <span style={{ marginLeft: '8px', fontSize: '20px', fontWeight: 'bold', color: '#111827' }}>
+                  <span style={{ marginLeft: '8px', fontSize: isMobile ? '18px' : '20px', fontWeight: 'bold', color: '#111827' }}>
                     {evaluation.score}/5
                   </span>
                 </div>
               </div>
               
-              <div style={{ marginBottom: '32px' }}>
-                <h4 style={{ fontWeight: '600', color: '#111827', marginBottom: '12px', fontSize: '18px' }}>Overall Feedback</h4>
-                <p style={{ color: '#374151', lineHeight: '1.6', fontSize: '16px', margin: '0' }}>{evaluation.feedback}</p>
+              <div style={{ marginBottom: isMobile ? '24px' : '32px' }}>
+                <h4 style={{ fontWeight: '600', color: '#111827', marginBottom: '12px', fontSize: isMobile ? '16px' : '18px' }}>Overall Feedback</h4>
+                <p style={{ color: '#374151', lineHeight: '1.6', fontSize: isMobile ? '14px' : '16px', margin: '0' }}>{evaluation.feedback}</p>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '32px' }}>
+              <div style={{ 
+                display: 'grid', 
+                gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(300px, 1fr))', 
+                gap: isMobile ? '24px' : '32px' 
+              }}>
                 <div>
-                  <h4 style={{ fontWeight: '600', color: '#065f46', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '18px' }}>
+                  <h4 style={{ 
+                    fontWeight: '600', 
+                    color: '#065f46', 
+                    marginBottom: '16px', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: '8px', 
+                    fontSize: isMobile ? '16px' : '18px' 
+                  }}>
                     <span style={{ width: '12px', height: '12px', backgroundColor: '#10b981', borderRadius: '50%' }}></span>
                     Strengths
                   </h4>
                   {evaluation.strengths && evaluation.strengths.length > 0 ? (
                     <ul style={{ listStyle: 'none', padding: '0', margin: '0' }}>
                       {evaluation.strengths.map((strength, index) => (
-                        <li key={index} style={{ color: '#065f46', marginBottom: '8px', fontSize: '16px', paddingLeft: '20px', position: 'relative' }}>
+                        <li key={index} style={{ 
+                          color: '#065f46', 
+                          marginBottom: '8px', 
+                          fontSize: isMobile ? '14px' : '16px', 
+                          paddingLeft: '20px', 
+                          position: 'relative' 
+                        }}>
                           <span style={{ position: 'absolute', left: '0', color: '#10b981' }}>✓</span>
                           {strength}
                         </li>
                       ))}
                     </ul>
                   ) : (
-                    <p style={{ color: '#6b7280', fontStyle: 'italic', margin: '0' }}>Keep working to identify your strengths!</p>
+                    <p style={{ color: '#6b7280', fontStyle: 'italic', margin: '0', fontSize: isMobile ? '14px' : '16px' }}>Keep working to identify your strengths!</p>
                   )}
                 </div>
                 <div>
-                  <h4 style={{ fontWeight: '600', color: '#dc2626', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '18px' }}>
+                  <h4 style={{ 
+                    fontWeight: '600', 
+                    color: '#dc2626', 
+                    marginBottom: '16px', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: '8px', 
+                    fontSize: isMobile ? '16px' : '18px' 
+                  }}>
                     <span style={{ width: '12px', height: '12px', backgroundColor: '#ef4444', borderRadius: '50%' }}></span>
                     Areas for Improvement
                   </h4>
                   <ul style={{ listStyle: 'none', padding: '0', margin: '0' }}>
                     {evaluation.improvements.map((improvement, index) => (
-                      <li key={index} style={{ color: '#dc2626', marginBottom: '8px', fontSize: '16px', paddingLeft: '20px', position: 'relative' }}>
+                      <li key={index} style={{ 
+                        color: '#dc2626', 
+                        marginBottom: '8px', 
+                        fontSize: isMobile ? '14px' : '16px', 
+                        paddingLeft: '20px', 
+                        position: 'relative' 
+                      }}>
                         <span style={{ position: 'absolute', left: '0', color: '#ef4444' }}>•</span>
                         {improvement}
                       </li>
