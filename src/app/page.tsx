@@ -665,7 +665,7 @@ function HomeContent() {
             
             {/* Our Story Box */}
             <div 
-              className="bg-white p-6 md:p-10 transition-all duration-300 hover:shadow-2xl hover:-translate-y-2"
+              className="bg-white p-6 md:p-10 transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 grid grid-cols-1 md:grid-cols-[300px_1fr] gap-6 md:gap-10 text-center md:text-left"
               style={{
                 boxShadow: '0 20px 60px -10px rgba(0, 0, 0, 0.15), 0 8px 30px -8px rgba(0, 0, 0, 0.1)',
                 border: '2px solid rgba(255, 255, 255, 0.8)',
@@ -673,166 +673,96 @@ function HomeContent() {
                 borderRadius: '24px'
               }}
             >
-            
-              {/* Mobile Layout: Hidden on desktop, shown on mobile */}
-              <div className="block md:hidden">
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
-                  <div style={{ width: '100%', marginBottom: '24px' }}>
-                    <Image
-                      src="/pierre headshot.jpeg"
-                      alt="Pierre Headshot"
-                      width={320}
-                      height={220}
-                      style={{ 
-                        width: '100%',
-                        height: '300px',
-                        borderRadius: '20px', 
-                        objectFit: 'cover', 
-                        boxShadow: '0 12px 28px -6px rgba(0, 0, 0, 0.2)' 
-                      }}
-                    />
-                  </div>
-                  
-                  <div style={{ width: '100%' }}>
-                    <h3 style={{
-                      fontSize: '2.5rem',
-                      fontWeight: '800',
-                      color: '#1f2937',
-                      margin: '0 0 20px 0',
-                      fontFamily: "'Fredoka', sans-serif",
-                      textAlign: 'center',
-                      lineHeight: '1.1',
-                      letterSpacing: '-0.025em'
-                    }}>
-                      OUR STORY
-                    </h3>
-                    
-                    <p style={{
-                      fontSize: '16px',
-                      color: '#4b5563',
-                      lineHeight: '1.7',
-                      margin: '0 0 28px 0',
-                      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-                      textAlign: 'center',
-                      fontWeight: '400'
-                    }}>
-                      The Our Story section highlights the journey that shaped the organisation, outlining its background, guiding values, and the principles that continue to influence its work today.
-                    </p>
-                    
-                    <button
-                      onClick={() => router.push('/our-story')}
-                      style={{
-                        background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
-                        color: '#000000',
-                        padding: '16px 32px',
-                        borderRadius: '30px',
-                        border: 'none',
-                        fontSize: '16px',
-                        fontWeight: '700',
-                        cursor: 'pointer',
-                        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                        fontFamily: "'Fredoka', sans-serif",
-                        boxShadow: '0 6px 20px rgba(251, 191, 36, 0.4)',
-                        transform: 'translateY(0)',
-                        minHeight: '52px',
-                        minWidth: '160px',
-                        letterSpacing: '0.5px'
-            }}
-            onMouseEnter={(e) => {
-                        e.currentTarget.style.background = 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)';
-                        e.currentTarget.style.boxShadow = '0 8px 25px rgba(251, 191, 36, 0.6)';
-                        e.currentTarget.style.transform = 'translateY(-2px)';
-            }}
-            onMouseLeave={(e) => {
-                        e.currentTarget.style.background = 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)';
-                        e.currentTarget.style.boxShadow = '0 6px 20px rgba(251, 191, 36, 0.4)';
-              e.currentTarget.style.transform = 'translateY(0)';
-                      }}
-                    >
-                      🚀 Learn More
-                    </button>
-                  </div>
-                </div>
+              <div>
+                <Image
+                  src="/pierre headshot.jpeg"
+                  alt="Pierre Headshot"
+                  width={300}
+                  height={300}
+                  style={{ 
+                    width: '100%',
+                    height: '300px',
+                    borderRadius: '20px', 
+                    objectFit: 'cover',
+                    objectPosition: 'center 20%',
+                    boxShadow: '0 12px 28px -6px rgba(0, 0, 0, 0.2)' 
+                  }}
+                  className="md:h-[280px]"
+                />
               </div>
-
-              {/* Desktop Layout: Hidden on mobile, shown on desktop */}
-              <div className="hidden md:block">
-              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '32px' }}>
-                <div style={{ flexShrink: 0 }}>
-                  <Image
-                    src="/pierre headshot.jpeg"
-                    alt="Pierre Headshot"
-                    width={180}
-                    height={240}
-                      style={{ 
-                        borderRadius: '20px', 
-                        objectFit: 'cover', 
-                        boxShadow: '0 12px 24px -6px rgba(0, 0, 0, 0.15)' 
-                      }}
-                  />
-                </div>
+              
+              <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center'
+              }}>
+                <h3 style={{
+                  fontSize: '2.5rem',
+                  fontWeight: '800',
+                  color: '#1f2937',
+                  margin: '0 0 20px 0',
+                  fontFamily: "'Fredoka', sans-serif",
+                  lineHeight: '1.1',
+                  letterSpacing: '-0.025em'
+                }}
+                className="md:text-6xl md:text-left md:mb-6"
+                >
+                  OUR STORY
+                </h3>
                 
-                <div style={{ flex: 1 }}>
-                  <h3 style={{
-                    fontSize: '3.5rem',
-                    fontWeight: 'bold',
-                    color: '#111827',
-                    margin: '0 0 24px 0',
-                    fontFamily: "'Fredoka', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-                      textAlign: 'left',
-                      lineHeight: '1.1'
-                  }}>
-                    OUR STORY
-                  </h3>
-                  
-                  <p style={{
-                    fontSize: '18px',
-                    color: '#4b5563',
-                    lineHeight: '1.7',
-                    margin: '0 0 24px 0',
-                      fontFamily: "'Fredoka', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-                      textAlign: 'left'
-                  }}>
-                    The Our Story section highlights the journey that shaped the organisation, outlining its background, guiding values, and the principles that continue to influence its work today.
-                  </p>
-                  
+                <p style={{
+                  fontSize: '16px',
+                  color: '#4b5563',
+                  lineHeight: '1.7',
+                  margin: '0 0 28px 0',
+                  fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                  fontWeight: '400'
+                }}
+                className="md:text-lg md:text-left md:mb-6"
+                >
+                  The Our Story section highlights the journey that shaped the organisation, outlining its background, guiding values, and the principles that continue to influence its work today.
+                </p>
+                
+                <div>
                   <button
                     onClick={() => router.push('/our-story')}
                     style={{
                       background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
-                      color: '#000',
+                      color: '#000000',
                       padding: '16px 32px',
-                      borderRadius: '25px',
+                      borderRadius: '30px',
                       border: 'none',
                       fontSize: '16px',
-                      fontWeight: 'bold',
+                      fontWeight: '700',
                       cursor: 'pointer',
                       transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                      fontFamily: "'Fredoka', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-                      boxShadow: '0 4px 15px rgba(251, 191, 36, 0.4)',
-                      transform: 'translateY(0)'
+                      fontFamily: "'Fredoka', sans-serif",
+                      boxShadow: '0 6px 20px rgba(251, 191, 36, 0.4)',
+                      transform: 'translateY(0)',
+                      minHeight: '52px',
+                      minWidth: '160px',
+                      letterSpacing: '0.5px'
                     }}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.background = 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)';
-                      e.currentTarget.style.transform = 'translateY(-2px)';
                       e.currentTarget.style.boxShadow = '0 8px 25px rgba(251, 191, 36, 0.6)';
+                      e.currentTarget.style.transform = 'translateY(-2px)';
                     }}
                     onMouseLeave={(e) => {
                       e.currentTarget.style.background = 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)';
+                      e.currentTarget.style.boxShadow = '0 6px 20px rgba(251, 191, 36, 0.4)';
                       e.currentTarget.style.transform = 'translateY(0)';
-                      e.currentTarget.style.boxShadow = '0 4px 15px rgba(251, 191, 36, 0.4)';
                     }}
                   >
                     🚀 Learn More
                   </button>
-                  </div>
                 </div>
               </div>
             </div>
 
             {/* Our Services Box */}
             <div 
-              className="bg-white p-6 md:p-10 transition-all duration-300 hover:shadow-2xl hover:-translate-y-2"
+              className="bg-white p-6 md:p-10 transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 grid grid-cols-1 md:grid-cols-[300px_1fr] gap-6 md:gap-10 text-center md:text-left"
               style={{
                 boxShadow: '0 20px 60px -10px rgba(0, 0, 0, 0.15), 0 8px 30px -8px rgba(0, 0, 0, 0.1)',
                 border: '2px solid rgba(255, 255, 255, 0.8)',
@@ -840,159 +770,88 @@ function HomeContent() {
                 borderRadius: '24px'
               }}
             >
-            
-              {/* Mobile Layout: Hidden on desktop, shown on mobile */}
-              <div className="block md:hidden">
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
-                  <div style={{ width: '100%', marginBottom: '24px' }}>
-                    <Image
-                      src="/talentix our services.jpeg"
-                      alt="Talentix Our Services"
-                      width={320}
-                      height={220}
-                      style={{ 
-                        width: '100%',
-                        height: '300px',
-                        borderRadius: '20px', 
-                        objectFit: 'cover', 
-                        boxShadow: '0 12px 28px -6px rgba(0, 0, 0, 0.2)' 
-                      }}
-                    />
-                  </div>
-                  
-                  <div style={{ width: '100%' }}>
-                    <h3 style={{
-                      fontSize: '2.5rem',
-                      fontWeight: '800',
-                      color: '#1f2937',
-                      margin: '0 0 20px 0',
-                      fontFamily: "'Fredoka', sans-serif",
-                      textAlign: 'center',
-                      lineHeight: '1.1',
-                      letterSpacing: '-0.025em'
-                    }}>
-                      SERVICES
-                    </h3>
-                    
-                    <p style={{
-                      fontSize: '16px',
-                      color: '#4b5563',
-                      lineHeight: '1.7',
-                      margin: '0 0 28px 0',
-                      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-                      textAlign: 'center',
-                      fontWeight: '400'
-                    }}>
-                      Here we'll talk about how our services can help your school or you as an individual. We offer interactive workshops & assemblies within schools to help you secure your first job!
-                    </p>
-                    
-                    <button
-                      onClick={() => router.push('/our-services')}
-                      style={{
-                        background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
-                        color: '#000000',
-                        padding: '16px 32px',
-                        borderRadius: '30px',
-                        border: 'none',
-                        fontSize: '16px',
-                        fontWeight: '700',
-                        cursor: 'pointer',
-                        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                        fontFamily: "'Fredoka', sans-serif",
-                        boxShadow: '0 6px 20px rgba(251, 191, 36, 0.4)',
-                        transform: 'translateY(0)',
-                        minHeight: '52px',
-                        minWidth: '160px',
-                        letterSpacing: '0.5px'
-            }}
-            onMouseEnter={(e) => {
-                        e.currentTarget.style.background = 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)';
-                        e.currentTarget.style.boxShadow = '0 8px 25px rgba(251, 191, 36, 0.6)';
-                        e.currentTarget.style.transform = 'translateY(-2px)';
-            }}
-            onMouseLeave={(e) => {
-                        e.currentTarget.style.background = 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)';
-                        e.currentTarget.style.boxShadow = '0 6px 20px rgba(251, 191, 36, 0.4)';
-              e.currentTarget.style.transform = 'translateY(0)';
-                      }}
-                    >
-                      ⚡ Learn More
-                    </button>
-                  </div>
-                </div>
+              <div>
+                <Image
+                  src="/talentix our services.jpeg"
+                  alt="Talentix Our Services"
+                  width={300}
+                  height={300}
+                  style={{ 
+                    width: '100%',
+                    height: '300px',
+                    borderRadius: '20px', 
+                    objectFit: 'cover', 
+                    boxShadow: '0 12px 28px -6px rgba(0, 0, 0, 0.2)' 
+                  }}
+                  className="md:h-[250px]"
+                />
               </div>
-
-              {/* Desktop Layout: Hidden on mobile, shown on desktop */}
-              <div className="hidden md:block">
-              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '32px' }}>
-                <div style={{ flexShrink: 0 }}>
-                  <Image
-                    src="/talentix our services.jpeg"
-                    alt="Talentix Our Services"
-                    width={180}
-                    height={240}
-                      style={{ 
-                        borderRadius: '20px', 
-                        objectFit: 'cover', 
-                        boxShadow: '0 12px 24px -6px rgba(0, 0, 0, 0.15)' 
-                      }}
-                  />
-                </div>
+              
+              <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center'
+              }}>
+                <h3 style={{
+                  fontSize: '2.5rem',
+                  fontWeight: '800',
+                  color: '#1f2937',
+                  margin: '0 0 20px 0',
+                  fontFamily: "'Fredoka', sans-serif",
+                  lineHeight: '1.1',
+                  letterSpacing: '-0.025em'
+                }}
+                className="md:text-6xl md:text-left md:mb-6"
+                >
+                  SERVICES
+                </h3>
                 
-                <div style={{ flex: 1 }}>
-                  <h3 style={{
-                    fontSize: '3.5rem',
-                    fontWeight: 'bold',
-                    color: '#111827',
-                    margin: '0 0 24px 0',
-                    fontFamily: "'Fredoka', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-                      textAlign: 'left',
-                      lineHeight: '1.1'
-                  }}>
-                    SERVICES
-                  </h3>
-                  
-                  <p style={{
-                    fontSize: '18px',
-                    color: '#4b5563',
-                    lineHeight: '1.7',
-                    margin: '0 0 24px 0',
-                      fontFamily: "'Fredoka', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-                      textAlign: 'left'
-                  }}>
-                    Here we'll talk about how our services can help your school or you as an individual. We offer interactive workshops & assemblies within schools to help you secure your first job!
-                  </p>
-                  
+                <p style={{
+                  fontSize: '16px',
+                  color: '#4b5563',
+                  lineHeight: '1.7',
+                  margin: '0 0 28px 0',
+                  fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                  fontWeight: '400'
+                }}
+                className="md:text-lg md:text-left md:mb-6"
+                >
+                  Here we'll talk about how our services can help your school or you as an individual. We offer interactive workshops & assemblies within schools to help you secure your first job!
+                </p>
+                
+                <div>
                   <button
                     onClick={() => router.push('/our-services')}
                     style={{
                       background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
-                      color: '#000',
+                      color: '#000000',
                       padding: '16px 32px',
-                      borderRadius: '25px',
+                      borderRadius: '30px',
                       border: 'none',
                       fontSize: '16px',
-                      fontWeight: 'bold',
+                      fontWeight: '700',
                       cursor: 'pointer',
                       transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                      fontFamily: "'Fredoka', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-                      boxShadow: '0 4px 15px rgba(251, 191, 36, 0.4)',
-                      transform: 'translateY(0)'
+                      fontFamily: "'Fredoka', sans-serif",
+                      boxShadow: '0 6px 20px rgba(251, 191, 36, 0.4)',
+                      transform: 'translateY(0)',
+                      minHeight: '52px',
+                      minWidth: '160px',
+                      letterSpacing: '0.5px'
                     }}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.background = 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)';
-                      e.currentTarget.style.transform = 'translateY(-2px)';
                       e.currentTarget.style.boxShadow = '0 8px 25px rgba(251, 191, 36, 0.6)';
+                      e.currentTarget.style.transform = 'translateY(-2px)';
                     }}
                     onMouseLeave={(e) => {
                       e.currentTarget.style.background = 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)';
+                      e.currentTarget.style.boxShadow = '0 6px 20px rgba(251, 191, 36, 0.4)';
                       e.currentTarget.style.transform = 'translateY(0)';
-                      e.currentTarget.style.boxShadow = '0 4px 15px rgba(251, 191, 36, 0.4)';
                     }}
                   >
                     ⚡ Learn More
                   </button>
-                  </div>
                 </div>
               </div>
             </div>

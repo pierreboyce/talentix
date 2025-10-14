@@ -233,18 +233,31 @@ export default function NavigationMobile() {
           {/* Hamburger menu button - Always shown on mobile */}
             <button
               onClick={toggleMobileMenu}
-              className="touch-target relative p-3 rounded-xl text-white shadow-lg transition-all duration-200 active:scale-95 border-0 outline-none"
+                     className="touch-target relative p-3 text-white transition-all duration-300 active:scale-95 border-0 outline-none"
               style={{ 
-                minHeight: '48px', 
-                minWidth: '48px',
+                       minHeight: '52px',
+                       minWidth: '52px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                backgroundImage: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
-                boxShadow: '0 8px 16px rgba(245, 158, 11, 0.35)'
+                       background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
+                       boxShadow: '0 10px 25px rgba(245, 158, 11, 0.4), 0 4px 12px rgba(245, 158, 11, 0.3)',
+                       borderRadius: '16px',
+                       border: '2px solid rgba(255, 255, 255, 0.3)',
+                       backdropFilter: 'blur(8px)'
               }}
               aria-label={showMobileMenu ? 'Close menu' : 'Open menu'}
               aria-expanded={showMobileMenu}
+                     onMouseEnter={(e) => {
+                       e.currentTarget.style.background = 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)';
+                       e.currentTarget.style.boxShadow = '0 15px 35px rgba(245, 158, 11, 0.5), 0 6px 18px rgba(245, 158, 11, 0.4)';
+                       e.currentTarget.style.transform = 'translateY(-2px) scale(1.05)';
+                     }}
+                     onMouseLeave={(e) => {
+                       e.currentTarget.style.background = 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)';
+                       e.currentTarget.style.boxShadow = '0 10px 25px rgba(245, 158, 11, 0.4), 0 4px 12px rgba(245, 158, 11, 0.3)';
+                       e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                     }}
             >
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d={showMobileMenu ? 'M5 5L19 19' : 'M3 7H21'} stroke="white" strokeWidth="2.5" strokeLinecap="round"/>
@@ -263,9 +276,10 @@ export default function NavigationMobile() {
 
       {/* Backdrop Blur Overlay */}
       {showMobileMenu && (
-        <div 
-          className="fixed inset-0 bg-black/40 backdrop-blur-md"
-          style={{ 
+        <div
+          className="fixed inset-0 backdrop-blur-lg"
+          style={{
+            background: 'linear-gradient(135deg, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.5) 100%)',
             animation: 'fadeIn 0.3s ease-out',
             touchAction: 'none',
             overflow: 'hidden',
@@ -278,43 +292,72 @@ export default function NavigationMobile() {
 
       {/* Side Panel Menu - Slides in from right */}
       <div 
-        className={`fixed top-0 h-full shadow-2xl overflow-y-auto transition-all duration-300 ease-out`}
+        className={`fixed top-0 h-full overflow-y-auto transition-all duration-300 ease-out`}
         style={{ 
           right: showMobileMenu ? '0' : '-100%',
           width: '85%',
           maxWidth: '320px',
           paddingTop: '70px',
-          borderLeft: '1px solid rgba(0, 0, 0, 0.1)',
           touchAction: 'pan-y',
-          backgroundColor: '#ffffff',
+          background: 'linear-gradient(145deg, #fefefe 0%, #ffffff 50%, #fefefe 100%)',
+          boxShadow: '-10px 0 40px rgba(0, 0, 0, 0.15), -5px 0 20px rgba(0, 0, 0, 0.1)',
+          borderLeft: '3px solid rgba(251, 191, 36, 0.3)',
+          borderTopLeftRadius: '24px',
+          borderBottomLeftRadius: '24px',
           zIndex: 10000,
           opacity: 1
         }}
             onClick={(e) => e.stopPropagation()}
         onTouchMove={(e) => e.stopPropagation()}
       >
-        <div className={`px-4 py-6 space-y-4 transition-opacity duration-300 ${
+        <div className={`px-6 py-8 space-y-4 transition-opacity duration-300 ${
           showMobileMenu && !isAnimating ? 'opacity-100' : 'opacity-0'
         }`}>
-            <div className="text-center mb-6">
+            <div className="text-center mb-8">
               <div 
-                className="text-xl font-bold mb-2"
-                style={{ 
+                className="relative inline-block"
+                style={{
+                  background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 70%, #d97706 100%)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text',
+                  fontSize: '1.5rem',
+                  fontWeight: '800',
                   fontFamily: 'Fredoka, sans-serif',
-                  color: '#1f2937'
+                  letterSpacing: '0.5px',
+                  marginBottom: '12px',
+                  textShadow: '2px 2px 4px rgba(251, 191, 36, 0.2)'
                 }}
               >
-                {user ? 'Explore Talentix' : 'Welcome to Talentix'}
+                {user ? '✨ Explore Talentix' : '🚀 Welcome to Talentix'}
+              </div>
+              <div className="flex justify-center items-center gap-2 mb-4">
+                <div 
+                  className="h-1 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full"
+                  style={{ width: '30px' }}
+                />
+                <div 
+                  className="w-2 h-2 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full animate-pulse"
+                />
+                <div 
+                  className="h-1 bg-gradient-to-r from-orange-500 to-red-500 rounded-full"
+                  style={{ width: '30px' }}
+                />
               </div>
               <div 
-                className="mx-auto h-1 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full"
-                style={{ width: '80px' }}
-              />
+                className="text-sm font-medium text-gray-600"
+                style={{ 
+                  fontFamily: 'Inter, sans-serif',
+                  letterSpacing: '0.3px'
+                }}
+              >
+                {user ? 'Your career journey awaits!' : 'Let\'s build your future together!'}
+              </div>
             </div>
             
             {!user ? (
               /* Non-authenticated user menu - Simple navigation */
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <button 
                   onClick={() => handleMenuItemClick(() => {
                     console.log('Join Our Community clicked - dispatching event!');
@@ -322,46 +365,130 @@ export default function NavigationMobile() {
                       window.dispatchEvent(new CustomEvent('talentix-show-community-modal'));
                     }
                   })}
-                  className="mobile-nav-item w-full text-center bg-gradient-to-r from-green-200 to-green-300 text-gray-800 hover:from-green-300 hover:to-green-400 transform hover:scale-105 active:scale-95"
-                  style={{ fontFamily: 'Fredoka, sans-serif', padding: '16px 12px', borderRadius: '12px' }}
+                  className="mobile-nav-item w-full text-center transform hover:scale-105 active:scale-95 transition-all duration-200"
+                  style={{ 
+                    fontFamily: 'Fredoka, sans-serif', 
+                    padding: '18px 16px', 
+                    borderRadius: '20px',
+                    background: 'linear-gradient(135deg, #dcfce7 0%, #22c55e 100%)',
+                    boxShadow: '0 8px 25px rgba(34, 197, 94, 0.3), 0 3px 10px rgba(34, 197, 94, 0.2)',
+                    border: '2px solid rgba(255, 255, 255, 0.7)',
+                    color: '#065f46',
+                    fontWeight: '700',
+                    letterSpacing: '0.3px'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)';
+                    e.currentTarget.style.boxShadow = '0 12px 35px rgba(34, 197, 94, 0.4), 0 5px 15px rgba(34, 197, 94, 0.3)';
+                    e.currentTarget.style.transform = 'translateY(-2px) scale(1.02)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'linear-gradient(135deg, #dcfce7 0%, #22c55e 100%)';
+                    e.currentTarget.style.boxShadow = '0 8px 25px rgba(34, 197, 94, 0.3), 0 3px 10px rgba(34, 197, 94, 0.2)';
+                    e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                  }}
                 >
                   <div className="flex items-center justify-center gap-3">
-                    <span className="text-2xl">🌟</span>
-                    <span className="font-semibold text-base">Join Our Community</span>
+                    <span className="text-2xl animate-bounce">🌟</span>
+                    <span className="font-bold text-base">Join Our Community</span>
                   </div>
                 </button>
                 
                 <button 
                   onClick={() => handleMenuItemClick(() => router.push('/our-story'))}
-                  className="mobile-nav-item w-full text-center bg-gradient-to-r from-yellow-200 to-yellow-300 text-gray-800 hover:from-yellow-300 hover:to-yellow-400 transform hover:scale-105 active:scale-95"
-                  style={{ fontFamily: 'Fredoka, sans-serif', padding: '16px 12px', borderRadius: '12px' }}
+                  className="mobile-nav-item w-full text-center transform hover:scale-105 active:scale-95 transition-all duration-200"
+                  style={{ 
+                    fontFamily: 'Fredoka, sans-serif', 
+                    padding: '18px 16px', 
+                    borderRadius: '20px',
+                    background: 'linear-gradient(135deg, #fef3c7 0%, #fde047 100%)',
+                    boxShadow: '0 8px 25px rgba(253, 224, 71, 0.3), 0 3px 10px rgba(253, 224, 71, 0.2)',
+                    border: '2px solid rgba(255, 255, 255, 0.7)',
+                    color: '#92400e',
+                    fontWeight: '700',
+                    letterSpacing: '0.3px'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = 'linear-gradient(135deg, #fde047 0%, #facc15 100%)';
+                    e.currentTarget.style.boxShadow = '0 12px 35px rgba(253, 224, 71, 0.4), 0 5px 15px rgba(253, 224, 71, 0.3)';
+                    e.currentTarget.style.transform = 'translateY(-2px) scale(1.02)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'linear-gradient(135deg, #fef3c7 0%, #fde047 100%)';
+                    e.currentTarget.style.boxShadow = '0 8px 25px rgba(253, 224, 71, 0.3), 0 3px 10px rgba(253, 224, 71, 0.2)';
+                    e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                  }}
                 >
                   <div className="flex items-center justify-center gap-3">
                     <span className="text-2xl">📖</span>
-                    <span className="font-semibold text-base">Our Story</span>
+                    <span className="font-bold text-base">Our Story</span>
                   </div>
                 </button>
                 
                 <button 
                   onClick={() => handleMenuItemClick(() => router.push('/our-services'))}
-                  className="mobile-nav-item w-full text-center bg-gradient-to-r from-purple-200 to-purple-300 text-gray-800 hover:from-purple-300 hover:to-purple-400 transform hover:scale-105 active:scale-95"
-                  style={{ fontFamily: 'Fredoka, sans-serif', padding: '16px 12px', borderRadius: '12px' }}
+                  className="mobile-nav-item w-full text-center transform hover:scale-105 active:scale-95 transition-all duration-200"
+                  style={{ 
+                    fontFamily: 'Fredoka, sans-serif', 
+                    padding: '18px 16px', 
+                    borderRadius: '20px',
+                    background: 'linear-gradient(135deg, #ddd6fe 0%, #a78bfa 100%)',
+                    boxShadow: '0 8px 25px rgba(167, 139, 250, 0.3), 0 3px 10px rgba(167, 139, 250, 0.2)',
+                    border: '2px solid rgba(255, 255, 255, 0.7)',
+                    color: '#5b21b6',
+                    fontWeight: '700',
+                    letterSpacing: '0.3px'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = 'linear-gradient(135deg, #a78bfa 0%, #8b5cf6 100%)';
+                    e.currentTarget.style.boxShadow = '0 12px 35px rgba(167, 139, 250, 0.4), 0 5px 15px rgba(167, 139, 250, 0.3)';
+                    e.currentTarget.style.transform = 'translateY(-2px) scale(1.02)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'linear-gradient(135deg, #ddd6fe 0%, #a78bfa 100%)';
+                    e.currentTarget.style.boxShadow = '0 8px 25px rgba(167, 139, 250, 0.3), 0 3px 10px rgba(167, 139, 250, 0.2)';
+                    e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                  }}
                 >
                   <div className="flex items-center justify-center gap-3">
                     <span className="text-2xl">🛠️</span>
-                    <span className="font-semibold text-base">Our Services</span>
+                    <span className="font-bold text-base">Our Services</span>
                   </div>
                 </button>
                 
-                <div className="border-t border-gray-200 pt-3 space-y-3">
+                <div className="mt-6 pt-6 space-y-4 relative">
+                  <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 w-16 h-0.5 bg-gradient-to-r from-transparent via-gray-300 to-transparent"></div>
+                  
                   <button 
                     onClick={() => handleMenuItemClick(() => {
                       setShowSignUpModal(false);
                       setShowPricingModal(false);
                       setShowSignInModal(true);
                     })}
-                    className="mobile-nav-item w-full text-center bg-gradient-to-r from-blue-300 to-blue-400 text-white hover:from-blue-400 hover:to-blue-500 transform hover:scale-105 active:scale-95"
-                    style={{ fontFamily: 'Fredoka, sans-serif', padding: '16px 12px', borderRadius: '12px' }}
+                    className="mobile-nav-item w-full text-center transform hover:scale-105 active:scale-95 transition-all duration-200"
+                    style={{ 
+                      fontFamily: 'Fredoka, sans-serif', 
+                      padding: '18px 16px', 
+                      borderRadius: '20px',
+                      background: 'linear-gradient(135deg, #bfdbfe 0%, #60a5fa 100%)',
+                      boxShadow: '0 8px 25px rgba(96, 165, 250, 0.3), 0 3px 10px rgba(96, 165, 250, 0.2)',
+                      border: '2px solid rgba(255, 255, 255, 0.7)',
+                      color: '#1e3a8a',
+                      fontWeight: '700',
+                      letterSpacing: '0.3px'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = 'linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%)';
+                      e.currentTarget.style.boxShadow = '0 12px 35px rgba(96, 165, 250, 0.4), 0 5px 15px rgba(96, 165, 250, 0.3)';
+                      e.currentTarget.style.transform = 'translateY(-2px) scale(1.02)';
+                      e.currentTarget.style.color = '#ffffff';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = 'linear-gradient(135deg, #bfdbfe 0%, #60a5fa 100%)';
+                      e.currentTarget.style.boxShadow = '0 8px 25px rgba(96, 165, 250, 0.3), 0 3px 10px rgba(96, 165, 250, 0.2)';
+                      e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                      e.currentTarget.style.color = '#1e3a8a';
+                    }}
                   >
                     <div className="flex items-center justify-center gap-3">
                       <span className="text-2xl">🔐</span>
@@ -375,11 +502,35 @@ export default function NavigationMobile() {
                       setShowPricingModal(false);
                       setShowSignUpModal(true);
                     })}
-                    className="mobile-nav-item w-full text-center bg-gradient-to-r from-yellow-300 to-orange-400 text-white hover:from-yellow-400 hover:to-orange-500 transform hover:scale-105 active:scale-95"
-                    style={{ fontFamily: 'Fredoka, sans-serif', padding: '18px 12px', borderRadius: '12px', boxShadow: '0 4px 12px rgba(251, 191, 36, 0.4)' }}
+                    className="mobile-nav-item w-full text-center transform hover:scale-105 active:scale-95 transition-all duration-200"
+                    style={{ 
+                      fontFamily: 'Fredoka, sans-serif', 
+                      padding: '20px 16px', 
+                      borderRadius: '20px',
+                      background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
+                      boxShadow: '0 10px 30px rgba(251, 191, 36, 0.4), 0 4px 15px rgba(251, 191, 36, 0.3)',
+                      border: '2px solid rgba(255, 255, 255, 0.8)',
+                      color: '#92400e',
+                      fontWeight: '800',
+                      letterSpacing: '0.5px',
+                      position: 'relative',
+                      overflow: 'hidden'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)';
+                      e.currentTarget.style.boxShadow = '0 15px 40px rgba(251, 191, 36, 0.5), 0 6px 20px rgba(251, 191, 36, 0.4)';
+                      e.currentTarget.style.transform = 'translateY(-3px) scale(1.03)';
+                      e.currentTarget.style.color = '#ffffff';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)';
+                      e.currentTarget.style.boxShadow = '0 10px 30px rgba(251, 191, 36, 0.4), 0 4px 15px rgba(251, 191, 36, 0.3)';
+                      e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                      e.currentTarget.style.color = '#92400e';
+                    }}
                   >
                     <div className="flex items-center justify-center gap-3">
-                      <span className="text-2xl">🚀</span>
+                      <span className="text-2xl animate-pulse">🚀</span>
                       <span className="font-bold text-lg">Sign Up Now</span>
                     </div>
                   </button>
