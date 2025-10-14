@@ -15,6 +15,7 @@ import ErrorBoundary from "../components/ErrorBoundary";
 import { ToastProvider } from "../components/Toast";
 import MobileRedirect from "../components/MobileRedirect";
 import NavigationWrapper from "../components/NavigationWrapper";
+import CommunityModal from "../components/CommunityModal";
 
 const inter = Inter({ subsets: ["latin"] });
 const fredoka = Fredoka({ 
@@ -65,6 +66,7 @@ export default function RootLayout({
                     <PointsNotification />
                     <ChatbotClientWrapper />
                     <GlobalModalManager />
+                    <CommunityModal />
                     </ChatbotProvider>
                   </QuestProvider>
                 </PointsProvider>
