@@ -25,11 +25,21 @@ export default function NavigationMobile() {
   const excludedPages = [
     '/our-story',
     '/our-services',
+    '/video-interview',
+  ];
+  
+  // Define pages where mobile navigation should be completely hidden
+  const hiddenPages: string[] = [
+    // '/video-interview', // Removed - we want to show header on video interview page
   ];
   
   const isExcludedPage = excludedPages.some(page => 
     pathname === page || 
     pathname.startsWith('/our-services')
+  );
+  const isHiddenPage = hiddenPages.some(page => 
+    pathname === page || 
+    pathname.startsWith(page + '/')
   );
   const isSticky = !isExcludedPage;
   const headerPositionClass = isSticky
@@ -43,16 +53,12 @@ export default function NavigationMobile() {
 
   // Close menu when clicking outside
   useEffect(() => {
+    if (typeof document === 'undefined') return;
+    
     const handleClickOutside = (event: MouseEvent) => {
       if (showMobileMenu) {
         const target = event.target as Element;
-        console.log('🔍 Mobile menu click outside check:', {
-          showMobileMenu,
-          target: target.tagName,
-          hasMenuContainer: !!target.closest('.mobile-menu-container')
-        });
         if (!target.closest('.mobile-menu-container')) {
-          console.log('🚫 Closing mobile menu due to outside click');
           toggleMobileMenu();
         }
       }
@@ -69,6 +75,8 @@ export default function NavigationMobile() {
 
   // Listen for modal events
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
     const handleShowSignIn = () => {
       // Close all other modals first
       setShowSignUpModal(false);
@@ -101,6 +109,8 @@ export default function NavigationMobile() {
 
   // Prevent body scroll when any modal is open
   useEffect(() => {
+    if (typeof document === 'undefined') return;
+    
     const isAnyModalOpen = showSignInModal || showSignUpModal || showPricingModal;
     if (isAnyModalOpen) {
       document.body.style.overflow = 'hidden';
@@ -153,12 +163,17 @@ export default function NavigationMobile() {
     }, 150);
   };
 
+  // Don't render mobile navigation on hidden pages
+  if (isHiddenPage) {
+    return null;
+  }
+
   return (
     <>
       <header className={`mobile-menu-container w-full bg-white border-b border-gray-200/80 ${headerPositionClass}`} style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
         <div className="mx-auto flex items-center justify-between px-4 py-3" style={{ height: '70px', width: '90%', maxWidth: '90vw' }}>
+          {/* Logo on the left */}
           <div className="flex items-center">
-            {/* Logo */}
             <Link href="/" className="flex items-center">
               <Image
                 src="/tixlogo.png"
@@ -171,68 +186,9 @@ export default function NavigationMobile() {
             </Link>
           </div>
 
-          {/* Navigation - Different for authenticated vs non-authenticated users */}
+          {/* Navigation buttons on the right - aligned horizontally with logo */}
           {!user ? (
-            /* Non-authenticated user navigation - Show buttons in header with desktop styling */
-            <div className="flex items-center space-x-1">
-              <button 
-                onClick={() => router.push('/our-story')}
-                style={{
-                  background: 'linear-gradient(135deg, #fef3c7 0%, #fde047 100%)',
-                  color: '#374151',
-                  padding: '6px 12px',
-                  borderRadius: '20px',
-                  border: 'none',
-                  fontSize: '11px',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                  transition: 'all 0.3s ease',
-                  boxShadow: '0 3px 10px rgba(253, 224, 71, 0.3)',
-                  fontFamily: "'Fredoka', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-2px) scale(1.03)';
-                  e.currentTarget.style.boxShadow = '0 5px 15px rgba(253, 224, 71, 0.4)';
-                  e.currentTarget.style.background = 'linear-gradient(135deg, #fde047 0%, #facc15 100%)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0) scale(1)';
-                  e.currentTarget.style.boxShadow = '0 3px 10px rgba(253, 224, 71, 0.3)';
-                  e.currentTarget.style.background = 'linear-gradient(135deg, #fef3c7 0%, #fde047 100%)';
-                }}
-              >
-                📖 Our Story
-              </button>
-              
-              <button 
-                onClick={() => router.push('/our-services')}
-                style={{
-                  background: 'linear-gradient(135deg, #ddd6fe 0%, #a78bfa 100%)',
-                  color: '#374151',
-                  padding: '6px 12px',
-                  borderRadius: '20px',
-                  border: 'none',
-                  fontSize: '11px',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                  transition: 'all 0.3s ease',
-                  boxShadow: '0 3px 10px rgba(167, 139, 250, 0.3)',
-                  fontFamily: "'Fredoka', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-2px) scale(1.03)';
-                  e.currentTarget.style.boxShadow = '0 5px 15px rgba(167, 139, 250, 0.4)';
-                  e.currentTarget.style.background = 'linear-gradient(135deg, #a78bfa 0%, #8b5cf6 100%)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0) scale(1)';
-                  e.currentTarget.style.boxShadow = '0 3px 10px rgba(167, 139, 250, 0.3)';
-                  e.currentTarget.style.background = 'linear-gradient(135deg, #ddd6fe 0%, #a78bfa 100%)';
-                }}
-              >
-                🛠️ Our Services
-              </button>
-              
+            <div className="flex items-center space-x-2" style={{ flexWrap: 'nowrap', overflow: 'hidden' }}>
               <button 
                 onClick={() => {
                   setShowSignUpModal(false);
@@ -243,24 +199,17 @@ export default function NavigationMobile() {
                   background: 'linear-gradient(135deg, #bfdbfe 0%, #60a5fa 100%)',
                   color: '#374151',
                   padding: '6px 12px',
-                  borderRadius: '20px',
+                  borderRadius: '16px',
                   border: 'none',
-                  fontSize: '11px',
+                  fontSize: '10px',
                   fontWeight: '600',
                   cursor: 'pointer',
                   transition: 'all 0.3s ease',
-                  boxShadow: '0 3px 10px rgba(96, 165, 250, 0.3)',
-                  fontFamily: "'Fredoka', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-2px) scale(1.03)';
-                  e.currentTarget.style.boxShadow = '0 5px 15px rgba(96, 165, 250, 0.4)';
-                  e.currentTarget.style.background = 'linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0) scale(1)';
-                  e.currentTarget.style.boxShadow = '0 3px 10px rgba(96, 165, 250, 0.3)';
-                  e.currentTarget.style.background = 'linear-gradient(135deg, #bfdbfe 0%, #60a5fa 100%)';
+                  boxShadow: '0 2px 6px rgba(96, 165, 250, 0.3)',
+                  fontFamily: "'Fredoka', sans-serif",
+                  whiteSpace: 'nowrap',
+                  flexShrink: 0,
+                  minWidth: '65px'
                 }}
               >
                 🔐 Sign In
@@ -275,25 +224,18 @@ export default function NavigationMobile() {
                 style={{
                   background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
                   color: '#000000',
-                  padding: '8px 14px',
-                  borderRadius: '20px',
+                  padding: '6px 12px',
+                  borderRadius: '16px',
                   border: 'none',
-                  fontSize: '11px',
+                  fontSize: '10px',
                   fontWeight: '700',
                   cursor: 'pointer',
                   transition: 'all 0.3s ease',
-                  boxShadow: '0 4px 12px rgba(251, 191, 36, 0.4)',
-                  fontFamily: "'Fredoka', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-3px) scale(1.05)';
-                  e.currentTarget.style.boxShadow = '0 6px 18px rgba(251, 191, 36, 0.5)';
-                  e.currentTarget.style.background = 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0) scale(1)';
-                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(251, 191, 36, 0.4)';
-                  e.currentTarget.style.background = 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)';
+                  boxShadow: '0 2px 6px rgba(251, 191, 36, 0.4)',
+                  fontFamily: "'Fredoka', sans-serif",
+                  whiteSpace: 'nowrap',
+                  flexShrink: 0,
+                  minWidth: '70px'
                 }}
               >
                 🚀 Sign Up
@@ -498,7 +440,11 @@ export default function NavigationMobile() {
                   </button>
                   
                   <button 
-                    onClick={() => handleMenuItemClick(() => window.dispatchEvent(new CustomEvent('talentix-sign-out')))}
+                    onClick={() => handleMenuItemClick(() => {
+                      if (typeof window !== 'undefined') {
+                        window.dispatchEvent(new CustomEvent('talentix-sign-out'));
+                      }
+                    })}
                     className="mobile-nav-item w-full text-left bg-gradient-to-r from-red-300 to-red-400 text-white hover:from-red-400 hover:to-red-500 transform hover:scale-105 active:scale-95"
                     style={{ fontFamily: 'Fredoka, sans-serif', padding: '12px 16px', borderRadius: '8px' }}
                   >

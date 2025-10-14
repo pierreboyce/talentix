@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
 import Groq from 'groq-sdk';
 import { v4 as uuidv4 } from 'uuid';
+import { rateLimiters, createRateLimitResponse } from '../../../../lib/rate-limiter';
 
 // Configure route for large payloads
 export const maxDuration = 60; // 60 seconds timeout
@@ -17,7 +18,7 @@ try {
     });
   }
 } catch (error) {
-  console.error('❌ Failed to initialize OpenAI:', error);
+  
 }
 
 try {
@@ -25,7 +26,7 @@ try {
     groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
   }
 } catch (error) {
-  console.error('❌ Failed to initialize Groq:', error);
+  
 }
 
 // Common filler words to detect
@@ -37,14 +38,31 @@ const fillerWords = [
 
 export async function POST(request: NextRequest) {
   try {
-    console.log('🎥 Video interview analysis started');
+    // 🛡️ Rate limiting check - 3 requests per minute for expensive video analysis
+    const rateLimitResult = await rateLimiters.aiHeavy.checkLimit(request);
+    if (!rateLimitResult.allowed) {
+      console.log('🚫 Video interview analysis rate limit exceeded');
+      return createRateLimitResponse(rateLimitResult.resetTime);
+    }
+    console.log(`✅ Video analysis rate limit passed. Remaining: ${rateLimitResult.remaining}`);
     
     // Check at least one provider exists
     if (!openai && !groq) {
-      console.error('❌ No AI provider available');
+      console.error('❌ No AI providers available for video interview analysis');
+      console.error('OpenAI API Key exists:', !!process.env.OPENAI_API_KEY);
+      console.error('Groq API Key exists:', !!process.env.GROQ_API_KEY);
+      
       return NextResponse.json(
-        { error: 'No AI provider configured. Add OPENAI_API_KEY or GROQ_API_KEY to .env.local.' },
-        { status: 500 }
+        { 
+          error: 'AI services temporarily unavailable',
+          details: 'Both OpenAI and Groq are currently experiencing issues. Please try again later or contact support.',
+          fallback: {
+            message: 'Video interview analysis is temporarily unavailable due to AI service issues.',
+            suggestion: 'Please try again in a few minutes, or contact support if the issue persists.',
+            supportEmail: 'support@talentix.co.uk'
+          }
+        },
+        { status: 503 }
       );
     }
 
@@ -61,15 +79,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log('📝 Question:', question);
-    console.log('📁 Category:', category);
-    console.log('👤 User ID:', userId);
-    console.log('🎬 Video file size:', videoFile.size, 'bytes');
+    
+    
+    
+    
 
     // Check file size limit (20MB for Vercel compatibility)
     const maxSize = 20 * 1024 * 1024; // 20MB
     if (videoFile.size > maxSize) {
-      console.error('❌ Video file too large:', videoFile.size, 'bytes');
+      
       return NextResponse.json(
         { error: `Video file too large. Maximum size is 20MB. Your file is ${Math.round(videoFile.size / 1024 / 1024)}MB. Please record a shorter answer.` },
         { status: 413 }
@@ -78,37 +96,61 @@ export async function POST(request: NextRequest) {
 
     // Process video file in memory (Vercel doesn't allow disk writes)
     const buffer = Buffer.from(await videoFile.arrayBuffer());
-    console.log('💾 Video file loaded in memory, size:', buffer.length, 'bytes');
+    
+    
+    
 
     // Helper: attempt transcription with providers in order
     const transcribeAudio = async (): Promise<string> => {
+      // Determine appropriate filename based on MIME type
+      let filename = 'video.webm';
+      if (videoFile.type.includes('mp4')) {
+        filename = 'video.mp4';
+      } else if (videoFile.type.includes('webm')) {
+        filename = 'video.webm';
+      } else if (videoFile.type.includes('ogg')) {
+        filename = 'video.ogg';
+      }
+      
+      
+      
       // Create a File object from buffer for API compatibility
-      const videoFileForAPI = new File([buffer], 'video.webm', { type: videoFile.type });
+      const videoFileForAPI = new File([buffer], filename, { type: videoFile.type });
 
       // 1) Try OpenAI Whisper first if available
       if (openai) {
         try {
-          console.log('🎤 Whisper (OpenAI) transcription attempt...');
+          console.log('🎤 Attempting OpenAI Whisper transcription...');
+          console.log('📁 File details:', {
+            name: filename,
+            type: videoFile.type,
+            size: videoFile.size
+          });
+          
           const transcriptionResponse = await openai.audio.transcriptions.create({
             file: videoFileForAPI,
             model: 'whisper-1',
             language: 'en',
           });
+          
           const t = transcriptionResponse.text;
+          console.log('✅ OpenAI transcription result:', t ? `"${t.substring(0, 100)}..."` : 'EMPTY');
+          
           if (t && t.trim().length > 0) {
-            console.log('✅ Whisper (OpenAI) transcription complete');
             return t;
           }
-        } catch (err) {
-          console.error('❌ Whisper (OpenAI) failed:', err);
-          // fall through to next provider
+        } catch (err: any) {
+          console.error('❌ OpenAI transcription error:', err.message);
+          console.error('❌ Full error:', err);
+          if (err.message?.includes('quota') || err.message?.includes('429')) {
+            console.log('💡 OpenAI quota exceeded for transcription, trying Groq...');
+          }
         }
       }
 
       // 2) Try Groq Whisper if key present
       if (groq) {
         try {
-          console.log('🎤 Whisper (Groq) transcription attempt...');
           const groqResp = await groq.audio.transcriptions.create({
             file: videoFileForAPI,
             // Groq-compatible Whisper model name
@@ -118,20 +160,34 @@ export async function POST(request: NextRequest) {
           } as any);
           const t = (groqResp as any)?.text || (groqResp as any)?.transcription || '';
           if (t && t.trim().length > 0) {
-            console.log('✅ Whisper (Groq) transcription complete');
             return t;
           }
-        } catch (err) {
-          console.error('❌ Whisper (Groq) failed:', err);
+        } catch (err: any) {
+          console.error('❌ Groq transcription error:', err.message);
+          if (err.message?.includes('quota') || err.message?.includes('429')) {
+            console.log('💡 Groq quota also exceeded for transcription');
+          }
         }
       }
 
-      throw new Error('Transcription failed with all providers');
+      console.error('❌ All transcription providers failed');
+      console.error('Video file details:', {
+        name: videoFile.name,
+        type: videoFile.type,
+        size: videoFile.size,
+        filename: filename
+      });
+      
+      throw new Error('Transcription failed with all providers. Video details: ' + JSON.stringify({
+        type: videoFile.type,
+        size: videoFile.size,
+        filename: filename
+      }));
     };
 
     // Helper: analyze transcript with LLM providers in order
     const analyzeTranscript = async (question: string, category: string, transcript: string) => {
-      console.log('🧠 Starting LLM analysis...');
+      
       
       const analysisPrompt = `
 You are an expert interview coach analyzing a candidate's video interview response. 
@@ -186,11 +242,14 @@ Return ONLY the JSON object, no additional text.
             max_tokens: 1500,
           });
           const analysisContent = gptResponse.choices[0]?.message?.content || '';
-          console.log('🔍 Raw OpenAI analysis:', analysisContent);
+          
           const result = tryParse(analysisContent);
           return result;
-        } catch (err) {
-          console.error('❌ OpenAI analysis failed:', err);
+        } catch (err: any) {
+          console.error('❌ OpenAI analysis error:', err.message);
+          if (err.message?.includes('quota') || err.message?.includes('429')) {
+            console.log('💡 OpenAI quota exceeded for analysis, trying Groq...');
+          }
         }
       }
 
@@ -206,11 +265,14 @@ Return ONLY the JSON object, no additional text.
             max_tokens: 1500,
           });
           const analysisContent = groqResp.choices?.[0]?.message?.content || '';
-          console.log('🔍 Raw Groq analysis:', analysisContent);
+          
           const result = tryParse(analysisContent);
           return result;
-        } catch (err) {
-          console.error('❌ Groq analysis failed:', err);
+        } catch (err: any) {
+          console.error('❌ Groq analysis error:', err.message);
+          if (err.message?.includes('quota') || err.message?.includes('429')) {
+            console.log('💡 Groq quota also exceeded for analysis');
+          }
         }
       }
 
@@ -219,10 +281,38 @@ Return ONLY the JSON object, no additional text.
 
     try {
       // Step 1: Transcribe audio (OpenAI → Groq)
-      const transcript = await transcribeAudio();
-      console.log('📄 Transcript:', transcript);
+      let transcript = '';
+      
+      try {
+        transcript = await transcribeAudio();
+      } catch (transcriptionError: any) {
+        console.error('❌ Transcription failed:', transcriptionError.message);
+        
+        // Return a helpful error with manual transcript option
+        return NextResponse.json({
+          error: 'Failed to transcribe audio',
+          details: transcriptionError.message,
+          suggestion: 'Try recording again with better audio quality, or use the manual transcript option if available.',
+          fallback: {
+            canRetry: true,
+            supportedFormats: ['mp4', 'webm', 'ogg'],
+            maxSize: '10MB',
+            tips: [
+              'Ensure good audio quality',
+              'Speak clearly and avoid background noise',
+              'Keep video under 2 minutes',
+              'Use supported formats: MP4, WebM, OGG'
+            ]
+          }
+        }, { status: 500 });
+      }
+      
       if (!transcript || transcript.trim().length === 0) {
-        throw new Error('No speech detected in the recording');
+        return NextResponse.json({
+          error: 'No speech detected in the recording',
+          details: 'The audio transcription was empty. Please ensure you spoke clearly and there was no background noise.',
+          suggestion: 'Try recording again with better audio quality.'
+        }, { status: 500 });
       }
 
       // Step 2: Analyze transcript (OpenAI → Groq)
@@ -232,7 +322,7 @@ Return ONLY the JSON object, no additional text.
       const requiredFields = ['clarity', 'confidence', 'relevance', 'overallScore', 'fillerWords', 'strengths', 'improvements'];
       for (const field of requiredFields) {
         if (!(field in analysisResult)) {
-          console.error(`❌ Missing required field: ${field}`);
+          
           throw new Error(`Analysis result missing required field: ${field}`);
         }
       }
@@ -246,16 +336,10 @@ Return ONLY the JSON object, no additional text.
       const allFillerWords = [...new Set([...analysisResult.fillerWords, ...detectedFillers])];
       analysisResult.fillerWords = allFillerWords;
 
-      console.log('✅ Video interview analysis complete!', {
-        clarity: analysisResult.clarity,
-        confidence: analysisResult.confidence,
-        relevance: analysisResult.relevance,
-        overallScore: analysisResult.overallScore,
-        fillerWordsCount: allFillerWords.length
-      });
+      
 
       // Save to localStorage-based storage (temporary solution)
-      console.log('💾 Saving interview attempt to storage...');
+      
       const interviewAttempt = {
         id: uuidv4(),
         userId,
@@ -284,7 +368,7 @@ Return ONLY the JSON object, no additional text.
     }
 
   } catch (error) {
-    console.error('❌ Video interview analysis error:', error);
+    
     
     let errorMessage = 'Failed to analyze video interview';
     if (error instanceof Error) {

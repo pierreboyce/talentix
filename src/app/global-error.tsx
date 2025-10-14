@@ -76,7 +76,3 @@ export default function GlobalError({
   )
 }
 
-
-
-
-

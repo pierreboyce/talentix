@@ -1,9 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
 import Groq from 'groq-sdk';
+import { rateLimiters, createRateLimitResponse } from '../../../lib/rate-limiter';
 
 export async function POST(request: NextRequest) {
   try {
+    // 🛡️ Rate limiting check - 10 requests per minute for AI chat
+    const rateLimitResult = await rateLimiters.aiModerate.checkLimit(request);
+    if (!rateLimitResult.allowed) {
+      console.log('🚫 AI chat rate limit exceeded');
+      return createRateLimitResponse(rateLimitResult.resetTime);
+    }
+    console.log(`✅ AI chat rate limit passed. Remaining: ${rateLimitResult.remaining}`);
+
     const { message, userName } = await request.json();
 
     const systemPrompt = `You are a helpful AI career assistant for Talentix, a platform helping teenagers get their first jobs.
@@ -27,7 +36,7 @@ Keep responses helpful, encouraging, and specifically tailored to first-time job
 
     if (process.env.OPENAI_API_KEY) {
       const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-      console.log('🤖 Using OpenAI for chat response...');
+      
       const completion = await openai.chat.completions.create({
         model: 'gpt-4o-mini',
         messages: [
@@ -39,7 +48,7 @@ Keep responses helpful, encouraging, and specifically tailored to first-time job
       });
       aiResponse = completion.choices[0]?.message?.content || undefined;
     } else if (process.env.GROQ_API_KEY) {
-      console.log('🤖 Using Groq as fallback for chat response...');
+      
       const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
       const completion = await groq.chat.completions.create({
         model: 'llama-3.1-8b-instant',
@@ -52,21 +61,21 @@ Keep responses helpful, encouraging, and specifically tailored to first-time job
       });
       aiResponse = completion.choices?.[0]?.message?.content || undefined;
     } else {
-      console.error('No AI provider configured');
+      
     }
 
     if (!aiResponse) {
       throw new Error('No response from OpenAI');
     }
 
-    console.log('✅ OpenAI chat response generated successfully');
+    
 
     return NextResponse.json({
       response: aiResponse
     });
 
   } catch (error) {
-    console.error('Error in chat API:', error);
+    
     
     // Fallback response
     const fallbackResponses = [

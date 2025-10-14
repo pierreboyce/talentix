@@ -109,8 +109,12 @@ export default function SignOutConfirmModal({ isOpen, onClose }: SignOutConfirmM
             <h1 className="text-4xl font-black text-black">Sign Out</h1>
           </div>
           <button
-            onClick={handleClose}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleClose();
+            }}
             className="w-14 h-14 flex items-center justify-center rounded-3xl hover:bg-white/40 hover:scale-110 transition-all duration-300 backdrop-blur-sm border-2 border-white/20 shadow-lg"
+            style={{ zIndex: 10000001 }}
           >
             <X className="w-6 h-6 text-black stroke-[3]" />
           </button>

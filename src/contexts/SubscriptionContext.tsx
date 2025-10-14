@@ -20,6 +20,7 @@ interface SubscriptionContextType {
   hasFeature: (feature: string) => boolean;
   canAccess: (feature: string) => boolean;
   refreshSubscription: () => Promise<void>;
+  forceSetSubscription: (subscription: Subscription) => void;
   isSubscribed: boolean;
   isPro: boolean;
   isEnterprise: boolean;
@@ -76,37 +77,23 @@ export function SubscriptionProvider({ children }: SubscriptionProviderProps) {
   const { user, loading: authLoading } = useAuth();
   const [subscription, setSubscription] = useState<Subscription>({
     id: 'free',
-    tier: 'free',
-    status: 'active',
+    tier: 'free' as const,
+    status: 'active' as const,
     currentPeriodEnd: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
     cancelAtPeriodEnd: false
   });
   const [isLoading, setIsLoading] = useState(false);
 
+
   // Fetch subscription data
   const refreshSubscription = async () => {
-    // Check for debug tier first
-    if (typeof window !== 'undefined') {
-      const debugTier = localStorage.getItem('debug_subscription_tier') as SubscriptionTier;
-      if (debugTier && (debugTier === 'free' || debugTier === 'pro' || debugTier === 'enterprise')) {
-        setSubscription({
-          id: debugTier,
-          tier: debugTier,
-          status: 'active',
-          currentPeriodEnd: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
-          cancelAtPeriodEnd: false
-        });
-        setIsLoading(false);
-        return;
-      }
-    }
 
     if (!user) {
       // For non-authenticated users, default to free tier
       setSubscription({
         id: 'free',
-        tier: 'free',
-        status: 'active',
+        tier: 'free' as const,
+        status: 'active' as const,
         currentPeriodEnd: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
         cancelAtPeriodEnd: false
       });
@@ -121,17 +108,36 @@ export function SubscriptionProvider({ children }: SubscriptionProviderProps) {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
       
+      const authToken = localStorage.getItem('auth_token');
+      console.log('🔐 Making subscription API call with token:', authToken ? 'Token exists' : 'No token');
+      console.log('🔑 Token preview:', authToken ? authToken.substring(0, 50) + '...' : 'null');
+      
+      // Skip API call if no valid token to prevent auth loops
+      if (!authToken || authToken === 'null' || authToken === 'undefined') {
+        console.log('⚠️ Skipping subscription API call - no valid token');
+        setSubscription({
+          id: 'free',
+          tier: 'free',
+          status: 'active',
+          currentPeriodEnd: new Date(),
+          cancelAtPeriodEnd: false
+        });
+        setIsLoading(false);
+        return;
+      }
+      
       const response = await fetch('/api/subscriptions/current', {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+          'Authorization': `Bearer ${authToken}`
         },
         signal: controller.signal
       });
       
       clearTimeout(timeoutId);
-
+      
       if (response.ok) {
         const data = await response.json();
+        
         if (data.subscription) {
           setSubscription({
             ...data.subscription,
@@ -142,35 +148,39 @@ export function SubscriptionProvider({ children }: SubscriptionProviderProps) {
           // User has no subscription, default to free
           setSubscription({
             id: 'free',
-            tier: 'free',
-            status: 'active',
-            currentPeriodEnd: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 year from now
+            tier: 'free' as const,
+            status: 'active' as const,
+            currentPeriodEnd: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
             cancelAtPeriodEnd: false
           });
         }
       } else {
+        console.error('❌ Subscription API error:', response.status, response.statusText);
+        const errorText = await response.text();
+        console.error('❌ Error response:', errorText);
+        
         // Default to free tier on error
         setSubscription({
           id: 'free',
-          tier: 'free',
-          status: 'active',
+          tier: 'free' as const,
+          status: 'active' as const,
           currentPeriodEnd: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
           cancelAtPeriodEnd: false
         });
       }
     } catch (error) {
-      console.error('Error fetching subscription:', error);
+      
       
       // Check if it was a timeout/abort error
       if (error instanceof Error && error.name === 'AbortError') {
-        console.warn('Subscription API request timed out, defaulting to free tier');
+        
       }
       
       // Default to free tier on error
       setSubscription({
         id: 'free',
-        tier: 'free',
-        status: 'active',
+        tier: 'free' as const,
+        status: 'active' as const,
         currentPeriodEnd: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
         cancelAtPeriodEnd: false
       });
@@ -212,17 +222,31 @@ export function SubscriptionProvider({ children }: SubscriptionProviderProps) {
     return hasFeature(feature);
   };
 
+  // Force set subscription (for success flows)
+  const forceSetSubscription = (newSubscription: Subscription) => {
+    setSubscription(newSubscription);
+  };
+
   // Computed properties
   const isSubscribed = subscription.tier !== 'free';
   const isPro = subscription.tier === 'pro';
   const isEnterprise = subscription.tier === 'enterprise';
 
-  // Load subscription on auth change
+  // Load subscription on auth change (but not during success flow)
   useEffect(() => {
     if (!authLoading) {
+      // Check if we're in a success flow to avoid overwriting fresh data
+      const urlParams = new URLSearchParams(window.location.search);
+      const subscriptionStatus = urlParams.get('subscription');
+      
+      if (subscriptionStatus === 'success') {
+        console.log('⚠️ Skipping automatic refresh during success flow');
+        return;
+      }
+      
       refreshSubscription();
     }
-  }, [user, authLoading]);
+  }, [user?.email, authLoading]);
 
   const contextValue: SubscriptionContextType = {
     subscription,
@@ -230,10 +254,19 @@ export function SubscriptionProvider({ children }: SubscriptionProviderProps) {
     hasFeature,
     canAccess,
     refreshSubscription,
+    forceSetSubscription,
     isSubscribed,
     isPro,
     isEnterprise
   };
+
+  // Expose refresh function globally for success handlers
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      (window as any).talentixSubscriptionRefresh = refreshSubscription;
+      (window as any).talentixForceSetSubscription = forceSetSubscription;
+    }
+  }, []);
 
   return (
     <SubscriptionContext.Provider value={contextValue}>

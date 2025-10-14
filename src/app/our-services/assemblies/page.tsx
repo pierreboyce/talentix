@@ -178,7 +178,7 @@ export default function AssembliesDetailPage() {
                 </button>
                 
                 <button
-                  onClick={() => window.open('mailto:talentixuk@gmail.com?subject=Assembly Inquiry', '_blank')}
+                  onClick={() => window.open('mailto:enquiries@talentix.co.uk?subject=Assembly Inquiry', '_blank')}
                   style={{
                     background: 'linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%)',
                     color: 'white',
@@ -234,5 +234,4 @@ export default function AssembliesDetailPage() {
     </div>
   );
 }
-
 

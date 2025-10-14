@@ -9,15 +9,11 @@ export async function GET() {
       message: 'Session endpoint available' 
     });
   } catch (error) {
-    console.error('Session check error:', error);
+    
     return NextResponse.json(
       { success: false, error: 'Session check failed' },
       { status: 500 }
     );
   }
 }
-
-
-
-
 

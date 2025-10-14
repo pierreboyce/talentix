@@ -30,7 +30,7 @@ class PerformanceMonitor {
   endMeasure(name: string): number | null {
     const startTime = this.measurements.get(name);
     if (!startTime) {
-      console.warn(`Performance measurement '${name}' was not started`);
+      
       return null;
     }
 
@@ -64,7 +64,7 @@ class PerformanceMonitor {
 
     // Log to console in development
     if (process.env.NODE_ENV === 'development') {
-      console.log(`📊 Performance [${type}] ${name}: ${value}${type === 'timing' ? 'ms' : ''}`);
+      
     }
   }
 
@@ -177,6 +177,6 @@ if (typeof window !== 'undefined') {
     observer.observe({ entryTypes: ['measure', 'navigation'] });
   } catch (e) {
     // Browser doesn't support these entry types
-    console.warn('Performance Observer not fully supported');
+    
   }
 }

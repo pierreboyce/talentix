@@ -6,16 +6,13 @@ export async function POST(request: NextRequest) {
     // Get the Word document buffer from the request
     const buffer = Buffer.from(await request.arrayBuffer());
     
-    console.log('📄 Extracting text from Word document, buffer size:', buffer.length);
+    
     
     // Extract text using mammoth
     const result = await mammoth.extractRawText({ buffer });
     
-    console.log('✅ Word document text extracted successfully, length:', result.value.length);
-    console.log('📝 Extracted text preview:', result.value.substring(0, 200) + '...');
-    
     if (result.messages.length > 0) {
-      console.log('⚠️ Extraction warnings:', result.messages);
+      
     }
     
     return NextResponse.json({
@@ -24,7 +21,7 @@ export async function POST(request: NextRequest) {
     });
     
   } catch (error) {
-    console.error('❌ Word document extraction failed:', error);
+    
     
     return NextResponse.json(
       { 
@@ -35,9 +32,4 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-
-
-
-
-
 

@@ -36,7 +36,6 @@ export default function Chatbot({ userName }: ChatbotProps) {
     scrollToBottom();
   }, [messages, isTyping]);
 
-
   // Listen for external open chat events
   useEffect(() => {
     const handleOpenChat = () => {
@@ -78,7 +77,7 @@ export default function Chatbot({ userName }: ChatbotProps) {
       const data = await response.json();
       return data.response;
     } catch (error) {
-      console.error('Error calling OpenAI API:', error);
+      
       
       // Enhanced fallback responses with emojis
       const responses = [
@@ -123,7 +122,7 @@ export default function Chatbot({ userName }: ChatbotProps) {
       setMessages(prev => [...prev, aiResponse]);
       setIsTyping(false);
     } catch (error) {
-      console.error('Error sending message:', error);
+      
       setIsTyping(false);
     }
   };

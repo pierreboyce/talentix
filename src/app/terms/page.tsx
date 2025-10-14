@@ -149,7 +149,7 @@ export default function TermsOfService() {
               borderRadius: '12px',
               textAlign: 'center'
             }}>
-              <p style={{ fontWeight: 'bold', marginBottom: '8px' }}>Email: talentixuk@gmail.com</p>
+              <p style={{ fontWeight: 'bold', marginBottom: '8px' }}>Email: enquiries@talentix.co.uk</p>
               <p>We're here to help and will respond to your inquiries promptly.</p>
             </div>
           </div>

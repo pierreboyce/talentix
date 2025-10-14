@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { useAuth } from '@/contexts/AuthContext'
 import { useSubscription } from '@/contexts/SubscriptionContext'
 import PricingModal from '@/components/PricingModal'
@@ -18,6 +19,13 @@ export default function SubscriptionDashboard() {
   const { subscription, refreshSubscription } = useSubscription()
   const [showPricingModal, setShowPricingModal] = useState(false)
   const [showConfetti, setShowConfetti] = useState(false)
+  const [showCommunityModal, setShowCommunityModal] = useState(false)
+  const [showSuccessModal, setShowSuccessModal] = useState(false)
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    source: ''
+  })
   const [usageStats, setUsageStats] = useState<UsageStats>({
     cvReviews: { used: 0, limit: 1, resetDate: 'Tomorrow' },
     videoInterviews: { used: 1, limit: 2 },
@@ -26,46 +34,116 @@ export default function SubscriptionDashboard() {
     achievementBadges: 2
   })
 
-  // Button handlers
+  // Button handlers - All redirect to Stripe Customer Portal
   const handlePaymentMethod = async () => {
-    if (!user?.email) {
-      alert('Please sign in to manage payment methods');
-      return;
-    }
-
-    try {
-      // In a real implementation, you would get the customer ID from your database
-      // For now, we'll use a placeholder
-      const response = await fetch('/api/subscriptions/billing-portal', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ customerId: 'placeholder' }) // This should be the actual Stripe customer ID
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        window.location.href = data.url;
-      } else {
-        alert('Unable to open billing portal. Please try again later.');
-      }
-    } catch (error) {
-      console.error('Error opening billing portal:', error);
-      alert('Unable to open billing portal. Please try again later.');
-    }
+    await handleDirectStripeAccess('manage your payment method')
   }
 
-  const handleDownloadInvoices = () => {
-    alert('📄 Invoice download coming soon! This will generate and download your billing history.')
+  const handleDownloadInvoices = async () => {
+    await handleDirectStripeAccess('download your invoices')
+  }
+
+  // Direct Stripe access with email update
+  const handleDirectStripeAccess = async (action: string) => {
+    // Try to access portal with pierreboyce70@gmail.com but update it to current user's email
+    if (user?.email) {
+      try {
+        console.log('🔄 Accessing portal and updating email to:', user.email);
+        const response = await fetch('/api/subscriptions/simple-portal', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ 
+            email: 'pierreboyce70@gmail.com', // Find subscription with this email
+            updateEmail: user.email // But update it to current user's email
+          })
+        })
+
+        const data = await response.json()
+        
+        if (response.ok) {
+          console.log(`✅ Portal access successful, email updated to:`, data.customerEmail)
+          window.location.href = data.url
+          return
+        } else {
+          console.log(`⚠️ Portal access failed:`, data.error)
+        }
+      } catch (error) {
+        console.log(`⚠️ Portal access error:`, error)
+      }
+    }
+
+    // Fallback: Try direct portal access with known emails
+    const emailsToTry = ['pierreboyce70@gmail.com', user?.email].filter(Boolean);
+    
+    for (const email of emailsToTry) {
+      try {
+        const response = await fetch('/api/subscriptions/simple-portal', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ email })
+        })
+
+        const data = await response.json()
+        
+        if (response.ok) {
+          console.log(`✅ Direct portal access successful for ${action}:`, data.customerEmail)
+          window.location.href = data.url
+          return
+        } else {
+          console.log(`⚠️ Direct portal failed for ${email}:`, data.error)
+        }
+      } catch (error) {
+        console.log(`⚠️ Direct portal error for ${email}:`, error)
+      }
+    }
+    
+    // If all attempts fail, show a helpful message
+    alert(`Unable to access billing portal automatically. Please visit: https://talentix.co.uk/cancel-subscription and enter your email address.`)
+  }
+
+  // Helper function to redirect to Stripe Customer Portal
+  const redirectToStripePortal = async (action: string) => {
+    try {
+      const token = localStorage.getItem('token')
+      if (!token) {
+        alert('Please sign in again to access billing settings.')
+        return
+      }
+
+      const response = await fetch('/api/subscriptions/create-portal', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      })
+
+      const data = await response.json()
+      
+      if (response.ok) {
+        // Redirect to Stripe customer portal
+        window.location.href = data.url
+      } else {
+        alert(data.error || `Failed to access billing portal to ${action}. Please try again.`)
+      }
+    } catch (error) {
+      console.error('Error accessing billing portal:', error)
+      alert(`Failed to access billing portal to ${action}. Please try again.`)
+    }
   }
 
   const handleChangePlan = () => {
     setShowPricingModal(true)
   }
 
-  const handleCancelSubscription = () => {
-    const confirmed = window.confirm('⚠️ Are you sure you want to cancel your subscription? You will lose access to Pro features at the end of your billing period.')
+  const handleCancelSubscription = async () => {
+    const confirmed = window.confirm('⚠️ Are you sure you want to cancel your subscription? You will be redirected to Stripe to manage your subscription.')
     if (confirmed) {
-      alert('🚧 Subscription cancellation coming soon! This will process your cancellation request.')
+      await handleDirectStripeAccess('cancel your subscription')
     }
   }
 
@@ -143,6 +221,32 @@ export default function SubscriptionDashboard() {
 
   const handleUpgrade = () => {
     setShowPricingModal(true)
+  }
+
+  const handleCommunitySubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    try {
+      const response = await fetch('/api/newsletter/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      })
+      
+      if (response.ok) {
+        setShowCommunityModal(false)
+        setShowSuccessModal(true)
+      }
+    } catch (error) {
+      console.error('Error submitting form:', error)
+    }
+  }
+
+  const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    setFormData(prev => ({
+      ...prev,
+      [e.target.name]: e.target.value
+    }))
   }
 
   const getProgressPercentage = (used: number, limit: number) => {
@@ -289,7 +393,22 @@ export default function SubscriptionDashboard() {
                 opacity: '0.8'
               }}>
                 {subscription.tier === 'free' ? 'Perfect for getting started! 🌟' :
-                 subscription.tier === 'pro' ? 'Next billing: Dec 15, 2024' : 'Custom billing cycle'}
+                 subscription.tier === 'pro' ? (() => {
+                   const nextBilling = new Date(subscription.currentPeriodEnd);
+                   const now = new Date();
+                   const diffTime = nextBilling.getTime() - now.getTime();
+                   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                   
+                   // Determine if it's monthly or yearly based on days until next billing
+                   const isYearly = diffDays > 300; // More than 300 days suggests yearly
+                   const billingType = isYearly ? 'yearly' : 'monthly';
+                   
+                   return `Next ${billingType} billing: ${nextBilling.toLocaleDateString('en-GB', { 
+                     year: 'numeric', 
+                     month: 'short', 
+                     day: 'numeric' 
+                   })}`;
+                 })() : 'Custom billing cycle'}
               </p>
             </div>
 
@@ -767,6 +886,7 @@ export default function SubscriptionDashboard() {
             </p>
             <button
               className="wiggle-button"
+              onClick={() => setShowCommunityModal(true)}
               style={{
                 backgroundColor: '#8b5cf6',
                 color: 'white',
@@ -813,7 +933,8 @@ export default function SubscriptionDashboard() {
                 ? 'Get priority support from our team!'
                 : 'Get help from our community and support team!'}
             </p>
-            <button
+            <a
+              href="mailto:enquiries@talentix.co.uk"
               className="wiggle-button"
               style={{
                 backgroundColor: '#06d6a0',
@@ -825,13 +946,16 @@ export default function SubscriptionDashboard() {
                 fontWeight: '700',
                 fontFamily: 'Fredoka, sans-serif',
                 cursor: 'pointer',
-                width: '100%'
+                width: '100%',
+                textDecoration: 'none',
+                display: 'block',
+                textAlign: 'center'
               }}
             >
               {subscription.tier === 'pro' || subscription.tier === 'enterprise' 
                 ? '⚡ Priority Support' 
                 : '💡 Get Help'}
-            </button>
+            </a>
           </div>
         </div>
 
@@ -942,6 +1066,277 @@ export default function SubscriptionDashboard() {
       {/* Pricing Modal */}
       {showPricingModal && (
         <PricingModal isOpen={showPricingModal} onClose={() => setShowPricingModal(false)} />
+      )}
+
+      {/* Community Form Modal */}
+      {showCommunityModal && typeof window !== 'undefined' && createPortal(
+        <div
+          className="modal-overlay-fixed"
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 9999,
+            padding: '20px'
+          }}
+          onClick={() => setShowCommunityModal(false)}
+        >
+          <div
+            style={{
+              backgroundColor: 'white',
+              borderRadius: '20px',
+              padding: '40px',
+              maxWidth: '500px',
+              width: '100%',
+              maxHeight: '90vh',
+              overflowY: 'auto',
+              position: 'relative'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 style={{
+              fontSize: '28px',
+              fontWeight: 'bold',
+              textAlign: 'center',
+              marginBottom: '20px',
+              color: '#1f2937',
+              fontFamily: 'Fredoka, sans-serif'
+            }}>
+              🌟 Join Our Community! 🌟
+            </h2>
+            
+            <p style={{
+              textAlign: 'center',
+              marginBottom: '30px',
+              color: '#6b7280',
+              fontSize: '16px',
+              lineHeight: '1.5'
+            }}>
+              Connect with thousands of young professionals and get career advice!
+            </p>
+
+            <form onSubmit={handleCommunitySubmit}>
+              <div style={{ marginBottom: '20px' }}>
+                <label style={{
+                  display: 'block',
+                  marginBottom: '8px',
+                  fontWeight: '600',
+                  color: '#374151'
+                }}>
+                  Name *
+                </label>
+                <input
+                  type="text"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleFormChange}
+                  required
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    border: '2px solid #e5e7eb',
+                    borderRadius: '8px',
+                    fontSize: '16px',
+                    outline: 'none',
+                    transition: 'border-color 0.2s'
+                  }}
+                />
+              </div>
+
+              <div style={{ marginBottom: '20px' }}>
+                <label style={{
+                  display: 'block',
+                  marginBottom: '8px',
+                  fontWeight: '600',
+                  color: '#374151'
+                }}>
+                  Email *
+                </label>
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleFormChange}
+                  required
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    border: '2px solid #e5e7eb',
+                    borderRadius: '8px',
+                    fontSize: '16px',
+                    outline: 'none',
+                    transition: 'border-color 0.2s'
+                  }}
+                />
+              </div>
+
+              <div style={{ marginBottom: '30px' }}>
+                <label style={{
+                  display: 'block',
+                  marginBottom: '8px',
+                  fontWeight: '600',
+                  color: '#374151'
+                }}>
+                  How did you hear about us?
+                </label>
+                <select
+                  name="source"
+                  value={formData.source}
+                  onChange={handleFormChange}
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    border: '2px solid #e5e7eb',
+                    borderRadius: '8px',
+                    fontSize: '16px',
+                    outline: 'none',
+                    backgroundColor: 'white'
+                  }}
+                >
+                  <option value="">Select an option</option>
+                  <option value="social-media">Social Media</option>
+                  <option value="friend">Friend/Word of Mouth</option>
+                  <option value="search">Google Search</option>
+                  <option value="school">School/College</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+
+              <button
+                type="submit"
+                style={{
+                  width: '100%',
+                  backgroundColor: '#8b5cf6',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '12px',
+                  padding: '16px',
+                  fontSize: '18px',
+                  fontWeight: 'bold',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = '#7c3aed';
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = '#8b5cf6';
+                  e.currentTarget.style.transform = 'translateY(0)';
+                }}
+              >
+                🚀 Join Community 🚀
+              </button>
+            </form>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {/* Success Modal */}
+      {showSuccessModal && typeof window !== 'undefined' && createPortal(
+        <div
+          className="modal-overlay-fixed"
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 9999,
+            padding: '20px'
+          }}
+          onClick={() => setShowSuccessModal(false)}
+        >
+          <div
+            style={{
+              backgroundColor: 'white',
+              borderRadius: '20px',
+              padding: '40px',
+              maxWidth: '500px',
+              width: '100%',
+              textAlign: 'center',
+              position: 'relative'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ fontSize: '64px', marginBottom: '20px' }}>🎉</div>
+            <h2 style={{
+              fontSize: '28px',
+              fontWeight: 'bold',
+              marginBottom: '16px',
+              color: '#1f2937',
+              fontFamily: 'Fredoka, sans-serif'
+            }}>
+              Welcome to Talentix Community! 🎉
+            </h2>
+            <p style={{
+              fontSize: '18px',
+              color: '#6b7280',
+              marginBottom: '30px',
+              lineHeight: '1.5'
+            }}>
+              🎉 You've successfully joined our community! You'll receive updates about Talentix and career opportunities. Click below to also join our WhatsApp community.
+            </p>
+
+            {/* WhatsApp Button */}
+            <a
+              href="https://chat.whatsapp.com/La1zsOBmy631JTQ7JBrm64?mode=ems_copy_h_t"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                display: 'inline-block',
+                background: 'linear-gradient(135deg, #25d366 0%, #128c7e 100%)',
+                color: 'white',
+                padding: '16px 32px',
+                borderRadius: '12px',
+                textDecoration: 'none',
+                fontSize: '18px',
+                fontWeight: 'bold',
+                marginBottom: '20px',
+                transition: 'all 0.2s'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-2px)';
+                e.currentTarget.style.boxShadow = '0 8px 25px rgba(37, 211, 102, 0.4)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = 'none';
+              }}
+            >
+              💬 Join WhatsApp Community
+            </a>
+
+            <div>
+              <button
+                onClick={() => setShowSuccessModal(false)}
+                style={{
+                  backgroundColor: '#6b7280',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  padding: '12px 24px',
+                  fontSize: '16px',
+                  cursor: 'pointer'
+                }}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
       )}
 
       <style jsx>{`

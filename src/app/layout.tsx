@@ -13,6 +13,8 @@ import PointsNotification from "../components/PointsNotification";
 import GlobalModalManager from "../components/GlobalModalManager";
 import ErrorBoundary from "../components/ErrorBoundary";
 import { ToastProvider } from "../components/Toast";
+import MobileRedirect from "../components/MobileRedirect";
+import NavigationWrapper from "../components/NavigationWrapper";
 
 const inter = Inter({ subsets: ["latin"] });
 const fredoka = Fredoka({ 
@@ -55,14 +57,8 @@ export default function RootLayout({
                 <PointsProvider>
                   <QuestProvider>
                     <ChatbotProvider>
-                      {/* Desktop Navigation - shown only on desktop */}
-                      <div className="desktop-nav">
-                        <Navigation />
-                      </div>
-                      {/* Mobile Navigation - shown only on mobile */}
-                      <div className="mobile-nav">
-                        <NavigationMobile />
-                      </div>
+                      <MobileRedirect />
+                      <NavigationWrapper />
                     <div className="min-h-screen bg-white text-black">
                     {children}
                     </div>

@@ -6,7 +6,7 @@ export async function POST(request: NextRequest) {
     // Get the PDF buffer from the request
     const buffer = Buffer.from(await request.arrayBuffer());
     
-    console.log('📄 Extracting text from PDF, buffer size:', buffer.length);
+    
     
     // Create a promise-based wrapper for pdf2json
     const extractTextFromPDF = (buffer: Buffer): Promise<string> => {
@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
         const pdfParser = new (PDFParser as any)(null, 1);
         
         pdfParser.on('pdfParser_dataError', (errData: any) => {
-          console.error('❌ PDF parsing error:', errData.parserError);
+          
           reject(new Error(errData.parserError));
         });
         
@@ -55,16 +55,13 @@ export async function POST(request: NextRequest) {
     
     const extractedText = await extractTextFromPDF(buffer);
     
-    console.log('✅ PDF text extracted successfully, length:', extractedText.length);
-    console.log('📝 Extracted text preview:', extractedText.substring(0, 200) + '...');
-    
     return NextResponse.json({
       text: extractedText,
       pages: 'Unknown' // pdf2json doesn't provide page count directly
     });
     
   } catch (error) {
-    console.error('❌ PDF extraction failed:', error);
+    
     
     return NextResponse.json(
       { 

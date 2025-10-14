@@ -21,161 +21,300 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<AuthSession | null>(null);
   const [loading, setLoading] = useState(false);
+  const [isCheckingSession, setIsCheckingSession] = useState(false);
+  const [lastCheckTime, setLastCheckTime] = useState(0);
+  const [hasSignedOut, setHasSignedOut] = useState(false);
+  const [isUpdatingStorage, setIsUpdatingStorage] = useState(false);
 
   // Check for existing session on mount and listen for storage changes
   useEffect(() => {
+    let debounceTimer: NodeJS.Timeout | null = null;
+    
     // Set a timeout to ensure loading never hangs indefinitely
     const timeoutId = setTimeout(() => {
       console.warn('🟨 Auth session check timed out, setting loading to false');
       setLoading(false);
+      setIsCheckingSession(false);
     }, 5000); // 5 second timeout
     
     checkSession().finally(() => {
       clearTimeout(timeoutId);
     });
     
-    // Listen for storage events (for OAuth updates)
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'talentix_user' || e.key === 'talentix_session') {
-        console.log('🔄 Storage changed, rechecking session...');
-        checkSession();
+    // Debounced storage change handler to prevent infinite loops
+    const debouncedCheckSession = () => {
+      if (debounceTimer) {
+        clearTimeout(debounceTimer);
+      }
+      debounceTimer = setTimeout(() => {
+        if (isUpdatingStorage) {
+          console.log('🟡 Storage changed but we are updating it ourselves, skipping...');
+          return;
+        }
+        if (!isCheckingSession) {
+          console.log('🔄 Storage changed (debounced), rechecking session...');
+          checkSession();
+        } else {
+          console.log('🟡 Storage changed but session check already in progress, skipping...');
+        }
+      }, 500); // Increased debounce to 500ms to reduce noise
+    };
+    
+    // TEMPORARILY DISABLED - Storage event listeners causing infinite loops
+    console.log('🚫 Storage event listeners DISABLED to prevent infinite loops');
+    
+    // const handleStorageChange = (e: StorageEvent) => {
+    //   // Only respond to storage changes from OTHER tabs/windows
+    //   if ((e.key === 'talentix_user' || e.key === 'talentix_session') && e.storageArea === localStorage) {
+    //     console.log('🔄 External storage change detected, key:', e.key);
+    //     debouncedCheckSession();
+    //   }
+    // };
+    
+    // Listen for custom storage events (for same-tab updates) - keep this one for OAuth
+    const handleCustomStorageEvent = (e: CustomEvent) => {
+      if (!e.detail?.internal) {
+        console.log('🔄 External custom storage event, rechecking session...');
+        debouncedCheckSession();
       }
     };
     
-    // Listen for custom storage events (for same-tab updates)
-    const handleCustomStorageEvent = () => {
-      console.log('🔄 Custom storage event, rechecking session...');
-      checkSession();
-    };
-    
-    window.addEventListener('storage', handleStorageChange);
-    window.addEventListener('talentix-auth-update', handleCustomStorageEvent);
+    // window.addEventListener('storage', handleStorageChange); // DISABLED
+    window.addEventListener('talentix-auth-update', handleCustomStorageEvent as EventListener);
     
     return () => {
       clearTimeout(timeoutId);
-      window.removeEventListener('storage', handleStorageChange);
-      window.removeEventListener('talentix-auth-update', handleCustomStorageEvent);
+      if (debounceTimer) {
+        clearTimeout(debounceTimer);
+      }
+      // window.removeEventListener('storage', handleStorageChange); // DISABLED
+      window.removeEventListener('talentix-auth-update', handleCustomStorageEvent as EventListener);
     };
-  }, []);
+  }, []); // Remove isCheckingSession dependency to prevent re-running effect
 
   const checkSession = async () => {
+    const now = Date.now();
+    
+    // Prevent session checks after explicit sign-out
+    if (hasSignedOut) {
+      console.log('🟡 checkSession: User has signed out, skipping session check');
+      return;
+    }
+    
+    // Prevent concurrent session checks
+    if (isCheckingSession) {
+      console.log('🟡 checkSession: Already checking session, skipping...');
+      return;
+    }
+
+    // Prevent too frequent session checks (minimum 5 seconds between checks to reduce noise)
+    if (now - lastCheckTime < 5000) {
+      console.log('🟡 checkSession: Too soon since last check, skipping...', { 
+        timeSinceLastCheck: now - lastCheckTime 
+      });
+      return;
+    }
+
     try {
+      setIsCheckingSession(true);
+      setLastCheckTime(now);
       setLoading(true);
       console.log('🟢 checkSession: Starting session check...');
       
-      // Check localStorage for existing user session
+      // First check if we have a server-side session
+      try {
+        const response = await fetch('/api/auth/me', {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success && data.user) {
+            console.log('🟢 checkSession: Valid server session found, user:', data.user);
+            
+            // Update localStorage with server data (without triggering events)
+            const sessionData = {
+              user: data.user,
+              expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days
+              token: `session_${data.user.id}` // Use user ID instead of timestamp to prevent constant changes
+            };
+            
+            // Silently update localStorage without triggering storage events
+            const currentUser = localStorage.getItem('talentix_user');
+            const currentSession = localStorage.getItem('talentix_session');
+            const newUserStr = JSON.stringify(data.user);
+            const newSessionStr = JSON.stringify(sessionData);
+            
+            if (currentUser !== newUserStr || currentSession !== newSessionStr) {
+              setIsUpdatingStorage(true);
+              if (currentUser !== newUserStr) {
+                localStorage.setItem('talentix_user', newUserStr);
+              }
+              if (currentSession !== newSessionStr) {
+                localStorage.setItem('talentix_session', newSessionStr);
+              }
+              // Reset flag after a short delay
+              setTimeout(() => setIsUpdatingStorage(false), 100);
+            }
+            
+            setUser(data.user);
+            setSession(sessionData);
+            return;
+          }
+        }
+      } catch (serverError) {
+        console.log('🟡 checkSession: Server check failed, falling back to localStorage');
+      }
+
+      // If no server session, check localStorage as fallback
       const storedUser = localStorage.getItem('talentix_user');
       const storedSession = localStorage.getItem('talentix_session');
       
-      console.log('🟢 checkSession: storedUser:', storedUser);
-      console.log('🟢 checkSession: storedSession:', storedSession);
+      console.log('🟢 checkSession: storedUser:', !!storedUser);
+      console.log('🟢 checkSession: storedSession:', !!storedSession);
       
       if (storedUser && storedSession) {
         const user = JSON.parse(storedUser);
         const session = JSON.parse(storedSession);
         
-        console.log('🟢 checkSession: Parsed user:', user);
-        console.log('🟢 checkSession: Parsed session:', session);
+        console.log('🟢 checkSession: Parsed user:', user?.email || 'no email');
+        console.log('🟢 checkSession: Session expires:', session?.expires);
         
         // Check if session is still valid
         if (session.expires && new Date(session.expires) > new Date()) {
-          console.log('🟢 checkSession: Session is valid, setting user and session');
+          console.log('🟢 checkSession: Local session is valid, checking if update needed');
+          
           setUser(user);
           setSession(session);
         } else {
-          console.log('🟢 checkSession: Session expired, clearing storage');
-          console.log('🟢 checkSession: Session expires:', session.expires);
-          console.log('🟢 checkSession: Current time:', new Date().toISOString());
-          // Session expired, clear storage
+          console.log('🟢 checkSession: Local session expired, clearing storage');
           localStorage.removeItem('talentix_user');
           localStorage.removeItem('talentix_session');
+          setUser(null);
+          setSession(null);
         }
       } else {
         console.log('🟢 checkSession: No stored user or session found');
+        setUser(null);
+        setSession(null);
       }
     } catch (error) {
       console.error('❌ Session check error:', error);
+      setUser(null);
+      setSession(null);
     } finally {
       console.log('🟢 checkSession: Setting loading to false');
       setLoading(false);
+      setIsCheckingSession(false);
     }
   };
 
   const signIn = async (credentials: LoginCredentials) => {
     try {
-      // Check for existing user data first
-      const storedUser = localStorage.getItem(`talentix_user_${credentials.email}`);
+      console.log('🔐 Starting signin process for:', credentials.email);
+      setLoading(true); // Set loading during signin
       
-      if (storedUser) {
-        const userData = JSON.parse(storedUser);
-        
-        // Simple password check (in real app, use proper hashing)
-        if (userData.password === credentials.password) {
-          const session = {
-            user: userData,
-            expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // 24 hours
-            token: `token_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-          };
-          
-          setUser(userData);
-          setSession(session);
-          // Set lightweight cookie so middleware can detect auth on server
-          document.cookie = `talentix-session=1; path=/; max-age=${24 * 60 * 60}`;
-          
-          // Store in localStorage
-          localStorage.setItem('talentix_user', JSON.stringify(userData));
-          localStorage.setItem('talentix_session', JSON.stringify(session));
-          
-          return { success: true };
-        } else {
-          return { success: false, error: 'Invalid email or password' };
-        }
-      } else {
-        return { success: false, error: 'User not found' };
+      const response = await fetch('/api/auth/signin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(credentials)
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setLoading(false);
+        return { success: false, error: data.error || 'Sign in failed' };
       }
+
+      if (!data.success) {
+        setLoading(false);
+        return { success: false, error: data.error || 'Sign in failed' };
+      }
+
+      // Set user data from server response
+      const userData = data.user;
+      const now = Date.now();
+      const sessionData = {
+        user: userData,
+        expires: new Date(now + 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days
+        token: `session_${now}`
+      };
+
+      console.log('✅ Signin successful, storing user data:', userData.email);
+
+      // Store in localStorage for client-side access (but server is source of truth)
+      localStorage.setItem('talentix_user', JSON.stringify(userData));
+      localStorage.setItem('talentix_session', JSON.stringify(sessionData));
+      
+      // Store JWT token for API authentication (if provided)
+      if (data.token) {
+        localStorage.setItem('auth_token', data.token);
+        console.log('✅ JWT token stored for API authentication');
+      }
+
+      // Reset sign-out flag when signing in
+      setHasSignedOut(false);
+      setUser(userData);
+      setSession(sessionData);
+      setLoading(false); // Clear loading after successful signin
+
+      return { success: true };
     } catch (error) {
       console.error('Sign in error:', error);
+      setLoading(false);
       return { success: false, error: 'Network error occurred' };
     }
   };
 
   const signUp = async (credentials: SignUpCredentials) => {
+    console.log('🚀 Frontend signUp called with:', { 
+      name: credentials.name, 
+      email: credentials.email, 
+      hasPassword: !!credentials.password,
+      location: credentials.location 
+    });
+    
     try {
-      // Check if user already exists
-      const existingUser = localStorage.getItem(`talentix_user_${credentials.email}`);
-      if (existingUser) {
-        return { success: false, error: 'User with this email already exists' };
+      console.log('📡 Making signup API request...');
+      const response = await fetch('/api/auth/signup-v2', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(credentials)
+      });
+
+      console.log('📡 Signup API response status:', response.status);
+      console.log('📡 Signup API response ok:', response.ok);
+
+      const data = await response.json();
+      console.log('📡 Signup API response data:', data);
+
+      if (!response.ok) {
+        return { success: false, error: data.error || 'Sign up failed' };
       }
 
-      // Create new user
-      const now = typeof window !== 'undefined' ? Date.now() : 0;
-      const userData = {
-        id: `user_${now}`,
-        name: credentials.name,
-        email: credentials.email,
-        password: credentials.password,
-        location: credentials.location || 'Unknown',
-        score: 0,
-        emoji: '😊',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      };
+      if (!data.success) {
+        return { success: false, error: data.error || 'Sign up failed' };
+      }
 
-      const session = {
+      // Set user data from server response
+      const userData = data.user;
+      const now = Date.now();
+      const sessionData = {
         user: userData,
-        expires: new Date(now + 24 * 60 * 60 * 1000).toISOString(), // 24 hours
-        token: `token_${now}_${typeof window !== 'undefined' ? Math.random().toString(36).substr(2, 9) : 'server'}`
+        expires: new Date(now + 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days
+        token: `session_${now}`
       };
 
-      // Store user data
-      localStorage.setItem(`talentix_user_${credentials.email}`, JSON.stringify(userData));
+      // Store in localStorage for client-side access (but server is source of truth)
       localStorage.setItem('talentix_user', JSON.stringify(userData));
-      localStorage.setItem('talentix_session', JSON.stringify(session));
+      localStorage.setItem('talentix_session', JSON.stringify(sessionData));
 
+      // Reset sign-out flag when signing up
+      setHasSignedOut(false);
       setUser(userData);
-      setSession(session);
-      // Set lightweight cookie so middleware can detect auth on server
-      document.cookie = `talentix-session=1; path=/; max-age=${24 * 60 * 60}`;
+      setSession(sessionData);
 
       return { success: true };
     } catch (error) {
@@ -186,22 +325,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const signOut = async () => {
     try {
-      // Only clear session data, keep user data for XP persistence
-      localStorage.removeItem('talentix_session');
-      // Clear middleware cookie
-      document.cookie = 'talentix-session=; Max-Age=0; path=/';
+      // Set sign-out flag to prevent further session checks
+      setHasSignedOut(true);
       
-      // Clear OAuth provider data if user was OAuth (but keep user data)
-      if (user?.id.includes('oauth_user_')) {
-        const provider = user.id.includes('google') ? 'google' : 'microsoft';
-        // Don't remove the OAuth user data - keep it for XP persistence
-      }
-      
-      // Keep email-specific user data for XP persistence
-      // localStorage.removeItem(`talentix_user_${user.email}`); // Commented out
-      
-      // Keep the main user data for XP persistence (do not remove)
-      // localStorage.removeItem('talentix_user');
+      // Call server-side signout API
+      await fetch('/api/auth/signout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
 
       // Ensure points persist under email-based key even after sign out
       try {
@@ -218,8 +349,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
           }
         }
       } catch {}
-      
-      // Only clear session-related data, not user profile data
+
+      // Clear local storage
+      localStorage.removeItem('talentix_session');
+      localStorage.removeItem('talentix_user');
+      localStorage.removeItem('auth_token'); // Clear JWT token
       
     } catch (error) {
       console.error('Sign out error:', error);
@@ -257,7 +391,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
       // FORCE production URL if we detect we're on the production domain
       if (window.location.hostname === 'talentix.co.uk' || window.location.hostname === 'www.talentix.co.uk') {
         baseUrl = 'https://talentix.co.uk';
-        console.log('🔗 FORCED production baseUrl for OAuth:', baseUrl);
       }
       
       if (baseUrl.includes('://www.')) {
@@ -275,10 +408,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
       };
       
       // Build OAuth URL
-      console.log(`🔗 ${provider} OAuth redirect URI:`, redirectUris[provider]);
-      console.log(`🔗 NEXT_PUBLIC_BASE_URL:`, process.env.NEXT_PUBLIC_BASE_URL);
-      console.log(`🔗 window.location.origin:`, window.location.origin);
-      console.log(`🔗 Final baseUrl used:`, baseUrl);
       
       const baseParams: Record<string, string> = {
         client_id: clientIds[provider],
@@ -298,21 +427,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       
       const oauthUrl = `${oauthUrls[provider]}?${params.toString()}`;
       
-      console.log(`🔐 Redirecting to ${provider} OAuth:`, oauthUrl);
-      console.log(`🔐 OAuth parameters:`, Object.fromEntries(params.entries()));
-      console.log(`🔐 Expected callback URL:`, redirectUris[provider]);
       
-      // Add extra debugging for Microsoft
-      if (provider === 'microsoft') {
-        console.log('🔧 Microsoft OAuth Debug:', {
-          clientId: clientIds[provider],
-          redirectUri: redirectUris[provider],
-          fullUrl: oauthUrl,
-          baseUrl,
-          windowOrigin: window.location.origin,
-          hostname: window.location.hostname
-        });
-      }
       
       // Redirect to OAuth provider
       window.location.href = oauthUrl;
@@ -351,7 +466,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
       if (user.id.includes('oauth_user_')) {
         const provider = user.id.includes('google') ? 'google' : 'microsoft';
         localStorage.setItem(`talentix_oauth_${provider}`, JSON.stringify(updatedUser));
-        console.log('🟡 Saved to talentix_oauth_${provider} localStorage');
       }
       
       // Update session
@@ -374,8 +488,21 @@ export function AuthProvider({ children }: AuthProviderProps) {
   };
 
   const refreshUser = async () => {
+    const now = Date.now();
     console.log('🔄 refreshUser called - manually reloading user from localStorage');
-    await checkSession();
+    
+    // Prevent too frequent refresh calls
+    if (now - lastCheckTime < 1000) {
+      console.log('🔄 refreshUser: Too soon since last check, skipping...', {
+        timeSinceLastCheck: now - lastCheckTime
+      });
+      return;
+    }
+    
+    if (!isCheckingSession) {
+      await checkSession();
+    } else {
+    }
   };
 
   // Expose refresh function globally for OAuth callbacks

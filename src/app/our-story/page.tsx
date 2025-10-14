@@ -18,7 +18,7 @@ export default function OurStoryPage() {
       name: 'Trey Alexander',
       title: 'Outreach and Engagement Coordinator',
       image: '/treyheadshot.jpeg',
-      story: 'Trey will add his inspiring story here shortly...',
+      story: 'Trey is a driven and ambitious individual who is currently pursuing A levels in Maths, Physics, and Economics, with a clear focus on building a career in finance. He has already gained valuable experience through internships at top firms such as J.P. Morgan and McKinsey & CO, he possesses a willingness to take on challenges. Trey also believes in being committed to continuous growth as well as the growth of those around him which is why he has decided to be apart of Talentix. Trey also works two Jobs and he understands the difficulty to attain just one, his insights are an integral part of Talentix.',
       emoji: '💡'
     },
     {
@@ -29,18 +29,18 @@ export default function OurStoryPage() {
       emoji: '⚡'
     },
     {
-      name: 'Mezue Onwumechili',
-      title: 'Client Outreach Associate',
-      image: '/mezueheadshot.png',
-      story: 'Mezue will add his inspiring story here shortly...',
-      emoji: '🎯'
+      name: 'Simi Fashola',
+      title: 'Outreach and Media Coordinator',
+      image: '/simiheadshot.jpeg',
+      story: 'Simi actively seeks opportunities to step out of his comfort zone, as he believes growth comes from embracing challenges and adapting to new experiences. Simi\'s passion lies in pursuing a career as a solicitor, where he can combine my analytical skills, resilience, and drive to make a meaningful impact while navigating complex legal issues with confidence and determination.',
+      emoji: '📱'
     },
     {
-      name: 'Arinze Nwafor',
-      title: 'Business Development Manager',
-      image: '/Arinzeheadshot.jpeg',
-      story: 'Arinze will add his inspiring story here shortly...',
-      emoji: '🤝'
+      name: 'Zoraez Imran',
+      title: 'Social Media Lead',
+      image: '/zoraezheadshot.jpeg',
+      story: 'Zoraez is a sixth-form student at UTC Reading, studying BTEC Engineering alongside A-Level Psychology and Business. An entrepreneur, public speaker, and content creator with 4,000+ followers, he is passionate about building impactful projects and inspiring others. His interests span business, politics, engineering, media, and technology. Zoraez seeks to grow as a leader and changemaker through Talentix, helping teens secure their first jobs one video at a time.',
+      emoji: '📺'
     }
   ];
 
@@ -125,7 +125,8 @@ export default function OurStoryPage() {
               background: `linear-gradient(45deg, ${
                 index === 0 ? '#fde047' : 
                 index === 1 ? '#60a5fa' :
-                index === 2 ? '#f472b6' : '#34d399'
+                index === 2 ? '#f472b6' : 
+                index === 3 ? '#34d399' : '#a78bfa'
               }20 0%, transparent 50%)`,
               borderRadius: '50%',
               zIndex: 0
@@ -154,7 +155,7 @@ export default function OurStoryPage() {
                       width: '100%',
                       height: '100%',
                       objectFit: 'cover',
-                      objectPosition: member.name === 'Mezue Onwumechili' ? 'center top' : 'center center'
+                      objectPosition: member.name === 'Simi Fashola' ? 'center 30%' : 'center center'
                     }}
                   onError={(e) => {
                     // Fallback to a placeholder if image doesn't exist
@@ -277,5 +278,4 @@ export default function OurStoryPage() {
     </div>
   );
 }
-
 

@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../contexts/AuthContext';
 import { usePoints } from '../../contexts/PointsContext';
+import { useDeviceDetection } from '../../hooks/useDeviceDetection';
 import { Upload, FileText, Briefcase, Wand2, Edit3, Download, Copy, RefreshCw, ArrowLeft } from 'lucide-react';
 
 interface CoverLetterData {
@@ -16,6 +17,7 @@ interface CoverLetterData {
 export default function CoverLetterGenerator(): React.ReactElement {
   const { user, loading } = useAuth();
   const { addPoints } = usePoints();
+  const { isMobile, isTablet } = useDeviceDetection();
   const router = useRouter();
   
   const [data, setData] = useState<CoverLetterData>({
@@ -235,19 +237,20 @@ export default function CoverLetterGenerator(): React.ReactElement {
     <div style={{
       minHeight: '100vh',
       background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-      padding: '20px'
+      padding: isMobile ? '12px' : '20px'
     }}>
       {/* Header */}
       <div style={{
         maxWidth: '1400px',
         margin: '0 auto',
-        marginBottom: '24px'
+        marginBottom: isMobile ? '16px' : '24px'
       }}>
         <div style={{
           display: 'flex',
           alignItems: 'center',
-          gap: '20px',
-          marginBottom: '16px'
+          gap: isMobile ? '12px' : '20px',
+          marginBottom: '16px',
+          flexDirection: isMobile ? 'column' : 'row'
         }}>
           <button
             onClick={() => router.push('/dashboard')}
@@ -255,16 +258,17 @@ export default function CoverLetterGenerator(): React.ReactElement {
               display: 'flex',
               alignItems: 'center',
               gap: '8px',
-              padding: '12px 16px',
+              padding: isMobile ? '14px 20px' : '12px 16px',
               backgroundColor: 'rgba(255, 255, 255, 0.2)',
               border: '2px solid rgba(255, 255, 255, 0.3)',
               borderRadius: '12px',
               color: '#ffffff',
               cursor: 'pointer',
-              fontSize: '14px',
+              fontSize: isMobile ? '15px' : '14px',
               fontWeight: '600',
               transition: 'all 0.2s ease',
-              backdropFilter: 'blur(10px)'
+              backdropFilter: 'blur(10px)',
+              minHeight: isMobile ? '48px' : 'auto'
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.3)';
@@ -283,16 +287,17 @@ export default function CoverLetterGenerator(): React.ReactElement {
               display: 'flex',
               alignItems: 'center',
               gap: '8px',
-              padding: '12px 16px',
+              padding: isMobile ? '14px 20px' : '12px 16px',
               backgroundColor: 'rgba(239, 68, 68, 0.2)',
               border: '2px solid rgba(239, 68, 68, 0.3)',
               borderRadius: '12px',
               color: '#ffffff',
               cursor: 'pointer',
-              fontSize: '14px',
+              fontSize: isMobile ? '15px' : '14px',
               fontWeight: '600',
               transition: 'all 0.2s ease',
-              backdropFilter: 'blur(10px)'
+              backdropFilter: 'blur(10px)',
+              minHeight: isMobile ? '48px' : 'auto'
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.3)';
@@ -308,26 +313,28 @@ export default function CoverLetterGenerator(): React.ReactElement {
 
         <div style={{
           background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
-          borderRadius: '20px',
-          padding: '32px',
+          borderRadius: isMobile ? '16px' : '20px',
+          padding: isMobile ? '24px 16px' : '32px',
           textAlign: 'center',
           boxShadow: '0 10px 30px rgba(0, 0, 0, 0.2)'
         }}>
           <h1 style={{
-            fontSize: '48px',
+            fontSize: isMobile ? '32px' : '48px',
             fontWeight: 'bold',
             color: '#ffffff',
             margin: '0 0 8px 0',
             fontFamily: "'Fredoka', 'Inter', sans-serif",
-            textShadow: '2px 2px 4px rgba(0, 0, 0, 0.2)'
+            textShadow: '2px 2px 4px rgba(0, 0, 0, 0.2)',
+            lineHeight: isMobile ? '1.2' : 'normal'
           }}>
             ✨ Cover Letter Magic
           </h1>
           <p style={{
-            fontSize: '20px',
+            fontSize: isMobile ? '16px' : '20px',
             color: '#ffffff',
             margin: '0',
-            opacity: 0.9
+            opacity: 0.9,
+            lineHeight: '1.4'
           }}>
             AI-powered cover letters that get you noticed! 🚀
           </p>
@@ -339,22 +346,22 @@ export default function CoverLetterGenerator(): React.ReactElement {
         maxWidth: '1400px',
         margin: '0 auto',
         display: 'grid',
-        gridTemplateColumns: '1fr 1fr',
-        gap: '24px',
-        minHeight: '600px'
+        gridTemplateColumns: isMobile || isTablet ? '1fr' : '1fr 1fr',
+        gap: isMobile ? '16px' : '24px',
+        minHeight: isMobile ? 'auto' : '600px'
       }}>
         {/* Left Side - Input Area */}
         <div style={{
           backgroundColor: '#ffffff',
-          borderRadius: '20px',
-          padding: '32px',
+          borderRadius: isMobile ? '16px' : '20px',
+          padding: isMobile ? '20px' : '32px',
           boxShadow: '0 10px 30px rgba(0, 0, 0, 0.1)',
           display: 'flex',
           flexDirection: 'column',
-          gap: '24px'
+          gap: isMobile ? '16px' : '24px'
         }}>
           <h2 style={{
-            fontSize: '28px',
+            fontSize: isMobile ? '22px' : '28px',
             fontWeight: 'bold',
             color: '#1f2937',
             margin: '0',
@@ -367,15 +374,15 @@ export default function CoverLetterGenerator(): React.ReactElement {
           {/* CV Upload Section */}
           <div style={{
             border: '3px dashed #e5e7eb',
-            borderRadius: '16px',
-            padding: '24px',
+            borderRadius: isMobile ? '12px' : '16px',
+            padding: isMobile ? '16px' : '24px',
             textAlign: 'center',
             transition: 'all 0.2s ease',
             backgroundColor: data.cv.includes('Extracting text from file...') ? '#fef3c7' : data.cv ? '#f0fdf4' : '#fafafa'
           }}>
-            <div style={{ fontSize: '48px', marginBottom: '16px' }}>📄</div>
+            <div style={{ fontSize: isMobile ? '36px' : '48px', marginBottom: isMobile ? '12px' : '16px' }}>📄</div>
             <h3 style={{
-              fontSize: '20px',
+              fontSize: isMobile ? '18px' : '20px',
               fontWeight: 'bold',
               color: '#1f2937',
               margin: '0 0 8px 0'
@@ -416,20 +423,39 @@ export default function CoverLetterGenerator(): React.ReactElement {
 
             <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
               <button
-                onClick={() => fileInputRef.current?.click()}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  
+                  console.log('🔥 COVER LETTER FILE UPLOAD BUTTON CLICKED ON MOBILE:', isMobile);
+                  console.log('🔥 Current URL:', window.location.href);
+                  console.log('🔥 File input ref:', fileInputRef.current);
+                  
+                  if (fileInputRef.current) {
+                    console.log('🔥 Attempting to trigger file input...');
+                    fileInputRef.current.click();
+                    console.log('🔥 File input clicked!');
+                  } else {
+                    console.error('🔥 File input ref is null!');
+                  }
+                }}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
                   gap: '8px',
-                  padding: '12px 20px',
+                  padding: isMobile ? '14px 24px' : '12px 20px',
                   background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
                   color: '#ffffff',
                   border: 'none',
-                  borderRadius: '12px',
+                  borderRadius: isMobile ? '10px' : '12px',
                   cursor: 'pointer',
-                  fontSize: '14px',
+                  fontSize: isMobile ? '16px' : '14px',
                   fontWeight: '600',
-                  transition: 'all 0.2s ease'
+                  transition: 'all 0.2s ease',
+                  minHeight: isMobile ? '48px' : 'auto', // Better touch target on mobile
+                  minWidth: isMobile ? '120px' : 'auto',
+                  position: 'relative',
+                  zIndex: 10000 // Ensure button is above any overlays
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.transform = 'translateY(-2px)';
@@ -459,32 +485,50 @@ export default function CoverLetterGenerator(): React.ReactElement {
               value={data.cv}
               onChange={(e) => setData(prev => ({ ...prev, cv: e.target.value }))}
               placeholder="Paste your CV content here..."
+              onClick={(e) => {
+                e.stopPropagation();
+                console.log('🔥 CV TEXTAREA CLICKED ON MOBILE:', isMobile);
+                // Focus the textarea to ensure it's active
+                e.currentTarget.focus();
+              }}
+              onTouchStart={(e) => {
+                e.stopPropagation();
+                console.log('🔥 CV TEXTAREA TOUCH START ON MOBILE:', isMobile);
+              }}
               style={{
                 width: '100%',
-                height: '120px',
-                padding: '12px',
+                height: isMobile ? '100px' : '120px',
+                padding: isMobile ? '14px' : '12px',
                 border: '2px solid #e5e7eb',
                 borderRadius: '8px',
-                fontSize: '14px',
+                fontSize: isMobile ? '16px' : '14px', // Prevent zoom on iOS
                 resize: 'vertical',
-                outline: 'none'
+                outline: 'none',
+                position: 'relative',
+                zIndex: 10001 // Higher than upload button to ensure it's above overlays
               }}
-              onFocus={(e) => e.currentTarget.style.borderColor = '#3b82f6'}
-              onBlur={(e) => e.currentTarget.style.borderColor = '#e5e7eb'}
+              onFocus={(e) => {
+                e.currentTarget.style.borderColor = '#3b82f6';
+                console.log('🔥 CV TEXTAREA FOCUSED');
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.borderColor = '#e5e7eb';
+                console.log('🔥 CV TEXTAREA BLURRED');
+              }}
             />
           </div>
 
           {/* Job Description Section */}
           <div style={{
             border: '3px solid #e5e7eb',
-            borderRadius: '16px',
-            padding: '24px',
+            borderRadius: isMobile ? '12px' : '16px',
+            padding: isMobile ? '16px' : '24px',
             backgroundColor: data.jobDescription ? '#fef3c7' : '#ffffff'
           }}>
             <div style={{ textAlign: 'center', marginBottom: '16px' }}>
-              <div style={{ fontSize: '48px', marginBottom: '8px' }}>💼</div>
+              <div style={{ fontSize: isMobile ? '36px' : '48px', marginBottom: '8px' }}>💼</div>
               <h3 style={{
-                fontSize: '20px',
+                fontSize: isMobile ? '18px' : '20px',
                 fontWeight: 'bold',
                 color: '#1f2937',
                 margin: '0 0 8px 0'
@@ -504,43 +548,85 @@ export default function CoverLetterGenerator(): React.ReactElement {
               value={data.jobDescription}
               onChange={(e) => setData(prev => ({ ...prev, jobDescription: e.target.value }))}
               placeholder="Paste the job description here..."
+              onClick={(e) => {
+                e.stopPropagation();
+                console.log('🔥 JOB DESCRIPTION TEXTAREA CLICKED ON MOBILE:', isMobile);
+                // Focus the textarea to ensure it's active
+                e.currentTarget.focus();
+              }}
+              onTouchStart={(e) => {
+                e.stopPropagation();
+                console.log('🔥 JOB DESCRIPTION TEXTAREA TOUCH START ON MOBILE:', isMobile);
+              }}
               style={{
                 width: '100%',
-                height: '150px',
-                padding: '12px',
+                height: isMobile ? '120px' : '150px',
+                padding: isMobile ? '14px' : '12px',
                 border: '2px solid #e5e7eb',
                 borderRadius: '8px',
-                fontSize: '14px',
+                fontSize: isMobile ? '16px' : '14px', // Prevent zoom on iOS
                 resize: 'vertical',
-                outline: 'none'
+                outline: 'none',
+                position: 'relative',
+                zIndex: 10001 // Higher than upload button to ensure it's above overlays
               }}
-              onFocus={(e) => e.currentTarget.style.borderColor = '#f59e0b'}
-              onBlur={(e) => e.currentTarget.style.borderColor = '#e5e7eb'}
+              onFocus={(e) => {
+                e.currentTarget.style.borderColor = '#f59e0b';
+                console.log('🔥 JOB DESCRIPTION TEXTAREA FOCUSED');
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.borderColor = '#e5e7eb';
+                console.log('🔥 JOB DESCRIPTION TEXTAREA BLURRED');
+              }}
             />
           </div>
 
           {/* Generate Button */}
           <button
-            onClick={generateCoverLetter}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              
+              console.log('🔥 GENERATE COVER LETTER BUTTON CLICKED ON MOBILE:', isMobile);
+              console.log('🔥 Current URL:', window.location.href);
+              console.log('🔥 Button disabled:', data.isGenerating || !data.cv.trim() || !data.jobDescription.trim());
+              
+              // Only proceed if button is not disabled
+              if (!data.isGenerating && data.cv.trim() && data.jobDescription.trim()) {
+                console.log('🔥 Calling generateCoverLetter function...');
+                generateCoverLetter();
+                console.log('🔥 generateCoverLetter function called!');
+              } else {
+                console.log('🔥 Button is disabled or missing data');
+              }
+            }}
             disabled={data.isGenerating || !data.cv.trim() || !data.jobDescription.trim()}
             style={{
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: '12px',
-              padding: '16px 32px',
+              gap: isMobile ? '8px' : '12px',
+              padding: isMobile ? '18px 24px' : '16px 32px',
               background: data.isGenerating 
                 ? 'linear-gradient(135deg, #9ca3af 0%, #6b7280 100%)'
                 : 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
               color: '#ffffff',
               border: 'none',
-              borderRadius: '16px',
+              borderRadius: isMobile ? '12px' : '16px',
               cursor: data.isGenerating ? 'not-allowed' : 'pointer',
-              fontSize: '18px',
+              fontSize: isMobile ? '16px' : '18px',
               fontWeight: 'bold',
               transition: 'all 0.3s ease',
               boxShadow: '0 8px 20px rgba(16, 185, 129, 0.3)',
-              fontFamily: "'Fredoka', 'Inter', sans-serif"
+              fontFamily: "'Fredoka', 'Inter', sans-serif",
+              minHeight: isMobile ? '56px' : 'auto', // Better touch target on mobile
+              width: isMobile ? '100%' : 'auto',
+              position: 'relative',
+              zIndex: 10002 // Higher than textareas to ensure it's above all overlays
+            }}
+            onTouchStart={(e) => {
+              e.stopPropagation();
+              console.log('🔥 GENERATE BUTTON TOUCH START ON MOBILE:', isMobile);
             }}
             onMouseEnter={(e) => {
               if (!data.isGenerating) {
@@ -579,20 +665,22 @@ export default function CoverLetterGenerator(): React.ReactElement {
         {/* Right Side - Generated Letter */}
         <div style={{
           backgroundColor: '#ffffff',
-          borderRadius: '20px',
-          padding: '32px',
+          borderRadius: isMobile ? '16px' : '20px',
+          padding: isMobile ? '20px' : '32px',
           boxShadow: '0 10px 30px rgba(0, 0, 0, 0.1)',
           display: 'flex',
           flexDirection: 'column',
-          gap: '20px'
+          gap: isMobile ? '16px' : '20px'
         }}>
           <div style={{
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'space-between'
+            justifyContent: 'space-between',
+            flexDirection: isMobile ? 'column' : 'row',
+            gap: isMobile ? '12px' : '0'
           }}>
             <h2 style={{
-              fontSize: '28px',
+              fontSize: isMobile ? '22px' : '28px',
               fontWeight: 'bold',
               color: '#1f2937',
               margin: '0',
@@ -602,22 +690,28 @@ export default function CoverLetterGenerator(): React.ReactElement {
             </h2>
 
             {data.generatedLetter && (
-              <div style={{ display: 'flex', gap: '8px' }}>
+              <div style={{ 
+                display: 'flex', 
+                gap: isMobile ? '6px' : '8px',
+                flexWrap: isMobile ? 'wrap' : 'nowrap',
+                justifyContent: isMobile ? 'center' : 'flex-start'
+              }}>
                 <button
                   onClick={handleEdit}
                   style={{
                     display: 'flex',
                     alignItems: 'center',
                     gap: '6px',
-                    padding: '8px 16px',
+                    padding: isMobile ? '10px 14px' : '8px 16px',
                     backgroundColor: '#f3f4f6',
                     border: 'none',
                     borderRadius: '8px',
                     cursor: 'pointer',
-                    fontSize: '14px',
+                    fontSize: isMobile ? '13px' : '14px',
                     fontWeight: '600',
                     color: '#374151',
-                    transition: 'all 0.2s ease'
+                    transition: 'all 0.2s ease',
+                    minHeight: isMobile ? '40px' : 'auto'
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.backgroundColor = '#e5e7eb';
@@ -636,15 +730,16 @@ export default function CoverLetterGenerator(): React.ReactElement {
                     display: 'flex',
                     alignItems: 'center',
                     gap: '6px',
-                    padding: '8px 16px',
+                    padding: isMobile ? '10px 14px' : '8px 16px',
                     backgroundColor: '#dbeafe',
                     border: 'none',
                     borderRadius: '8px',
                     cursor: 'pointer',
-                    fontSize: '14px',
+                    fontSize: isMobile ? '13px' : '14px',
                     fontWeight: '600',
                     color: '#1d4ed8',
-                    transition: 'all 0.2s ease'
+                    transition: 'all 0.2s ease',
+                    minHeight: isMobile ? '40px' : 'auto'
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.backgroundColor = '#bfdbfe';
@@ -663,15 +758,16 @@ export default function CoverLetterGenerator(): React.ReactElement {
                     display: 'flex',
                     alignItems: 'center',
                     gap: '6px',
-                    padding: '8px 16px',
+                    padding: isMobile ? '10px 14px' : '8px 16px',
                     backgroundColor: '#dcfce7',
                     border: 'none',
                     borderRadius: '8px',
                     cursor: 'pointer',
-                    fontSize: '14px',
+                    fontSize: isMobile ? '13px' : '14px',
                     fontWeight: '600',
                     color: '#166534',
-                    transition: 'all 0.2s ease'
+                    transition: 'all 0.2s ease',
+                    minHeight: isMobile ? '40px' : 'auto'
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.backgroundColor = '#bbf7d0';
@@ -691,11 +787,11 @@ export default function CoverLetterGenerator(): React.ReactElement {
           <div style={{
             flex: 1,
             border: '2px solid #e5e7eb',
-            borderRadius: '16px',
-            padding: '24px',
+            borderRadius: isMobile ? '12px' : '16px',
+            padding: isMobile ? '16px' : '24px',
             backgroundColor: '#fafafa',
             position: 'relative',
-            minHeight: '400px'
+            minHeight: isMobile ? '300px' : '400px'
           }}>
             {!data.generatedLetter && !data.isGenerating && (
               <div style={{
@@ -707,9 +803,9 @@ export default function CoverLetterGenerator(): React.ReactElement {
                 color: '#9ca3af',
                 textAlign: 'center'
               }}>
-                <div style={{ fontSize: '64px', marginBottom: '16px' }}>✨</div>
-                <h3 style={{ fontSize: '20px', margin: '0 0 8px 0' }}>Ready for Magic?</h3>
-                <p style={{ margin: '0' }}>Upload your CV and job description to generate your cover letter!</p>
+                <div style={{ fontSize: isMobile ? '48px' : '64px', marginBottom: isMobile ? '12px' : '16px' }}>✨</div>
+                <h3 style={{ fontSize: isMobile ? '18px' : '20px', margin: '0 0 8px 0' }}>Ready for Magic?</h3>
+                <p style={{ margin: '0', fontSize: isMobile ? '14px' : '16px', padding: isMobile ? '0 10px' : '0' }}>Upload your CV and job description to generate your cover letter!</p>
               </div>
             )}
 
@@ -718,34 +814,47 @@ export default function CoverLetterGenerator(): React.ReactElement {
                 <textarea
                   value={editedLetter}
                   onChange={(e) => setEditedLetter(e.target.value)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    console.log('🔥 EDIT TEXTAREA CLICKED ON MOBILE:', isMobile);
+                    e.currentTarget.focus();
+                  }}
+                  onTouchStart={(e) => {
+                    e.stopPropagation();
+                    console.log('🔥 EDIT TEXTAREA TOUCH START ON MOBILE:', isMobile);
+                  }}
                   style={{
                     width: '100%',
                     flex: 1,
                     border: 'none',
                     outline: 'none',
                     backgroundColor: 'transparent',
-                    fontSize: '14px',
+                    fontSize: isMobile ? '16px' : '14px', // Prevent zoom on iOS
                     lineHeight: '1.6',
                     resize: 'none',
-                    fontFamily: "'Inter', sans-serif"
+                    fontFamily: "'Inter', sans-serif",
+                    position: 'relative',
+                    zIndex: 10001 // Ensure it's above overlays
                   }}
                 />
                 <div style={{
                   display: 'flex',
-                  gap: '12px',
-                  justifyContent: 'flex-end',
-                  marginTop: '16px'
+                  gap: isMobile ? '8px' : '12px',
+                  justifyContent: isMobile ? 'center' : 'flex-end',
+                  marginTop: '16px',
+                  flexDirection: isMobile ? 'column' : 'row'
                 }}>
                   <button
                     onClick={() => setIsEditing(false)}
                     style={{
-                      padding: '8px 16px',
+                      padding: isMobile ? '12px 20px' : '8px 16px',
                       backgroundColor: '#f3f4f6',
                       border: 'none',
                       borderRadius: '8px',
                       cursor: 'pointer',
-                      fontSize: '14px',
-                      fontWeight: '600'
+                      fontSize: isMobile ? '16px' : '14px',
+                      fontWeight: '600',
+                      minHeight: isMobile ? '44px' : 'auto'
                     }}
                   >
                     Cancel
@@ -753,14 +862,15 @@ export default function CoverLetterGenerator(): React.ReactElement {
                   <button
                     onClick={saveEdit}
                     style={{
-                      padding: '8px 16px',
+                      padding: isMobile ? '12px 20px' : '8px 16px',
                       background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
                       color: '#ffffff',
                       border: 'none',
                       borderRadius: '8px',
                       cursor: 'pointer',
-                      fontSize: '14px',
-                      fontWeight: '600'
+                      fontSize: isMobile ? '16px' : '14px',
+                      fontWeight: '600',
+                      minHeight: isMobile ? '44px' : 'auto'
                     }}
                   >
                     Save Changes
@@ -771,7 +881,7 @@ export default function CoverLetterGenerator(): React.ReactElement {
               <div
                 ref={typewriterRef}
                 style={{
-                  fontSize: '14px',
+                  fontSize: isMobile ? '15px' : '14px', // Slightly larger on mobile for readability
                   lineHeight: '1.6',
                   color: '#374151',
                   whiteSpace: 'pre-wrap',

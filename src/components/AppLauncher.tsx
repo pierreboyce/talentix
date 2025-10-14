@@ -28,7 +28,7 @@ interface AppItem {
 }
 
 // Reorganized Categories as Requested
-const jobToolsApps: AppItem[] = [
+const jobFeaturesApps: AppItem[] = [
   {
     id: 'job-vacancies',
     name: 'Job Vacancies',
@@ -57,10 +57,7 @@ const jobToolsApps: AppItem[] = [
     emoji: '✍️',
     href: '/cover-letter',
     color: 'bg-gradient-to-br from-indigo-400 to-indigo-600'
-  }
-];
-
-const careerSupportApps: AppItem[] = [
+  },
   {
     id: 'interview-prep',
     name: 'Interview Prep',
@@ -83,13 +80,6 @@ const careerSupportApps: AppItem[] = [
     href: '/career-guidance',
     color: 'bg-gradient-to-br from-emerald-400 to-emerald-600',
     restricted: true
-  },
-  {
-    id: 'ai-chat',
-    name: 'AI Chat',
-    emoji: '🤖',
-    href: '/ai-chat',
-    color: 'bg-gradient-to-br from-cyan-400 to-cyan-600'
   }
 ];
 
@@ -135,13 +125,6 @@ const accountCompanyApps: AppItem[] = [
     emoji: '🛠️',
     href: '/our-services',
     color: 'bg-gradient-to-br from-purple-400 to-purple-600'
-  },
-  {
-    id: 'logout',
-    name: 'Sign Out',
-    emoji: '🚪',
-    href: '#',
-    color: 'bg-gradient-to-br from-red-400 to-red-600'
   }
 ];
 
@@ -280,11 +263,6 @@ export default function AppLauncher() {
       return;
     }
     
-    // Special handling for AI chat - open the widget instead of navigating
-    if (appId === 'ai-chat') {
-      openChat();
-      return;
-    }
     
     // Special handling for home button
     if (appId === 'home') {
@@ -299,6 +277,20 @@ export default function AppLauncher() {
     // For other apps, the Link component will handle navigation
   };
 
+  // Helper function to get custom Pro messages based on app ID
+  const getProMessage = (appId: string) => {
+    switch (appId) {
+      case 'cv-reviewer':
+        return 'Unlimited Reviews with Talentix Pro ✨';
+      case 'video-interview':
+        return 'Unlimited Practice with Talentix Pro ✨';
+      case 'career-guidance':
+        return 'Unlimited Guides with Talentix Pro ✨';
+      default:
+        return 'Available with Talentix Pro ✨';
+    }
+  };
+
   // Helper function to render app items
   const renderAppItem = (app: AppItem) => {
     // Handle placeholder (empty) items
@@ -306,63 +298,7 @@ export default function AppLauncher() {
       return <div key="placeholder" className="opacity-0"></div>;
     }
     
-    // Handle logout button
-    if (app.id === 'logout') {
-      return (
-        <button
-          key={app.id}
-          onClick={() => handleAppClick(app.href, app.id)}
-          className="group flex flex-col items-center p-4 rounded-2xl hover:bg-red-100 transition-all duration-300 hover:scale-105 hover:shadow-xl"
-          style={{ backdropFilter: 'blur(5px)' }}
-        >
-          <div className="w-24 h-24 rounded-2xl flex items-center justify-center mb-3 group-hover:scale-110 group-hover:rotate-12 transition-all duration-300 shadow-lg group-hover:shadow-xl relative">
-            <span className="text-[2.8rem] group-hover:animate-bounce">{app.emoji}</span>
-          </div>
-          <span className="text-[0.75rem] text-red-700 text-center font-medium leading-tight max-w-[100px] group-hover:text-red-800" style={{ fontWeight: '500', textShadow: '0 1px 2px rgba(0, 0, 0, 0.1)' }}>
-            {app.name}
-          </span>
-        </button>
-      );
-    }
-    
-    if (app.id === 'ai-chat') {
-      return (
-        <button
-          key={app.id}
-          onClick={() => handleAppClick(app.href, app.id)}
-          className="group flex flex-col items-center p-4 rounded-2xl hover:bg-white/30 transition-all duration-300 hover:scale-105 hover:shadow-xl"
-          style={{ backdropFilter: 'blur(5px)' }}
-        >
-          <div className="w-24 h-24 rounded-2xl flex items-center justify-center mb-3 group-hover:scale-110 group-hover:rotate-12 transition-all duration-300 shadow-lg group-hover:shadow-xl relative">
-            <span className="text-[2.8rem] group-hover:animate-bounce">{app.emoji}</span>
-          </div>
-          <span className="text-[0.75rem] text-gray-800 text-center font-medium leading-tight max-w-[100px] group-hover:text-gray-900" style={{ fontWeight: '500', textShadow: '0 1px 2px rgba(0, 0, 0, 0.1)' }}>
-            {app.name}
-          </span>
-          {app.restricted && subscription.tier === 'free' && (
-            <div className="absolute left-1/2 bottom-full mb-2 opacity-0 group-hover:opacity-100 transition-all duration-300 ease-out pointer-events-none"
-              style={{
-                zIndex: 2147483647,
-                transform: 'translateX(-50%) scale(0.9)',
-                background: 'linear-gradient(135deg, #fef3c7 0%, #fde047 50%, #facc15 100%)',
-                borderRadius: '12px',
-                padding: '6px 12px',
-                fontSize: '11px',
-                fontWeight: '700',
-                color: '#1f2937',
-                boxShadow: '0 4px 12px rgba(254, 243, 199, 0.6), 0 2px 4px rgba(0, 0, 0, 0.1)',
-                border: '1.5px solid rgba(255, 255, 255, 0.8)',
-                whiteSpace: 'nowrap',
-                fontFamily: 'Fredoka, sans-serif'
-              }}
-            >
-              Available with Talentix Pro ✨
-            </div>
-          )}
-        </button>
-      );
-    } else {
-      return (
+    return (
         <Link
           key={app.id}
           href={app.href}
@@ -393,30 +329,43 @@ export default function AppLauncher() {
                 fontFamily: 'Fredoka, sans-serif'
               }}
             >
-              Available with Talentix Pro ✨
+              {getProMessage(app.id)}
             </div>
           )}
         </Link>
       );
-    }
   };
 
   return (
-    <div className="relative">
-      {/* 9 Dots Button - Positioned on the far right */}
-      <button
-        onClick={handleToggle}
-        className="hover:bg-gray-100 rounded-lg transition-colors bg-transparent p-0"
-        aria-label="Open app launcher"
-      >
-        <Image
-          src="/menu-icon-24.png"
-          alt="Menu"
-          width={24}
-          height={24}
-          className="w-6 h-6"
-        />
-      </button>
+    <>
+      <div className="relative flex flex-col items-center gap-1">
+        {/* Hamburger Menu Button - Matching mobile design */}
+        <button
+          onClick={handleToggle}
+          className="flex items-center justify-center p-3 rounded-xl text-white shadow-lg transition-all duration-200 active:scale-95 border-0 outline-none"
+          style={{ 
+            minHeight: '48px', 
+            minWidth: '48px',
+            backgroundImage: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
+            boxShadow: '0 8px 16px rgba(245, 158, 11, 0.35)'
+          }}
+          aria-label={isOpen ? 'Close menu' : 'Open menu'}
+          aria-expanded={isOpen}
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d={isOpen ? 'M5 5L19 19' : 'M3 7H21'} stroke="white" strokeWidth="2.5" strokeLinecap="round"/>
+            <path d={isOpen ? 'M19 5L5 19' : 'M3 12H21'} stroke="white" strokeWidth="2.5" strokeLinecap="round"/>
+            {!isOpen && (
+              <path d="M3 17H21" stroke="white" strokeWidth="2.5" strokeLinecap="round"/>
+            )}
+          </svg>
+        </button>
+        
+        {/* Menu text below button */}
+        <span className="text-xs font-bold text-gray-800" style={{ fontFamily: 'Fredoka, sans-serif' }}>
+          Menu
+        </span>
+      </div>
 
       {/* Dropdown Menu (portaled to body to avoid clipping/stacking issues) */}
       {mounted && isOpen && createPortal(
@@ -439,24 +388,6 @@ export default function AppLauncher() {
             />
           </div>
 
-          
-          {/* Exit Button - Overlapping Menu */}
-          <button
-            onClick={handleClose}
-            className="fixed top-4 left-4 px-6 py-3 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 shadow-xl hover:shadow-2xl group"
-            style={{
-              fontSize: '16px',
-              fontWeight: 'bold',
-              border: '3px solid rgba(255, 255, 255, 0.9)',
-              zIndex: 2147483649,
-              backgroundColor: '#dc2626',
-              boxShadow: '0 10px 25px rgba(220, 38, 38, 0.6)'
-            }}
-            aria-label="Exit menu"
-          >
-            <span className="group-hover:scale-110 transition-transform duration-300">Exit</span>
-          </button>
-
           {/* Menu - Fun & Playful Design */}
           <div 
             className="overflow-hidden rounded-[2.5rem] animate-fadeIn"
@@ -473,6 +404,36 @@ export default function AppLauncher() {
               backdropFilter: 'blur(10px)'
             }}
           >
+            {/* Close X Button - Top Right Corner Inside Menu */}
+            <button
+              onClick={handleClose}
+              className="absolute rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110"
+              style={{
+                top: '20px',
+                right: '20px',
+                width: '40px',
+                height: '40px',
+                backgroundColor: '#e63946',
+                color: 'white',
+                fontSize: '20px',
+                fontWeight: 'bold',
+                border: 'none',
+                zIndex: 10,
+                boxShadow: '0 4px 12px rgba(230, 57, 70, 0.4)',
+                cursor: 'pointer'
+              }}
+              aria-label="Close menu"
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = '#d32f2f';
+                e.currentTarget.style.boxShadow = '0 6px 16px rgba(230, 57, 70, 0.6)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = '#e63946';
+                e.currentTarget.style.boxShadow = '0 4px 12px rgba(230, 57, 70, 0.4)';
+              }}
+            >
+              ×
+            </button>
             {/* Floating Background Elements */}
             <div className="absolute inset-0 pointer-events-none">
               <div className="absolute top-4 left-8 text-4xl opacity-20 animate-bounce" style={{ animationDelay: '0s' }}>🎯</div>
@@ -498,57 +459,135 @@ export default function AppLauncher() {
             {/* Categorized Apps Grid - Full Menu Layout */}
             <div className="px-8 pt-8 pb-4 flex-1 flex flex-col" style={{ minHeight: 'calc(100% - 120px)' }}>
               
-              {/* Account & Company Row - Special layout for 7 items */}
-              <div className="flex-1 mb-4">
-                <h3 className="text-3xl font-bold text-gray-800 mb-10 flex items-center gap-2">
-                  <span>👤</span> Account & Company
-                </h3>
+              {/* Account & Company Row - Special layout for 6 items */}
+              <div className="flex-1 mb-4" style={{ position: 'relative' }}>
+                {/* Profile Section with Sign Out - Absolutely Positioned Top Right */}
+                <div style={{ 
+                  position: 'absolute',
+                  top: '16px',
+                  right: '16px',
+                  display: 'flex', 
+                  flexDirection: 'column',
+                  alignItems: 'stretch',
+                  gap: '8px',
+                  zIndex: 10
+                }}>
+                  {/* Profile Block */}
+                  <div style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: '8px',
+                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                    backdropFilter: 'blur(4px)',
+                    borderRadius: '8px',
+                    padding: '8px 12px',
+                    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+                    border: '1px solid rgba(255, 255, 255, 0.5)'
+                  }}>
+                    {/* Profile Avatar */}
+                    <div style={{
+                      width: '32px',
+                      height: '32px',
+                      borderRadius: '8px',
+                      background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}>
+                      <span style={{
+                        color: 'white',
+                        fontSize: '14px',
+                        fontWeight: 'bold'
+                      }}>
+                        {user?.name ? user.name.charAt(0).toUpperCase() : 'B'}
+                      </span>
+                    </div>
+                    
+                    {/* Profile Info */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                      <span style={{
+                        color: '#1f2937',
+                        fontSize: '12px',
+                        fontWeight: '600',
+                        lineHeight: '1.2',
+                        fontFamily: 'Fredoka, sans-serif'
+                      }}>
+                        {user?.name || 'boyce'}
+                      </span>
+                      <span style={{
+                        color: subscription.tier === 'free' ? '#059669' : '#ea580c',
+                        fontSize: '10px',
+                        fontWeight: 'bold',
+                        backgroundColor: subscription.tier === 'free' ? '#d1fae5' : '#fed7aa',
+                        padding: '2px 6px',
+                        borderRadius: '4px',
+                        lineHeight: '1.2',
+                        fontFamily: 'Fredoka, sans-serif'
+                      }}>
+                        {subscription.tier === 'free' ? 'FREE' : subscription.tier.toUpperCase()}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  {/* Sign Out Button - Below Profile */}
+                  <button
+                    onClick={() => handleAppClick('#', 'logout')}
+                    style={{
+                      backgroundColor: '#e63946',
+                      color: 'white',
+                      fontWeight: 'bold',
+                      padding: '6px 12px',
+                      borderRadius: '6px',
+                      border: 'none',
+                      cursor: 'pointer',
+                      fontSize: '11px',
+                      fontFamily: 'Fredoka, sans-serif',
+                      transition: 'background-color 0.2s ease',
+                      textAlign: 'center',
+                      whiteSpace: 'nowrap'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = '#c5303e';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = '#e63946';
+                    }}
+                  >
+                    Sign Out
+                  </button>
+                </div>
+
+                {/* Header with title only */}
+                <div style={{ 
+                  padding: '10px',
+                  marginBottom: '24px'
+                }}>
+                  <h3 className="text-3xl font-bold text-gray-800 flex items-center gap-2">
+                    <span>👤</span> Account & Company
+                  </h3>
+                </div>
                 <div className="space-y-3">
                   {/* First row - 4 items */}
                   <div className="grid grid-cols-4 gap-6">
                     {accountCompanyApps.slice(0, 4).map((app) => renderAppItem(app))}
                   </div>
-                  {/* Second row - 3 items left-aligned */}
+                  {/* Second row - 2 items left-aligned */}
                   <div className="grid grid-cols-4 gap-6">
-                    {accountCompanyApps.slice(4, 7).map((app) => renderAppItem(app))}
+                    {accountCompanyApps.slice(4, 6).map((app) => renderAppItem(app))}
+                    <div className="opacity-0"></div>
                     <div className="opacity-0"></div>
                   </div>
                 </div>
               </div>
 
-              {/* Center X Button */}
-              <div className="flex justify-center items-center py-6">
-                <button
-                  onClick={handleClose}
-                  className="w-16 h-16 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 shadow-lg hover:shadow-xl"
-                  style={{
-                    fontSize: '24px',
-                    fontWeight: 'bold',
-                    border: '3px solid rgba(255, 255, 255, 0.9)',
-                  }}
-                  aria-label="Close menu"
-                >
-                  ✕
-                </button>
-              </div>
 
-              {/* Career Support Row */}
-              <div className="flex-1 mb-4">
-                <h3 className="text-3xl font-bold text-gray-800 mb-12 flex items-center gap-2">
-                  <span>🚀</span> Career Support
-                </h3>
-                <div className="grid grid-cols-4 gap-6 h-full">
-                  {careerSupportApps.map((app) => renderAppItem(app))}
-                </div>
-              </div>
-
-              {/* Job Tools Row */}
+              {/* Job Features Row */}
               <div className="flex-1 mb-4">
                 <h3 className="text-3xl font-bold text-gray-800 mb-10 flex items-center gap-2">
-                  <span>🛠️</span> Job Tools
+                  <span>💼</span> Job Features
                 </h3>
                 <div className="grid grid-cols-4 gap-6 h-full">
-                  {jobToolsApps.map((app) => renderAppItem(app))}
+                  {jobFeaturesApps.map((app) => renderAppItem(app))}
                 </div>
               </div>
             </div>
@@ -564,9 +603,7 @@ export default function AppLauncher() {
         </>,
         document.body
       )}
-      
-      {/* Sign Out Confirmation Modal now handled by GlobalModalManager */}
-    </div>
+    </>
   );
 } 
  

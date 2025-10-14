@@ -64,6 +64,11 @@ export default function Dashboard() {
   const { subscription } = useSubscription();
   const { isMobile } = useDeviceDetection();
 
+  // Simple mount tracking
+  useEffect(() => {
+    console.log('📍 Dashboard mounted successfully');
+  }, []);
+
   // All state hooks must be at the top
   const [greeting, setGreeting] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
@@ -122,36 +127,90 @@ export default function Dashboard() {
     window.open(job.applyLink, '_blank', 'noopener,noreferrer');
   };
 
-  // Authentication redirect effect - must be before any early returns
+  // Add a ref to prevent multiple redirects and track auth state
+  const redirectAttempted = useRef(false);
+  const authCheckCount = useRef(0);
+  const authStable = useRef(false);
+  const stableUserEmail = useRef<string | null>(null);
+
+  // Authentication redirect effect - restored with stability improvements
   useEffect(() => {
-    console.log('📊 Dashboard auth check:', { loading, user: !!user, session: !!session });
-    // Don't redirect if we're still loading or if we have a user
-    if (loading || user || session) {
-      console.log('📊 Dashboard: User authenticated or still loading, staying on dashboard');
+    // If auth is stable and user hasn't changed, skip entirely
+    if (authStable.current && user?.email === stableUserEmail.current) {
       return;
     }
 
-    // If this is an OAuth landing (direct_login or oauth_user in URL),
-    // give the OAuth handler effect time to persist the session
-    const params = new URLSearchParams(window.location.search);
-    const isOAuthLanding = params.get('direct_login') === 'true' || params.has('oauth_user');
-    if (isOAuthLanding) {
-      console.log('📊 Dashboard: OAuth landing detected, skipping auth redirect');
+    authCheckCount.current += 1;
+    const checkId = authCheckCount.current;
+    
+    console.log(`📊 Dashboard auth check #${checkId}:`, { 
+      loading, 
+      user: !!user, 
+      userEmail: user?.email,
+      session: !!session,
+      authStable: authStable.current
+    });
+    
+    // If we have a user, mark auth as stable
+    if (user?.email) {
+      console.log(`📊 Dashboard #${checkId}: User authenticated (${user.email}), marking auth as stable`);
+      authStable.current = true;
+      stableUserEmail.current = user.email;
+      
+      if (localStorage.getItem('talentix_signin_success')) {
+        localStorage.removeItem('talentix_signin_success');
+      }
+      redirectAttempted.current = false;
       return;
     }
     
-    console.log('📊 Dashboard: No auth found, will redirect to home in 2 seconds');
-    // Only redirect after a longer delay to prevent flashing
+    // If we lost the user, reset stability
+    if (authStable.current && !user) {
+      console.log(`📊 Dashboard #${checkId}: User lost, resetting auth stability`);
+      authStable.current = false;
+      stableUserEmail.current = null;
+    }
+
+    // If we're loading, wait
+    if (loading) {
+      console.log(`📊 Dashboard #${checkId}: Still loading, waiting...`);
+      return;
+    }
+
+    // If we already attempted a redirect, don't do it again
+    if (redirectAttempted.current) {
+      console.log(`📊 Dashboard #${checkId}: Redirect already attempted, skipping`);
+      return;
+    }
+
+    // Clean up any signin flags that might cause issues
+    if (localStorage.getItem('talentix_signin_success')) {
+      localStorage.removeItem('talentix_signin_success');
+    }
+    if (localStorage.getItem('signin_in_progress')) {
+      localStorage.removeItem('signin_in_progress');
+    }
+
+    // Check for OAuth landing
+    const params = new URLSearchParams(window.location.search);
+    const isOAuthLanding = params.get('direct_login') === 'true' || params.has('oauth_user');
+    if (isOAuthLanding) {
+      console.log(`📊 Dashboard #${checkId}: OAuth landing detected, skipping auth redirect`);
+      return;
+    }
+    
+    // Final check - no user, no session, not loading, haven't redirected yet
+    console.log(`📊 Dashboard #${checkId}: No auth found, will redirect to home in 2 seconds`);
     const timer = setTimeout(() => {
-      // Double check that we still don't have authentication
-      if (!user && !session && !loading) {
-        console.log('📊 Dashboard: Redirecting to home - no authentication');
+      if (!user && !session && !loading && !redirectAttempted.current) {
+        console.log(`📊 Dashboard #${checkId}: Final redirect to home - no authentication`);
+        redirectAttempted.current = true;
         router.push('/');
       }
-    }, 1500); // Slightly longer delay to avoid racing OAuth flow
+    }, 2000);
     
     return () => clearTimeout(timer);
-  }, [loading, user, session, router]);
+  }, [loading, user?.email, !!session, router]);
 
   useEffect(() => {
     setDisplayEmoji(user?.emoji || '😊');
@@ -201,7 +260,7 @@ export default function Dashboard() {
     if (hour < 12) setGreeting('Good morning');
     else if (hour < 17) setGreeting('Good afternoon');
     else setGreeting('Good evening');
-  }, [user, session, loading, router]);
+  }, [loading]);
 
   // Points are now handled by the shared context
 
@@ -232,6 +291,38 @@ export default function Dashboard() {
         console.log('💾 Storing session:', session);
         localStorage.setItem('talentix_session', JSON.stringify(session));
         
+        // Create JWT token for OAuth user for API authentication
+        const createJWTToken = async () => {
+          try {
+            console.log('🔄 Creating JWT token for OAuth user:', userData.email);
+            const jwtResponse = await fetch('/api/auth/create-oauth-token', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ user: userData })
+            });
+            
+            console.log('📡 JWT API response status:', jwtResponse.status);
+            
+            if (jwtResponse.ok) {
+              const jwtData = await jwtResponse.json();
+              console.log('📊 JWT API response data:', jwtData);
+              if (jwtData.token) {
+                localStorage.setItem('auth_token', jwtData.token);
+                console.log('✅ JWT token created and stored for OAuth user');
+              } else {
+                console.error('❌ No token in response:', jwtData);
+              }
+            } else {
+              const errorData = await jwtResponse.json();
+              console.error('❌ JWT API error:', jwtResponse.status, errorData);
+            }
+          } catch (error) {
+            console.error('❌ Failed to create JWT token for OAuth user:', error);
+          }
+        };
+        
+        createJWTToken();
+        
         // Clear URL parameters
         const newUrl = new URL(window.location.href);
         newUrl.searchParams.delete('oauth_user');
@@ -257,22 +348,38 @@ export default function Dashboard() {
     }
   }, []);
 
+  // Handle subscription success
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const subscriptionStatus = urlParams.get('subscription');
+    
+    if (subscriptionStatus === 'success') {
+      // Clear the URL parameter
+      window.history.replaceState({}, document.title, window.location.pathname);
+      
+      // Show success message with refresh option
+      setTimeout(() => {
+        const shouldRefresh = confirm('🎉 Welcome to Talentix Pro! Your subscription has been activated successfully.\n\nWould you like to refresh the page to see your updated Pro features?');
+        
+        if (shouldRefresh) {
+          window.location.reload();
+        }
+      }, 1500);
+    }
+  }, []);
+
 
 
   const handleSignOutClick = () => {
-    console.log('Sign out button clicked!'); // Debug log
     
     // Simple, direct approach - no async/await
     try {
-      console.log('Starting simple sign out...'); // Debug log
       
       // Clear all localStorage immediately
       localStorage.removeItem('talentix_session');
     localStorage.removeItem('talentix_user');
-      console.log('localStorage cleared'); // Debug log
       
       // Force redirect immediately
-      console.log('Redirecting immediately...'); // Debug log
       window.location.href = '/';
       
     } catch (error) {
@@ -288,8 +395,7 @@ export default function Dashboard() {
     router.push(`/search?q=${encodeURIComponent(trimmedQuery)}`);
   };
 
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSearchSubmit = () => {
     const trimmedQuery = searchQuery.trim() || "jobs";
     router.push(`/search?q=${encodeURIComponent(trimmedQuery)}`);
   };
@@ -316,50 +422,31 @@ export default function Dashboard() {
 
   // Function to handle emoji selection
   const handleEmojiSelect = async (newEmoji: string) => {
-    console.log('🔵 handleEmojiSelect called with:', newEmoji);
-    console.log('🔵 Current user:', user);
-    console.log('🔵 Current displayEmoji:', displayEmoji);
-    
-    // Debug localStorage contents
-    console.log('🔵 localStorage talentix_user:', localStorage.getItem('talentix_user'));
-    console.log('🔵 localStorage talentix_session:', localStorage.getItem('talentix_session'));
-    console.log('🔵 localStorage talentix_oauth_google:', localStorage.getItem('talentix_oauth_google'));
-    console.log('🔵 localStorage talentix_oauth_microsoft:', localStorage.getItem('talentix_oauth_microsoft'));
     
     if (user) {
       try {
-        console.log('🔵 Setting displayEmoji to:', newEmoji);
         setDisplayEmoji(newEmoji);
         
-        console.log('🔵 Calling updateUser with emoji:', newEmoji);
         const result = await updateUser({ emoji: newEmoji });
         
-        console.log('🔵 updateUser result:', result);
         
         if (!result.success) {
           console.error('❌ Failed to update emoji:', result.error);
     } else {
-          console.log('✅ Emoji updated successfully');
           // Force a re-render by updating user state
-          console.log('🔵 User after update should have emoji:', newEmoji);
         }
       } catch (error) {
         console.error('❌ Error updating emoji:', error);
       }
     } else {
-      console.log('❌ No user found, cannot update emoji');
-      console.log('❌ Attempting to load user from localStorage manually...');
       
       // Try to manually load user from localStorage
       const storedUser = localStorage.getItem('talentix_user');
       if (storedUser) {
         try {
           const userData = JSON.parse(storedUser);
-          console.log('❌ Found user in localStorage:', userData);
-          console.log('❌ This suggests the AuthContext is not loading properly');
           
           // Manually update the emoji in localStorage since AuthContext user is null
-          console.log('🔄 Manually updating emoji in localStorage...');
           const updatedUserData = { ...userData, emoji: newEmoji, updatedAt: new Date().toISOString() };
           
           // Update all localStorage entries
@@ -380,26 +467,21 @@ export default function Dashboard() {
               const updatedSession = { ...sessionData, user: updatedUserData };
               localStorage.setItem('talentix_session', JSON.stringify(updatedSession));
             } catch (e) {
-              console.log('❌ Error updating session:', e);
             }
           }
           
           // Update the display immediately
           setDisplayEmoji(newEmoji);
           
-          console.log('✅ Emoji updated manually in localStorage');
           
           // Try to refresh the AuthContext to load the updated user
           if (refreshUser) {
-            console.log('🔄 Calling refreshUser to reload AuthContext...');
             await refreshUser();
           }
           
         } catch (e) {
-          console.log('❌ Error parsing stored user:', e);
         }
       } else {
-        console.log('❌ No user found in localStorage either');
       }
     }
   };
@@ -452,7 +534,7 @@ export default function Dashboard() {
       companyLogo: '💊',
       jobTitle: 'Customer Advisor',
       description: 'Help customers find the right products, introduce them to new things, and make their shopping experience better.',
-      applyLink: 'https://www.boots.jobs/retail/customer-advisor/',
+      applyLink: 'https://www.boots.jobs/search-jobs',
     },
     {
       companyName: 'Tesco',
@@ -466,21 +548,21 @@ export default function Dashboard() {
       companyLogo: '☕',
       jobTitle: 'Barista',
       description: 'Create the perfect coffee experience for our customers. Full training provided with flexible scheduling.',
-      applyLink: 'https://www.costa.co.uk/careers/barista',
+      applyLink: 'https://www.costacareers.co.uk',
     },
     {
       companyName: 'Sainsbury\'s',
       companyLogo: '🛍️',
       jobTitle: 'Sales Assistant',
       description: 'Help customers find what they need and keep our store looking great. Weekend and evening shifts available.',
-      applyLink: 'https://sainsburys.jobs/retail/sales-assistant',
+      applyLink: 'https://sainsburys.jobs',
     },
     {
       companyName: 'Next',
       companyLogo: '👕',
       jobTitle: 'Sales Associate',
       description: 'Join our fashion team and help customers find their perfect style. Great staff discount and flexible hours.',
-      applyLink: 'https://www.next.co.uk/careers/retail-sales-associate',
+      applyLink: 'https://careers.next.co.uk',
     },
   ];
 
@@ -670,7 +752,7 @@ export default function Dashboard() {
             
             <div className="flex items-center space-x-8">
               <div style={{ width: '420px', marginLeft: '-60px', marginRight: '20px' }}>
-                <form onSubmit={handleSearchSubmit} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <div style={{ 
                     position: 'relative', 
                     flex: 1,
@@ -714,7 +796,8 @@ export default function Dashboard() {
                     />
                   </div>
                   <button
-                    type="submit"
+                    type="button"
+                    onClick={handleSearchSubmit}
                     style={{
                       padding: '12px 18px',
                       background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
@@ -734,22 +817,9 @@ export default function Dashboard() {
                   >
                     ✨ Search
                   </button>
-                </form>
+                </div>
               </div>
               
-              {/* Debug Subscription Toggle */}
-              <button
-                onClick={() => {
-                  // Toggle between free and pro
-                  const newTier = subscription?.tier === 'free' ? 'pro' : 'free';
-                  localStorage.setItem('debug_subscription_tier', newTier);
-                  window.location.reload();
-                }}
-                className="px-3 py-2 bg-purple-500 hover:bg-purple-600 text-white text-xs font-bold rounded-lg transition-all duration-200 hover:scale-105"
-                style={{ fontFamily: 'Fredoka, sans-serif' }}
-              >
-                Debug: {subscription?.tier === 'free' ? 'Switch to Pro' : 'Switch to Free'}
-              </button>
 
               {/* Playful Profile Section */}
               <div className="flex items-center space-x-3 group cursor-pointer">
@@ -1200,7 +1270,7 @@ export default function Dashboard() {
 
               {/* CV Reviewer Feature Card with Pro Banner */}
               <div style={{ position: 'relative', flexShrink: 0 }}>
-                <ProBanner />
+                <ProBanner feature="cv-reviewer" />
                 <div 
                   onClick={handleCVReviewerNavigation}
                 style={{
@@ -1329,7 +1399,7 @@ export default function Dashboard() {
 
               {/* Video Interview Feature Card with Pro Banner */}
               <div style={{ position: 'relative', flexShrink: 0 }}>
-                <ProBanner />
+                <ProBanner feature="video-interview" />
                 <div 
                   onClick={handleVideoInterviewNavigation}
                 style={{
@@ -1519,25 +1589,27 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              {/* Career Guidance Feature Card */}
-              <div 
-                onClick={handleCareerGuidanceNavigation}
-                style={{
-                  flexShrink: 0,
-                  width: '350px',
-                  background: 'linear-gradient(135deg, #fce7f3 0%, #ec4899 100%)',
-                  borderRadius: '20px',
-                  padding: '32px',
-                  boxShadow: '0 8px 25px rgba(236, 72, 153, 0.3)',
-                  border: '3px solid #ec4899',
-                  cursor: 'pointer',
-                  transition: 'all 0.3s ease',
-                  scrollSnapAlign: 'start',
-                  position: 'relative',
-                  overflow: 'hidden'
-                }}
-                className="dashboard-feature-card points"
-              >
+              {/* Career Guidance Feature Card with Pro Banner */}
+              <div style={{ position: 'relative', flexShrink: 0 }}>
+                <ProBanner feature="career-guidance" />
+                <div 
+                  onClick={handleCareerGuidanceNavigation}
+                  style={{
+                    flexShrink: 0,
+                    width: '350px',
+                    background: 'linear-gradient(135deg, #fce7f3 0%, #ec4899 100%)',
+                    borderRadius: '20px',
+                    padding: '32px',
+                    boxShadow: '0 8px 25px rgba(236, 72, 153, 0.3)',
+                    border: '3px solid #ec4899',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease',
+                    scrollSnapAlign: 'start',
+                    position: 'relative',
+                    overflow: 'hidden'
+                  }}
+                  className="dashboard-feature-card points"
+                >
                 <div style={{ position: 'absolute', top: '10px', right: '10px', fontSize: '2rem', opacity: '0.3' }}>📚</div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '24px' }}>
                   <div style={{
@@ -1579,6 +1651,7 @@ export default function Dashboard() {
                   <span style={{ fontSize: '14px', color: '#ffffff', fontWeight: '600' }}>
                     Learn More →
                   </span>
+                </div>
                 </div>
               </div>
 

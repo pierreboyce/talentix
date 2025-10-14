@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
       credentialUrl: `/certificates/${certificateId}`,
       description: `Demonstrates ${level.toLowerCase()} level proficiency in career development skills and professional growth.`,
       skills: skillsByLevel[level] || ['Professional Development'],
-      imageUrl: `/talentix${level.toLowerCase()}certificate.png`,
+      imageUrl: `/${level.toLowerCase()}rankcerti.png`,
       color: getColorByLevel(level),
       icon: getIconByLevel(level),
       achievementName: achievementName || `${level} Level Achievement`
@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error('Error generating certificate:', error);
+    
     return NextResponse.json(
       { error: 'Failed to generate certificate' },
       { status: 500 }

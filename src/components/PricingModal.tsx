@@ -104,7 +104,7 @@ export default function PricingModal({ isOpen, onClose }: PricingModalProps) {
     }
 
     if (tier.id === 'enterprise') {
-      showToast('Please contact us for Enterprise pricing', 'info');
+      window.open('mailto:enquiries@talentix.co.uk?subject=Enterprise Plan Inquiry&body=Hi Talentix Team,%0D%0A%0D%0AI am interested in the Enterprise plan for my organization.%0D%0A%0D%0APlease contact me with more details about:%0D%0A- Custom pricing options%0D%0A- Available features%0D%0A- Implementation timeline%0D%0A- Support options%0D%0A%0D%0AOrganization details:%0D%0A- Company name:%0D%0A- Number of users:%0D%0A- Specific requirements:%0D%0A%0D%0AThank you!', '_blank');
       return;
     }
 
@@ -122,9 +122,12 @@ export default function PricingModal({ isOpen, onClose }: PricingModalProps) {
         throw new Error('Price ID not configured for this tier');
       }
 
+      // Don't require token for subscription - use user email directly
       const response = await fetch('/api/subscriptions/create-checkout', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json'
+        },
         body: JSON.stringify({ priceId, userEmail: user.email })
       });
       
@@ -264,7 +267,30 @@ export default function PricingModal({ isOpen, onClose }: PricingModalProps) {
         @media (max-width: 768px) {
           .pricing-grid {
             grid-template-columns: 1fr !important;
-            gap: 32px !important;
+            gap: 20px !important;
+          }
+        }
+        
+        @media (max-width: 640px) {
+          .pricing-grid {
+            grid-template-columns: 1fr !important;
+            gap: 16px !important;
+          }
+          
+          .pricing-card {
+            padding: 20px !important;
+          }
+          
+          .pricing-card h3 {
+            font-size: 24px !important;
+          }
+          
+          .pricing-card .price {
+            font-size: 28px !important;
+          }
+          
+          .pricing-card ul li {
+            font-size: 14px !important;
           }
         }
       `}</style>
@@ -281,22 +307,22 @@ export default function PricingModal({ isOpen, onClose }: PricingModalProps) {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          zIndex: 9999999,
-          padding: '20px'
+          zIndex: 99999999,
+          padding: window.innerWidth < 640 ? '8px' : '20px'
         }}
         onClick={onClose}
       >
         <div 
           style={{
             backgroundColor: 'white',
-            borderRadius: '24px',
-            padding: '24px',
+            borderRadius: window.innerWidth < 640 ? '16px' : '24px',
+            padding: window.innerWidth < 640 ? '16px' : '24px',
             maxWidth: '1200px',
             width: '100%',
-            maxHeight: '95vh',
+            maxHeight: window.innerWidth < 640 ? '98vh' : '95vh',
             overflowY: 'auto',
             position: 'relative',
-            zIndex: 10000000,
+            zIndex: 100000000,
             boxShadow: '0 50px 100px -20px rgba(0, 0, 0, 0.25)',
             border: '2px solid rgba(255, 255, 255, 0.3)'
           }}
@@ -310,7 +336,10 @@ export default function PricingModal({ isOpen, onClose }: PricingModalProps) {
 
           {/* Close button */}
           <button
-            onClick={onClose}
+            onClick={(e) => {
+              e.stopPropagation();
+              onClose();
+            }}
             style={{
               position: 'absolute',
               top: '24px',
@@ -327,7 +356,8 @@ export default function PricingModal({ isOpen, onClose }: PricingModalProps) {
               alignItems: 'center',
               justifyContent: 'center',
               transition: 'all 0.3s ease',
-              boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1)'
+              boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1)',
+              zIndex: 100000001
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
@@ -344,10 +374,10 @@ export default function PricingModal({ isOpen, onClose }: PricingModalProps) {
           </button>
 
           {/* Header */}
-          <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-            <div className="bounce-icon" style={{ fontSize: '48px', marginBottom: '12px' }}>🚀</div>
+          <div style={{ textAlign: 'center', marginBottom: window.innerWidth < 640 ? '24px' : '32px' }}>
+            <div className="bounce-icon" style={{ fontSize: window.innerWidth < 640 ? '32px' : '48px', marginBottom: window.innerWidth < 640 ? '8px' : '12px' }}>🚀</div>
             <h2 className="gradient-text" style={{ 
-              fontSize: '42px', 
+              fontSize: window.innerWidth < 640 ? '28px' : window.innerWidth < 768 ? '36px' : '42px', 
               fontWeight: '900', 
               marginBottom: '12px',
               fontFamily: 'Fredoka, sans-serif',
@@ -357,7 +387,7 @@ export default function PricingModal({ isOpen, onClose }: PricingModalProps) {
               Choose Your Plan
             </h2>
             <p style={{ 
-              fontSize: '18px', 
+              fontSize: window.innerWidth < 640 ? '16px' : '18px', 
               color: '#6b7280',
               fontFamily: 'Fredoka, sans-serif',
               fontWeight: '600',
@@ -366,7 +396,7 @@ export default function PricingModal({ isOpen, onClose }: PricingModalProps) {
               Unlock Your Career Potential! 🎯
             </p>
             <p style={{ 
-              fontSize: '14px', 
+              fontSize: window.innerWidth < 640 ? '12px' : '14px', 
               color: '#9ca3af',
               fontFamily: 'Fredoka, sans-serif',
               fontWeight: '500'

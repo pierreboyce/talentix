@@ -118,7 +118,10 @@ export default function ForgotPasswordModal({ isOpen, onClose }: ForgotPasswordM
       >
         {/* Close Button */}
         <button
-          onClick={handleClose}
+          onClick={(e) => {
+            e.stopPropagation();
+            handleClose();
+          }}
           style={{
             position: 'absolute',
             top: '20px',
@@ -130,7 +133,16 @@ export default function ForgotPasswordModal({ isOpen, onClose }: ForgotPasswordM
             cursor: 'pointer',
             padding: '8px',
             backdropFilter: 'blur(10px)',
-            transition: 'all 0.3s ease'
+            transition: 'all 0.3s ease',
+            zIndex: 10000001
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = 'rgba(239, 68, 68, 0.9)';
+            e.currentTarget.style.color = 'white';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)';
+            e.currentTarget.style.color = '#374151';
           }}
         >
           <X size={24} />

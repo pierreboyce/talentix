@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
 import Groq from 'groq-sdk';
+import { rateLimiters, createRateLimitResponse } from '../../../../lib/rate-limiter';
 
 // Calculate points based on score (30/25/20/10/0 for 5/4/3/2/1)
 function calculatePoints(score: number): number {
@@ -29,18 +30,17 @@ interface CVFeedback {
 }
 
 async function analyzeWithOpenAI(cvText: string): Promise<CVFeedback> {
-  console.log('🤖 Using OpenAI GPT for CV analysis...');
-  console.log('🔍 analyzeWithOpenAI called with CV text length:', cvText.length);
-  console.log('📄 CV TEXT CONTENT:', cvText);
+  
+  
+  
 
   const usingOpenAI = Boolean(process.env.OPENAI_API_KEY);
   const usingGroq = !usingOpenAI && Boolean(process.env.GROQ_API_KEY);
   if (!usingOpenAI && !usingGroq) {
-    console.log('❌ No AI provider key found');
     throw new Error('AI service not configured');
   }
 
-      const prompt = `ANALYZE THIS ACTUAL CV TEXT AND PROVIDE PERSONALIZED FEEDBACK:
+  const prompt = `ANALYZE THIS ACTUAL CV TEXT AND PROVIDE PERSONALIZED FEEDBACK:
 
 ==== CV CONTENT TO ANALYZE ====
 ${cvText}
@@ -108,7 +108,7 @@ ABSOLUTELY CRITICAL:
       });
       rawResponse = completion.choices?.[0]?.message?.content || '';
     }
-    console.log('🔍 Raw OpenAI response:', rawResponse);
+    
 
     // Clean up potential markdown formatting
     let cleanedResponse = rawResponse;
@@ -119,18 +119,18 @@ ABSOLUTELY CRITICAL:
     }
 
     const parsedResult = JSON.parse(cleanedResponse);
-    console.log('✅ JSON parsed successfully:', parsedResult);
-    console.log('✅ OpenAI CV analysis successful!');
+    
+    
     
     return parsedResult;
   } catch (error) {
-    console.error('❌ OpenAI CV analysis failed:', error);
+    
     throw error;
   }
 }
 
 function analyzeBasicCV(cvText: string): CVFeedback {
-  console.log('🔧 Using basic CV analysis fallback...');
+  
   
   const sections = [
     {
@@ -179,6 +179,14 @@ function analyzeBasicCV(cvText: string): CVFeedback {
 
 export async function POST(request: NextRequest) {
   try {
+    // 🛡️ Rate limiting check - 3 requests per minute for expensive CV analysis
+    const rateLimitResult = await rateLimiters.aiHeavy.checkLimit(request);
+    if (!rateLimitResult.allowed) {
+      console.log('🚫 CV analysis rate limit exceeded');
+      return createRateLimitResponse(rateLimitResult.resetTime);
+    }
+    console.log(`✅ CV analysis rate limit passed. Remaining: ${rateLimitResult.remaining}`);
+
     const { cvText } = await request.json();
 
     if (!cvText || typeof cvText !== 'string') {
@@ -193,7 +201,7 @@ export async function POST(request: NextRequest) {
     try {
       result = await analyzeWithOpenAI(cvText);
     } catch (error) {
-      console.error('❌ OpenAI analysis failed, using fallback:', error);
+      
       result = analyzeBasicCV(cvText);
     }
 
@@ -201,11 +209,11 @@ export async function POST(request: NextRequest) {
     const points = calculatePoints(result.score);
     const resultWithPoints = { ...result, points };
     
-    console.log('✅ CV analysis complete!', { score: result.score, points });
+    
 
     return NextResponse.json(resultWithPoints);
   } catch (error) {
-    console.error('❌ CV analysis error:', error);
+    
     return NextResponse.json(
       { error: 'Failed to analyze CV' },
       { status: 500 }

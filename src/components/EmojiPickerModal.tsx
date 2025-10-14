@@ -88,7 +88,10 @@ export default function EmojiPickerModal({ isOpen, onClose, onEmojiSelect, curre
       >
         {/* Close Button */}
         <button
-          onClick={handleClose}
+          onClick={(e) => {
+            e.stopPropagation();
+            handleClose();
+          }}
           style={{
             position: 'absolute',
             top: '16px',
@@ -104,7 +107,14 @@ export default function EmojiPickerModal({ isOpen, onClose, onEmojiSelect, curre
             alignItems: 'center',
             justifyContent: 'center',
             borderRadius: '50%',
-            transition: 'background-color 0.2s'
+            transition: 'background-color 0.2s',
+            zIndex: 10000001
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.1)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = 'transparent';
           }}
         >
           <X size={24} />

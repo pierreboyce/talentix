@@ -275,23 +275,15 @@ export default function HomepageMobile() {
         
         <div className="space-y-4 max-w-sm mx-auto">
           <a
-            href="mailto:talentixuk@gmail.com"
+            href="mailto:enquiries@talentix.co.uk"
             className="block bg-white/80 backdrop-blur-sm rounded-2xl p-6 text-center shadow-lg hover:shadow-xl transition-all duration-300"
           >
             <div className="text-4xl mb-3">📧</div>
             <h3 className="font-bold text-lg text-gray-900 mb-2" style={{ fontFamily: 'Fredoka, sans-serif' }}>
               Email Us
             </h3>
-            <p className="text-gray-600 font-medium">talentixuk@gmail.com</p>
+            <p className="text-gray-600 font-medium">enquiries@talentix.co.uk</p>
           </a>
-          
-          <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 text-center shadow-lg">
-            <div className="text-4xl mb-3">📞</div>
-            <h3 className="font-bold text-lg text-gray-900 mb-2" style={{ fontFamily: 'Fredoka, sans-serif' }}>
-              Call Us
-            </h3>
-            <p className="text-gray-600 font-medium">Coming Soon!</p>
-          </div>
         </div>
       </section>
 
@@ -320,6 +312,4 @@ export default function HomepageMobile() {
     </div>
   );
 }
-
-
 

@@ -1,349 +1,204 @@
-/**
- * Database abstraction layer - Mock implementation
- * This can be easily replaced with a real database (PostgreSQL, MongoDB, etc.)
- */
+import { promises as fs } from 'fs';
+import path from 'path';
+import bcrypt from 'bcryptjs';
+import { User } from '../types/auth';
 
-export interface User {
-  id: string;
-  email: string;
-  name: string;
-  createdAt: Date;
-  updatedAt: Date;
-  subscription: {
-    tier: 'free' | 'pro' | 'enterprise';
-    status: 'active' | 'cancelled' | 'expired';
-    startDate?: Date;
-    endDate?: Date;
-  };
-  usage: {
-    cvReviews: number;
-    videoInterviews: number;
-    blogViews: number;
-  };
+const DB_DIR = path.join(process.cwd(), 'data');
+const USERS_FILE = path.join(DB_DIR, 'users.json');
+
+// Ensure data directory exists
+async function ensureDataDir() {
+  try {
+    await fs.access(DB_DIR);
+  } catch {
+    await fs.mkdir(DB_DIR, { recursive: true });
+  }
 }
 
-export interface Subscription {
-  id: string;
-  userId: string;
-  tier: 'free' | 'pro' | 'enterprise';
-  status: 'active' | 'cancelled' | 'expired';
-  stripeCustomerId?: string;
-  stripeSubscriptionId?: string;
-  startDate: Date;
-  endDate?: Date;
-  createdAt: Date;
-  updatedAt: Date;
+// Ensure users file exists
+async function ensureUsersFile() {
+  try {
+    await fs.access(USERS_FILE);
+  } catch {
+    await fs.writeFile(USERS_FILE, JSON.stringify([], null, 2));
+  }
 }
 
-// Mock data store (in production, this would be a real database)
-const mockUsers: User[] = [
-  {
-    id: '1',
-    email: 'john@example.com',
-    name: 'John Doe',
-    createdAt: new Date('2024-01-15'),
-    updatedAt: new Date('2024-01-15'),
-    subscription: {
-      tier: 'pro',
-      status: 'active',
-      startDate: new Date('2024-01-15'),
-      endDate: new Date('2024-12-15'),
-    },
-    usage: {
-      cvReviews: 45,
-      videoInterviews: 23,
-      blogViews: 156,
-    },
-  },
-  {
-    id: '2',
-    email: 'sarah@example.com',
-    name: 'Sarah Smith',
-    createdAt: new Date('2024-02-01'),
-    updatedAt: new Date('2024-02-01'),
-    subscription: {
-      tier: 'free',
-      status: 'active',
-    },
-    usage: {
-      cvReviews: 3,
-      videoInterviews: 5,
-      blogViews: 28,
-    },
-  },
-  {
-    id: '3',
-    email: 'mike@company.com',
-    name: 'Mike Johnson',
-    createdAt: new Date('2024-01-20'),
-    updatedAt: new Date('2024-01-20'),
-    subscription: {
-      tier: 'enterprise',
-      status: 'active',
-      startDate: new Date('2024-01-20'),
-    },
-    usage: {
-      cvReviews: 234,
-      videoInterviews: 189,
-      blogViews: 1245,
-    },
-  },
-];
+// Read all users from file
+async function readUsers(): Promise<User[]> {
+  await ensureDataDir();
+  await ensureUsersFile();
+  
+  try {
+    const data = await fs.readFile(USERS_FILE, 'utf8');
+    return JSON.parse(data);
+  } catch (error) {
+    console.error('Error reading users file:', error);
+    return [];
+  }
+}
 
-const mockSubscriptions: Subscription[] = [
-  {
-    id: 'sub_1',
-    userId: '1',
-    tier: 'pro',
-    status: 'active',
-    stripeCustomerId: 'cus_123',
-    stripeSubscriptionId: 'sub_123',
-    startDate: new Date('2024-01-15'),
-    endDate: new Date('2024-12-15'),
-    createdAt: new Date('2024-01-15'),
-    updatedAt: new Date('2024-01-15'),
-  },
-  {
-    id: 'sub_2',
-    userId: '3',
-    tier: 'enterprise',
-    status: 'active',
-    stripeCustomerId: 'cus_456',
-    stripeSubscriptionId: 'sub_456',
-    startDate: new Date('2024-01-20'),
-    createdAt: new Date('2024-01-20'),
-    updatedAt: new Date('2024-01-20'),
-  },
-];
+// Write users to file
+async function writeUsers(users: User[]): Promise<void> {
+  await ensureDataDir();
+  await fs.writeFile(USERS_FILE, JSON.stringify(users, null, 2));
+}
 
-/**
- * Database operations for users
- */
-export const userDb = {
-  /**
-   * Find user by ID
-   */
-  async findById(id: string): Promise<User | null> {
-    // Simulate database delay
-    await new Promise(resolve => setTimeout(resolve, 10));
-    return mockUsers.find(user => user.id === id) || null;
+// Database operations
+export const database = {
+  // Find user by email
+  async findUserByEmail(email: string): Promise<User | null> {
+    const users = await readUsers();
+    return users.find(user => user.email.toLowerCase() === email.toLowerCase()) || null;
   },
 
-  /**
-   * Find user by email
-   */
-  async findByEmail(email: string): Promise<User | null> {
-    await new Promise(resolve => setTimeout(resolve, 10));
-    return mockUsers.find(user => user.email === email) || null;
+  // Find user by ID
+  async findUserById(id: string): Promise<User | null> {
+    const users = await readUsers();
+    return users.find(user => user.id === id) || null;
   },
 
-  /**
-   * Create a new user
-   */
-  async create(userData: Omit<User, 'id' | 'createdAt' | 'updatedAt'>): Promise<User> {
-    await new Promise(resolve => setTimeout(resolve, 10));
+  // Create new user
+  async createUser(userData: {
+    name: string;
+    email: string;
+    password: string;
+    location?: string;
+  }): Promise<User> {
+    const users = await readUsers();
     
+    // Check if user already exists
+    const existingUser = users.find(user => user.email.toLowerCase() === userData.email.toLowerCase());
+    if (existingUser) {
+      throw new Error('User with this email already exists');
+    }
+
+    // Hash password
+    const hashedPassword = await bcrypt.hash(userData.password, 12);
+
+    // Create new user
     const newUser: User = {
-      ...userData,
-      id: `user_${Date.now()}`,
-      createdAt: new Date(),
-      updatedAt: new Date(),
+      id: `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      name: userData.name,
+      email: userData.email.toLowerCase(),
+      password: hashedPassword,
+      location: userData.location || 'Unknown',
+      score: 0,
+      emoji: '😊',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
     };
-    
-    mockUsers.push(newUser);
-    return newUser;
+
+    // Add to users array and save
+    users.push(newUser);
+    await writeUsers(users);
+
+    // Return user without password
+    const { password, ...userWithoutPassword } = newUser;
+    return userWithoutPassword as User;
   },
 
-  /**
-   * Update user
-   */
-  async update(id: string, updates: Partial<Omit<User, 'id' | 'createdAt'>>): Promise<User | null> {
-    await new Promise(resolve => setTimeout(resolve, 10));
+  // Verify user password
+  async verifyPassword(email: string, password: string): Promise<User | null> {
+    const users = await readUsers();
+    const user = users.find(user => user.email.toLowerCase() === email.toLowerCase());
     
-    const userIndex = mockUsers.findIndex(user => user.id === id);
-    if (userIndex === -1) return null;
+    if (!user || !user.password) {
+      return null;
+    }
 
-    mockUsers[userIndex] = {
-      ...mockUsers[userIndex],
+    const isValid = await bcrypt.compare(password, user.password);
+    if (!isValid) {
+      return null;
+    }
+
+    // Return user without password
+    const { password: _, ...userWithoutPassword } = user;
+    return userWithoutPassword as User;
+  },
+
+  // Update user
+  async updateUser(id: string, updates: Partial<User>): Promise<User | null> {
+    const users = await readUsers();
+    const userIndex = users.findIndex(user => user.id === id);
+    
+    if (userIndex === -1) {
+      return null;
+    }
+
+    // Update user
+    users[userIndex] = {
+      ...users[userIndex],
       ...updates,
-      updatedAt: new Date(),
+      updatedAt: new Date().toISOString()
     };
 
-    return mockUsers[userIndex];
+    await writeUsers(users);
+
+    // Return user without password
+    const { password, ...userWithoutPassword } = users[userIndex];
+    return userWithoutPassword as User;
   },
 
-  /**
-   * Delete user
-   */
-  async delete(id: string): Promise<boolean> {
-    await new Promise(resolve => setTimeout(resolve, 10));
+  // Update user password
+  async updatePassword(email: string, newPassword: string): Promise<boolean> {
+    const users = await readUsers();
+    const userIndex = users.findIndex(user => user.email.toLowerCase() === email.toLowerCase());
     
-    const userIndex = mockUsers.findIndex(user => user.id === id);
-    if (userIndex === -1) return false;
+    if (userIndex === -1) {
+      return false;
+    }
 
-    mockUsers.splice(userIndex, 1);
+    // Hash new password
+    const hashedPassword = await bcrypt.hash(newPassword, 12);
+
+    // Update user password
+    users[userIndex] = {
+      ...users[userIndex],
+      password: hashedPassword,
+      updatedAt: new Date().toISOString()
+    };
+
+    await writeUsers(users);
     return true;
   },
 
-  /**
-   * Get all users (for admin)
-   */
-  async findAll(limit?: number, offset?: number): Promise<User[]> {
-    await new Promise(resolve => setTimeout(resolve, 10));
+  // Get all users (admin function)
+  async getAllUsers(): Promise<Omit<User, 'password'>[]> {
+    const users = await readUsers();
+    return users.map(({ password, ...user }) => user);
+  },
+
+  // Update user subscription
+  async updateUserSubscription(email: string, subscriptionData: {
+    stripeCustomerId: string;
+    stripeSubscriptionId: string | null;
+    tier: string;
+    status: string;
+    currentPeriodEnd: Date;
+    cancelAtPeriodEnd: boolean;
+    priceId: string | null;
+  }): Promise<boolean> {
+    const users = await readUsers();
+    const userIndex = users.findIndex(u => u.email === email);
     
-    let users = [...mockUsers];
-    
-    if (offset) {
-      users = users.slice(offset);
+    if (userIndex === -1) {
+      return false;
     }
-    
-    if (limit) {
-      users = users.slice(0, limit);
-    }
-    
-    return users;
-  },
 
-  /**
-   * Count total users
-   */
-  async count(): Promise<number> {
-    await new Promise(resolve => setTimeout(resolve, 10));
-    return mockUsers.length;
-  },
-};
-
-/**
- * Database operations for subscriptions
- */
-export const subscriptionDb = {
-  /**
-   * Find subscription by user ID
-   */
-  async findByUserId(userId: string): Promise<Subscription | null> {
-    await new Promise(resolve => setTimeout(resolve, 10));
-    return mockSubscriptions.find(sub => sub.userId === userId) || null;
-  },
-
-  /**
-   * Find subscription by Stripe subscription ID
-   */
-  async findByStripeId(stripeSubscriptionId: string): Promise<Subscription | null> {
-    await new Promise(resolve => setTimeout(resolve, 10));
-    return mockSubscriptions.find(sub => sub.stripeSubscriptionId === stripeSubscriptionId) || null;
-  },
-
-  /**
-   * Create subscription
-   */
-  async create(subData: Omit<Subscription, 'id' | 'createdAt' | 'updatedAt'>): Promise<Subscription> {
-    await new Promise(resolve => setTimeout(resolve, 10));
-    
-    const newSubscription: Subscription = {
-      ...subData,
-      id: `sub_${Date.now()}`,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-    
-    mockSubscriptions.push(newSubscription);
-    return newSubscription;
-  },
-
-  /**
-   * Update subscription
-   */
-  async update(id: string, updates: Partial<Omit<Subscription, 'id' | 'createdAt'>>): Promise<Subscription | null> {
-    await new Promise(resolve => setTimeout(resolve, 10));
-    
-    const subIndex = mockSubscriptions.findIndex(sub => sub.id === id);
-    if (subIndex === -1) return null;
-
-    mockSubscriptions[subIndex] = {
-      ...mockSubscriptions[subIndex],
-      ...updates,
-      updatedAt: new Date(),
+    users[userIndex] = {
+      ...users[userIndex],
+      stripeCustomerId: subscriptionData.stripeCustomerId,
+      stripeSubscriptionId: subscriptionData.stripeSubscriptionId,
+      subscriptionTier: subscriptionData.tier as 'free' | 'pro' | 'enterprise',
+      subscriptionStatus: subscriptionData.status,
+      subscriptionCurrentPeriodEnd: subscriptionData.currentPeriodEnd.toISOString(),
+      subscriptionCancelAtPeriodEnd: subscriptionData.cancelAtPeriodEnd,
+      subscriptionPriceId: subscriptionData.priceId,
+      updatedAt: new Date().toISOString()
     };
 
-    return mockSubscriptions[subIndex];
-  },
-
-  /**
-   * Get all subscriptions
-   */
-  async findAll(): Promise<Subscription[]> {
-    await new Promise(resolve => setTimeout(resolve, 10));
-    return [...mockSubscriptions];
-  },
-
-  /**
-   * Count active subscriptions
-   */
-  async countActive(): Promise<number> {
-    await new Promise(resolve => setTimeout(resolve, 10));
-    return mockSubscriptions.filter(sub => sub.status === 'active').length;
-  },
-};
-
-/**
- * Analytics queries
- */
-export const analyticsDb = {
-  /**
-   * Get user analytics
-   */
-  async getUserAnalytics() {
-    await new Promise(resolve => setTimeout(resolve, 10));
-    
-    const total = mockUsers.length;
-    const active = mockUsers.filter(user => 
-      user.subscription.status === 'active' && 
-      user.usage.cvReviews > 0 || user.usage.videoInterviews > 0
-    ).length;
-
-    return {
-      total,
-      active,
-      growth: Math.round((active / total) * 100),
-    };
-  },
-
-  /**
-   * Get subscription analytics
-   */
-  async getSubscriptionAnalytics() {
-    await new Promise(resolve => setTimeout(resolve, 10));
-    
-    const total = mockSubscriptions.length;
-    const active = mockSubscriptions.filter(sub => sub.status === 'active').length;
-    const pro = mockSubscriptions.filter(sub => sub.tier === 'pro' && sub.status === 'active').length;
-    const enterprise = mockSubscriptions.filter(sub => sub.tier === 'enterprise' && sub.status === 'active').length;
-
-    // Mock revenue calculation
-    const monthlyRevenue = (pro * 3.99) + (enterprise * 29.99);
-
-    return {
-      total,
-      active,
-      monthlyRevenue,
-      conversionRate: Math.round((active / mockUsers.length) * 100),
-    };
-  },
-
-  /**
-   * Get usage analytics
-   */
-  async getUsageAnalytics() {
-    await new Promise(resolve => setTimeout(resolve, 10));
-    
-    const totalCvReviews = mockUsers.reduce((sum, user) => sum + user.usage.cvReviews, 0);
-    const totalVideoInterviews = mockUsers.reduce((sum, user) => sum + user.usage.videoInterviews, 0);
-    const totalBlogViews = mockUsers.reduce((sum, user) => sum + user.usage.blogViews, 0);
-
-    return {
-      cvReviews: { total: totalCvReviews },
-      videoInterviews: { total: totalVideoInterviews },
-      blogViews: { total: totalBlogViews },
-    };
-  },
+    await writeUsers(users);
+    return true;
+  }
 };

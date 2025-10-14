@@ -10,7 +10,7 @@ export default function Error({
   reset: () => void
 }) {
   useEffect(() => {
-    console.error(error)
+    
   }, [error])
 
   return (
@@ -104,8 +104,4 @@ export default function Error({
     </div>
   )
 }
-
-
-
-
 

@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '../../contexts/AuthContext';
 import { usePoints } from '../../contexts/PointsContext';
 import { useSubscription } from '../../contexts/SubscriptionContext';
-import { Play, Square, RotateCcw, Send, Clock, Mic, Video, ArrowLeft, CheckCircle, Search, Settings, Lightbulb, Shuffle } from 'lucide-react';
+import { Play, Square, RotateCcw, Send, Clock, Mic, Video, ArrowLeft, CheckCircle, Search, Settings, Lightbulb, Shuffle, Menu } from 'lucide-react';
+import { useDeviceDetection } from '../../hooks/useDeviceDetection';
 
 // Hardcoded interview questions
 const interviewQuestions = [
@@ -87,6 +88,7 @@ export default function VideoInterviewPage(): React.ReactElement {
   const { addPoints } = usePoints();
   const { subscription } = useSubscription();
   const router = useRouter();
+  const { isMobile, isTablet } = useDeviceDetection();
   
   // Core state
   const [currentQuestion, setCurrentQuestion] = useState(interviewQuestions[0]);
@@ -119,6 +121,17 @@ export default function VideoInterviewPage(): React.ReactElement {
       router.push('/');
     }
   }, [user, loading, router]);
+
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+    };
+    
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, []);
 
 
   // Handle video source switching
@@ -167,6 +180,9 @@ export default function VideoInterviewPage(): React.ReactElement {
     }
     
     const currentUsage = parseInt(localStorage.getItem(`video_interview_questions_used_${user.email}`) || '0');
+    console.log('🔍 Video interview usage check:');
+    console.log('  - User email:', user.email);
+    
     if (subscription.tier === 'free' && currentUsage >= 2) {
       // Trigger pricing modal for upgrade
       window.dispatchEvent(new CustomEvent('openPricingModal'));
@@ -196,6 +212,8 @@ export default function VideoInterviewPage(): React.ReactElement {
   };
 
   const startPractice = async () => {
+    console.log('🚀 startPractice function called');
+    console.log('🔍 Current URL before startPractice:', window.location.href);
     // Check if user can use video interview feature
     const canProceed = checkCanUseVideoInterview();
     if (!canProceed) {
@@ -205,10 +223,12 @@ export default function VideoInterviewPage(): React.ReactElement {
     // Get random question and track usage
     getRandomQuestionAndTrackUsage();
     
+    console.log('🎯 Setting stage to planning...');
     setStage('planning');
     setTimeLeft(60);
     setFeedback(null);
     setRecordedBlob(null);
+    console.log('✅ State updated - stage: planning, timeLeft: 60');
     
     try {
       console.log('🎥 Requesting camera and microphone access...');
@@ -487,51 +507,56 @@ export default function VideoInterviewPage(): React.ReactElement {
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#f9fafb' }}>
-      {/* Header */}
-      <div style={{ backgroundColor: '#ffffff', boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)', borderBottom: '1px solid #e5e7eb' }}>
-        <div style={{ maxWidth: '64rem', margin: '0 auto', padding: '16px 24px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-              <button
-                onClick={() => router.push('/dashboard')}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  color: '#4b5563',
-                  backgroundColor: 'transparent',
-                  border: 'none',
-                  cursor: 'pointer',
-                  fontSize: '16px',
-                  fontWeight: '500',
-                  transition: 'color 0.2s ease'
-                }}
-              >
-                <ArrowLeft style={{ width: '20px', height: '20px' }} />
-                Back to Dashboard
-              </button>
+
+      {/* Desktop Header */}
+      {!isMobile && (
+        <div style={{ backgroundColor: '#ffffff', boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)', borderBottom: '1px solid #e5e7eb' }}>
+          <div style={{ maxWidth: '64rem', margin: '0 auto', padding: '16px 24px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                <button
+                  onClick={() => router.push('/dashboard')}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    color: '#4b5563',
+                    backgroundColor: 'transparent',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontSize: '16px',
+                    fontWeight: '500',
+                    transition: 'color 0.2s ease'
+                  }}
+                >
+                  <ArrowLeft style={{ width: '20px', height: '20px' }} />
+                  Back to Dashboard
+                </button>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <Video style={{ width: '24px', height: '24px', color: '#2563eb' }} />
+                <h1 style={{ fontSize: '24px', fontWeight: 'bold', color: '#111827', margin: '0' }}>Video Interview Practice</h1>
+              </div>
+              <div style={{ width: '128px' }}></div>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <Video style={{ width: '24px', height: '24px', color: '#2563eb' }} />
-              <h1 style={{ fontSize: '24px', fontWeight: 'bold', color: '#111827', margin: '0' }}>Video Interview Practice</h1>
-            </div>
-            <div style={{ width: '128px' }}></div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Welcome Screen */}
       {stage === 'welcome' && (
-        <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #fef3c7 0%, #fbbf24 50%, #f59e0b 100%)', display: 'flex' }}>
-          <div style={{
-            width: '280px',
-            backgroundColor: '#1f2937',
-            color: '#ffffff',
-            padding: '24px 0',
-            position: 'fixed',
-            height: '100vh',
-            overflowY: 'auto'
-          }}>
+        <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #fef3c7 0%, #fbbf24 50%, #f59e0b 100%)', display: isMobile ? 'block' : 'flex' }}>
+          {/* Desktop Sidebar */}
+          {!isMobile && (
+            <div style={{
+              width: '280px',
+              backgroundColor: '#1f2937',
+              color: '#ffffff',
+              padding: '24px 0',
+              position: 'fixed',
+              height: '100vh',
+              overflowY: 'auto'
+            }}>
             <div style={{ padding: '0 24px', marginBottom: '32px' }}>
               <h1 style={{ 
                 fontSize: '24px', 
@@ -572,27 +597,78 @@ export default function VideoInterviewPage(): React.ReactElement {
                 </div>
               </div>
             </nav>
-          </div>
+            </div>
+          )}
 
-          <div style={{ marginLeft: '280px', flex: 1, padding: '32px 48px' }}>
-            <div style={{ marginBottom: '40px' }}>
-              <h1 style={{ 
-                fontSize: '48px', 
-                fontWeight: 'bold', 
-                color: '#1f2937', 
-                margin: '0 0 8px 0',
-                fontFamily: "'Fredoka', 'Inter', sans-serif"
+          <div style={{ 
+            marginLeft: isMobile ? '0' : '280px', 
+            flex: 1, 
+            padding: isMobile ? '70px 0 20px 0' : '32px 48px' 
+          }}>
+            {/* Mobile Hero Section */}
+            {isMobile && (
+              <div style={{
+                background: 'linear-gradient(135deg, #fef3c7 0%, #fde047 50%, #fbbf24 100%)',
+                margin: '-70px 0 32px 0',
+                padding: '110px 20px 40px 20px',
+                textAlign: 'center',
+                borderRadius: '0 0 24px 24px',
+                boxShadow: '0 8px 25px -3px rgba(251, 191, 36, 0.3)'
               }}>
-                Video Interview Practice 🎥
-              </h1>
-              <p style={{ 
-                fontSize: '20px', 
-                color: '#4b5563', 
-                margin: '0 0 16px 0',
-                fontWeight: '400'
-              }}>
-                Get ready to practice interview questions with video recording and AI‑powered feedback
-              </p>
+                <div style={{ 
+                  fontSize: '72px', 
+                  marginBottom: '16px',
+                  filter: 'drop-shadow(2px 2px 4px rgba(0,0,0,0.1))'
+                }}>
+                  🎥
+                </div>
+                <h1 style={{ 
+                  fontSize: '32px', 
+                  fontWeight: 'bold', 
+                  color: '#1f2937', 
+                  margin: '0 0 16px 0',
+                  fontFamily: "'Fredoka', 'Inter', sans-serif",
+                  textShadow: '0 2px 4px rgba(255,255,255,0.8)'
+                }}>
+                  Video Interview Practice
+                </h1>
+                <p style={{ 
+                  fontSize: '18px', 
+                  color: '#374151', 
+                  margin: '0',
+                  fontWeight: '500',
+                  lineHeight: '1.5'
+                }}>
+                  🌟 Get ready to ace your interviews with video recording and AI‑powered feedback!
+                </p>
+              </div>
+            )}
+
+            <div style={{ 
+              marginBottom: isMobile ? '32px' : '40px',
+              padding: isMobile ? '0 16px' : '0'
+            }}>
+              {!isMobile && (
+                <>
+                  <h1 style={{ 
+                    fontSize: '48px', 
+                    fontWeight: 'bold', 
+                    color: '#1f2937', 
+                    margin: '0 0 8px 0',
+                    fontFamily: "'Fredoka', 'Inter', sans-serif"
+                  }}>
+                    Video Interview Practice 🎥
+                  </h1>
+                  <p style={{ 
+                    fontSize: '20px', 
+                    color: '#4b5563', 
+                    margin: '0 0 16px 0',
+                    fontWeight: '400'
+                  }}>
+                    Get ready to practice interview questions with video recording and AI‑powered feedback
+                  </p>
+                </>
+              )}
               
               {/* Usage Limits Display */}
               {subscription.tier === 'free' && (
@@ -600,11 +676,13 @@ export default function VideoInterviewPage(): React.ReactElement {
                   backgroundColor: '#fef3c7',
                   border: '2px solid #fbbf24',
                   borderRadius: '12px',
-                  padding: '16px',
-                  marginBottom: '24px',
+                  padding: isMobile ? '12px' : '16px',
+                  marginBottom: isMobile ? '16px' : '24px',
                   display: 'flex',
-                  alignItems: 'center',
-                  gap: '12px'
+                  alignItems: isMobile ? 'flex-start' : 'center',
+                  flexDirection: isMobile ? 'column' : 'row',
+                  gap: isMobile ? '8px' : '12px',
+                  textAlign: isMobile ? 'center' : 'left'
                 }}>
                   <span style={{ fontSize: '24px' }}>⚠️</span>
                   <div>
@@ -629,80 +707,219 @@ export default function VideoInterviewPage(): React.ReactElement {
             </div>
 
             <div style={{ 
-              display: 'flex', 
-              justifyContent: 'center',
-              maxWidth: '600px',
-              margin: '0 auto'
+              padding: isMobile ? '0 16px' : '0',
+              margin: isMobile ? '0 0 40px 0' : '0 auto',
+              maxWidth: isMobile ? '100%' : '600px'
             }}>
               <div
-                onClick={startPractice}
                 style={{
                   backgroundColor: '#ffffff',
-                  borderRadius: '16px',
-                  padding: '32px 24px',
-                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-                  cursor: 'pointer',
-                  transition: 'all 0.3s ease',
-                  border: '2px solid transparent',
+                  borderRadius: isMobile ? '24px' : '16px',
+                  padding: isMobile ? '40px 24px' : '32px 24px',
+                  boxShadow: isMobile ? '0 20px 40px -12px rgba(0, 0, 0, 0.15), 0 8px 25px -8px rgba(251, 191, 36, 0.2)' : '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                  cursor: 'default',
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                  border: isMobile ? '3px solid #fde047' : '2px solid transparent',
                   position: 'relative',
-                  minHeight: '200px',
+                  minHeight: isMobile ? '240px' : '200px',
                   display: 'flex',
                   flexDirection: 'column',
                   alignItems: 'center',
                   justifyContent: 'center',
                   textAlign: 'center',
-                  width: '100%'
+                  width: '100%',
+                  background: isMobile ? 'linear-gradient(135deg, #ffffff 0%, #fefbf0 100%)' : '#ffffff'
+                }}
+                onMouseEnter={isMobile ? undefined : (e) => {
+                  e.currentTarget.style.transform = 'translateY(-2px) scale(1.02)';
+                  e.currentTarget.style.boxShadow = '0 25px 50px -12px rgba(0, 0, 0, 0.25)';
+                }}
+                onMouseLeave={isMobile ? undefined : (e) => {
+                  e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                  e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1)';
                 }}
               >
-                <div style={{ fontSize: '64px', marginBottom: '16px' }}>🎥</div>
+                {/* Decorative elements for mobile */}
+                {isMobile && (
+                  <>
+                    <div style={{
+                      position: 'absolute',
+                      top: '16px',
+                      right: '16px',
+                      fontSize: '24px',
+                      opacity: 0.6
+                    }}>
+                      ✨
+                    </div>
+                    <div style={{
+                      position: 'absolute',
+                      top: '20px',
+                      left: '20px',
+                      fontSize: '20px',
+                      opacity: 0.5
+                    }}>
+                      💫
+                    </div>
+                  </>
+                )}
+                
+                <div style={{ 
+                  fontSize: isMobile ? '64px' : '64px', 
+                  marginBottom: isMobile ? '20px' : '16px',
+                  filter: 'drop-shadow(2px 2px 8px rgba(251, 191, 36, 0.3))'
+                }}>
+                  🎥
+                </div>
                 <h3 style={{ 
-                  fontSize: '24px', 
+                  fontSize: isMobile ? '24px' : '24px', 
                   fontWeight: 'bold', 
                   color: '#1f2937', 
-                  marginBottom: '12px',
-                  margin: '0 0 12px 0'
+                  margin: isMobile ? '0 0 12px 0' : '0 0 12px 0',
+                  fontFamily: "'Fredoka', 'Inter', sans-serif"
                 }}>
                   Start Video Practice
                 </h3>
                 <p style={{ 
-                  fontSize: '16px', 
+                  fontSize: isMobile ? '16px' : '16px', 
                   color: '#6b7280', 
-                  marginBottom: '16px',
-                  margin: '0 0 16px 0',
-                  lineHeight: '1.5'
+                  margin: isMobile ? '0 0 28px 0' : '0 0 16px 0',
+                  lineHeight: '1.6',
+                  maxWidth: isMobile ? '280px' : 'none'
                 }}>
-                  Practice interview questions with video recording and get instant AI feedback
+                  🎯 Practice interview questions with video recording and get instant AI feedback
                 </p>
-                <div style={{
-                  backgroundColor: '#fbbf24',
-                  color: '#1f2937',
-                  padding: '12px 24px',
-                  borderRadius: '12px',
-                  fontSize: '16px',
-                  fontWeight: 'bold',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px'
-                }}>
-                  <Play style={{ width: '20px', height: '20px' }} />
-                  Start Practice 🚀
-                </div>
+                <button
+                  style={{
+                    background: isMobile ? 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)' : '#fbbf24',
+                    color: '#1f2937',
+                    padding: isMobile ? '18px 40px' : '12px 24px',
+                    borderRadius: isMobile ? '16px' : '12px',
+                    fontSize: isMobile ? '18px' : '16px',
+                    fontWeight: 'bold',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '10px',
+                    border: 'none',
+                    cursor: 'pointer',
+                    width: isMobile ? '100%' : 'auto',
+                    minHeight: isMobile ? '56px' : 'auto',
+                    transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                    boxShadow: isMobile ? '0 8px 20px -6px rgba(251, 191, 36, 0.4)' : 'none',
+                    fontFamily: "'Fredoka', 'Inter', sans-serif",
+                    // Enhanced hitbox properties
+                    position: 'relative',
+                    zIndex: 999999,
+                    outline: 'none',
+                    touchAction: 'manipulation',
+                    userSelect: 'none',
+                    WebkitTouchCallout: 'none',
+                    WebkitUserSelect: 'none',
+                    // Ensure button is above any other elements
+                    isolation: 'isolate'
+                  }}
+                  onClick={(e) => {
+                    console.log('🎯 Start Practice button clicked - calling startPractice()');
+                    e.preventDefault();
+                    e.stopPropagation();
+                    e.nativeEvent?.stopImmediatePropagation();
+                    startPractice();
+                  }}
+                  onTouchStart={isMobile ? (e) => {
+                    console.log('🎯 Start Practice button touch start!');
+                    e.stopPropagation();
+                    e.currentTarget.style.transform = 'scale(0.98)';
+                  } : undefined}
+                  onTouchEnd={isMobile ? (e) => {
+                    console.log('🎯 Start Practice button touch end!');
+                    e.stopPropagation();
+                    e.currentTarget.style.transform = 'scale(1)';
+                    startPractice();
+                  } : undefined}
+                  onMouseEnter={isMobile ? undefined : (e) => {
+                    e.currentTarget.style.background = 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)';
+                    e.currentTarget.style.transform = 'translateY(-1px) scale(1.05)';
+                    e.currentTarget.style.boxShadow = '0 12px 25px -8px rgba(251, 191, 36, 0.5)';
+                  }}
+                  onMouseLeave={isMobile ? undefined : (e) => {
+                    e.currentTarget.style.background = '#fbbf24';
+                    e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                    e.currentTarget.style.boxShadow = 'none';
+                  }}
+                >
+                  <Play style={{ width: '22px', height: '22px', pointerEvents: 'none' }} />
+                  <span style={{ pointerEvents: 'none' }}>Start Practice 🚀</span>
+                </button>
               </div>
             </div>
 
-            <div style={{ textAlign: 'center', marginTop: '24px' }}>
+            <div style={{ 
+              textAlign: 'center', 
+              marginTop: isMobile ? '20px' : '24px',
+              paddingBottom: isMobile ? '40px' : '0'
+            }}>
               <button
-                onClick={() => setShowHowItWorksModal(true)}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  color: '#4b5563',
-                  fontSize: '16px',
-                  textDecoration: 'underline',
-                  cursor: 'pointer'
+                onClick={(e) => {
+                  console.log('💡 Learn how it works button clicked!');
+                  e.preventDefault();
+                  e.stopPropagation();
+                  e.nativeEvent?.stopImmediatePropagation();
+                  setShowHowItWorksModal(true);
                 }}
+                style={{
+                  background: isMobile ? 'linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%)' : 'none',
+                  border: isMobile ? '2px solid #a5b4fc' : 'none',
+                  borderRadius: isMobile ? '16px' : '0',
+                  color: isMobile ? '#4338ca' : '#4b5563',
+                  fontSize: isMobile ? '16px' : '16px',
+                  fontWeight: isMobile ? '600' : 'normal',
+                  textDecoration: isMobile ? 'none' : 'underline',
+                  cursor: 'pointer',
+                  padding: isMobile ? '16px 24px' : '8px 16px',
+                  minHeight: isMobile ? '52px' : 'auto',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  margin: isMobile ? '0 auto' : '0',
+                  maxWidth: isMobile ? '240px' : 'auto',
+                  transition: 'all 0.2s ease',
+                  fontFamily: isMobile ? "'Fredoka', 'Inter', sans-serif" : 'inherit',
+                  boxShadow: isMobile ? '0 4px 12px rgba(67, 56, 202, 0.15)' : 'none',
+                  // Enhanced hitbox properties
+                  position: 'relative',
+                  zIndex: 999998,
+                  outline: 'none',
+                  touchAction: 'manipulation',
+                  userSelect: 'none',
+                  WebkitTouchCallout: 'none',
+                  WebkitUserSelect: 'none',
+                  isolation: 'isolate'
+                }}
+                onMouseEnter={isMobile ? undefined : (e) => {
+                  e.currentTarget.style.color = '#6366f1';
+                  e.currentTarget.style.textDecoration = 'none';
+                }}
+                onMouseLeave={isMobile ? undefined : (e) => {
+                  e.currentTarget.style.color = '#4b5563';
+                  e.currentTarget.style.textDecoration = 'underline';
+                }}
+                onTouchStart={isMobile ? (e) => {
+                  console.log('💡 Learn how it works button touch start!');
+                  e.stopPropagation();
+                  e.currentTarget.style.transform = 'scale(0.98)';
+                  e.currentTarget.style.background = 'linear-gradient(135deg, #c7d2fe 0%, #a5b4fc 100%)';
+                } : undefined}
+                onTouchEnd={isMobile ? (e) => {
+                  console.log('💡 Learn how it works button touch end!');
+                  e.stopPropagation();
+                  e.currentTarget.style.transform = 'scale(1)';
+                  e.currentTarget.style.background = 'linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%)';
+                  setShowHowItWorksModal(true);
+                } : undefined}
               >
-                Learn how it works
+                <span style={{ fontSize: isMobile ? '20px' : '16px', pointerEvents: 'none' }}>💡</span>
+                <span style={{ pointerEvents: 'none' }}>Learn how it works</span>
               </button>
             </div>
           </div>
@@ -801,14 +1018,14 @@ export default function VideoInterviewPage(): React.ReactElement {
               </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '32px', alignItems: 'start' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '2fr 1fr', gap: isMobile ? '16px' : '32px', alignItems: 'start' }}>
               <div style={{
                 backgroundColor: '#ffffff',
                 borderRadius: '16px',
                 boxShadow: '0 10px 25px -3px rgba(0, 0, 0, 0.1)',
-                padding: '32px',
+                padding: isMobile ? '16px' : '32px',
                 border: '3px solid #fde047',
-                minHeight: '500px'
+                minHeight: isMobile ? 'auto' : '500px'
               }}>
                 <div style={{
                   display: 'flex',
@@ -849,7 +1066,7 @@ export default function VideoInterviewPage(): React.ReactElement {
                   </div>
                   <div style={{ textAlign: 'right' }}>
                     <div style={{
-                      fontSize: '48px',
+                      fontSize: isMobile ? '32px' : '48px',
                       fontWeight: 'bold',
                       color: stage === 'planning' ? '#1e40af' : '#dc2626',
                       fontFamily: 'monospace',
@@ -1304,7 +1521,7 @@ export default function VideoInterviewPage(): React.ReactElement {
                 </div>
 
                 {/* Strengths and Improvements - Compact Side by Side Cards */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: isMobile ? '16px' : '20px' }}>
                   
                   {/* Strengths */}
                   <div style={{
@@ -1627,51 +1844,82 @@ export default function VideoInterviewPage(): React.ReactElement {
 
       {/* How It Works Modal */}
       {showHowItWorksModal && (
-        <div style={{
+        <div 
+          onClick={(e) => {
+            // Close modal when clicking background
+            if (e.target === e.currentTarget) {
+              setShowHowItWorksModal(false);
+            }
+          }}
+          style={{
           position: 'fixed',
           inset: '0',
-          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          backgroundColor: 'rgba(0, 0, 0, 0.6)',
+          backdropFilter: 'blur(4px)',
+          WebkitBackdropFilter: 'blur(4px)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          zIndex: 50,
-          padding: '16px'
+          zIndex: 999999,
+          padding: isMobile ? '20px' : '16px'
         }}>
           <div style={{
             backgroundColor: '#ffffff',
-            borderRadius: '16px',
-            maxWidth: '32rem',
+            borderRadius: isMobile ? '20px' : '16px',
+            maxWidth: isMobile ? '100%' : '32rem',
             width: '100%',
-            padding: '32px',
-            position: 'relative'
+            padding: isMobile ? '24px' : '32px',
+            position: 'relative',
+            maxHeight: isMobile ? '90vh' : 'auto',
+            overflowY: isMobile ? 'auto' : 'visible'
           }}>
             <button
-              onClick={() => setShowHowItWorksModal(false)}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setShowHowItWorksModal(false);
+              }}
+              onTouchStart={isMobile ? (e) => {
+                e.stopPropagation();
+                e.currentTarget.style.transform = 'scale(0.9)';
+              } : undefined}
+              onTouchEnd={isMobile ? (e) => {
+                e.stopPropagation();
+                e.currentTarget.style.transform = 'scale(1)';
+                setShowHowItWorksModal(false);
+              } : undefined}
               style={{
                 position: 'absolute',
-                top: '16px',
-                right: '16px',
+                top: isMobile ? '12px' : '16px',
+                right: isMobile ? '12px' : '16px',
                 color: '#9ca3af',
-                backgroundColor: 'transparent',
+                backgroundColor: isMobile ? '#f3f4f6' : 'transparent',
                 border: 'none',
                 cursor: 'pointer',
-                fontSize: '24px'
+                fontSize: isMobile ? '18px' : '24px',
+                padding: isMobile ? '8px' : '4px',
+                borderRadius: isMobile ? '50%' : '0',
+                width: isMobile ? '32px' : 'auto',
+                height: isMobile ? '32px' : 'auto',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
               }}
             >
               ×
             </button>
             
             <h2 style={{
-              fontSize: '24px',
+              fontSize: isMobile ? '20px' : '24px',
               fontWeight: 'bold',
               color: '#1f2937',
-              marginBottom: '24px',
-              margin: '0 0 24px 0'
+              marginBottom: isMobile ? '20px' : '24px',
+              margin: isMobile ? '0 40px 20px 0' : '0 0 24px 0'
             }}>
               How Video Interview Practice Works
             </h2>
             
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '24px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(250px, 1fr))', gap: isMobile ? '16px' : '24px' }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
                   <div style={{
@@ -1690,8 +1938,8 @@ export default function VideoInterviewPage(): React.ReactElement {
                     1
                   </div>
                   <div>
-                    <h3 style={{ fontWeight: '600', color: '#1f2937', marginBottom: '4px', margin: '0 0 4px 0' }}>Get Your Question</h3>
-                    <p style={{ fontSize: '14px', color: '#6b7280', margin: '0' }}>A random interview question appears on your screen</p>
+                    <h3 style={{ fontWeight: '600', color: '#1f2937', marginBottom: '4px', margin: '0 0 4px 0', fontSize: isMobile ? '14px' : '16px' }}>Get Your Question</h3>
+                    <p style={{ fontSize: isMobile ? '13px' : '14px', color: '#6b7280', margin: '0', lineHeight: '1.4' }}>A random interview question appears on your screen</p>
                   </div>
                 </div>
                 

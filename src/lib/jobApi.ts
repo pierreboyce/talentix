@@ -54,7 +54,7 @@ class JobApiManager {
   // JSearch API Integration (RapidAPI)
   async fetchJobsFromJSearch(query: string, location: string = 'UK'): Promise<JobListing[]> {
     if (!this.config.jsearchApiKey || !this.checkRateLimit('jsearch', 50)) {
-      console.warn('JSearch API rate limit exceeded or no API key');
+      
       return [];
     }
 
@@ -76,7 +76,7 @@ class JobApiManager {
       const data = await response.json();
       return this.transformJSearchData(data.data || []);
     } catch (error) {
-      console.error('JSearch API fetch error:', error);
+      
       return [];
     }
   }
@@ -123,7 +123,7 @@ class JobApiManager {
   // Indeed Jobs API (via RapidAPI)
   async fetchJobsFromIndeed(query: string, location: string = 'UK'): Promise<JobListing[]> {
     if (!this.config.rapidApiKey || !this.checkRateLimit('indeed', 30)) {
-      console.warn('Indeed API rate limit exceeded or no API key');
+      
       return [];
     }
 
@@ -145,7 +145,7 @@ class JobApiManager {
       const data = await response.json();
       return this.transformIndeedData(data.hits || []);
     } catch (error) {
-      console.error('Indeed API fetch error:', error);
+      
       return [];
     }
   }
@@ -186,7 +186,7 @@ class JobApiManager {
   // LinkedIn Jobs (if partnership access is available)
   async fetchJobsFromLinkedIn(query: string, location: string = 'United Kingdom'): Promise<JobListing[]> {
     if (!this.config.linkedinPartnerToken || !this.checkRateLimit('linkedin', 1000)) {
-      console.warn('LinkedIn API not available or rate limit exceeded');
+      
       return [];
     }
 
@@ -207,7 +207,7 @@ class JobApiManager {
       const data = await response.json();
       return this.transformLinkedInData(data.elements || []);
     } catch (error) {
-      console.error('LinkedIn API fetch error:', error);
+      
       return [];
     }
   }
@@ -231,7 +231,7 @@ class JobApiManager {
 
   // Aggregate jobs from all available sources
   async fetchAllJobs(query: string, location: string = 'UK'): Promise<JobListing[]> {
-    console.log(`🔍 Fetching jobs for: "${query}" in ${location}`);
+    
     
     const promises = [
       this.fetchJobsFromJSearch(query, location),
@@ -246,19 +246,19 @@ class JobApiManager {
       results.forEach((result, index) => {
         if (result.status === 'fulfilled') {
           allJobs.push(...result.value);
-          console.log(`✅ Source ${index + 1} returned ${result.value.length} jobs`);
+          
         } else {
-          console.warn(`❌ Source ${index + 1} failed:`, result.reason);
+          
         }
       });
 
       // Remove duplicates based on title and company
       const uniqueJobs = this.removeDuplicates(allJobs);
-      console.log(`📊 Total unique jobs found: ${uniqueJobs.length}`);
+      
       
       return uniqueJobs;
     } catch (error) {
-      console.error('Error aggregating jobs:', error);
+      
       return [];
     }
   }
@@ -404,17 +404,4 @@ class JobApiManager {
 }
 
 export { JobApiManager, type JobListing, type JobApiConfig };
-
-
-
-
-
-
-
-
-
-
-
-
-
 

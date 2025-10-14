@@ -22,10 +22,13 @@ export function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
-  // gate everything else until access cookie set
-  if (!hasAccess) {
-    const url = new URL('/coming-soon', request.url)
-    return NextResponse.redirect(url)
+  // 📱 Mobile device handling - DISABLED FOR DEVELOPMENT
+  const userAgent = request.headers.get('user-agent') || ''
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent)
+  
+  if (isMobile) {
+    console.log('📱 Mobile device detected - allowing through (mobile coming soon disabled)')
+    return NextResponse.next()
   }
 
   return NextResponse.next()

@@ -15,20 +15,20 @@ export default function UserAvatar() {
 
   const handleSignOut = async () => {
     try {
-      console.log('UserAvatar: Starting sign out...');
+      
       setIsOpen(false); // Close the dropdown
       
       // Clear localStorage immediately
       localStorage.removeItem('talentix_session');
       localStorage.removeItem('talentix_user');
-      console.log('UserAvatar: localStorage cleared');
+      
       
       // Force redirect immediately
-      console.log('UserAvatar: Redirecting...');
+      
       window.location.href = '/';
       
     } catch (error) {
-      console.error('UserAvatar sign out error:', error);
+      
       // Force redirect even on error
       window.location.href = '/';
     }

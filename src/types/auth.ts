@@ -9,6 +9,14 @@ export interface User {
   password?: string;
   createdAt: string;
   updatedAt: string;
+  // Subscription fields
+  stripeCustomerId?: string;
+  stripeSubscriptionId?: string | null;
+  subscriptionTier?: 'free' | 'pro' | 'enterprise';
+  subscriptionStatus?: string;
+  subscriptionCurrentPeriodEnd?: string;
+  subscriptionCancelAtPeriodEnd?: boolean;
+  subscriptionPriceId?: string | null;
 }
 
 export interface AuthSession {

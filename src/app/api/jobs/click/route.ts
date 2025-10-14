@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
     // Award 10 points for clicking on a job
     const points = 10;
     
-    console.log('💼 Job clicked!', { jobId, jobTitle, company, points });
+    
 
     return NextResponse.json({ 
       success: true, 
@@ -29,16 +29,11 @@ export async function POST(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error('❌ Job click tracking error:', error);
+    
     return NextResponse.json(
       { error: 'Failed to track job click' },
       { status: 500 }
     );
   }
 }
-
-
-
-
-
 

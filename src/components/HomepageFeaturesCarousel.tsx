@@ -1,8 +1,28 @@
 'use client';
 
+import { useState } from 'react';
 import { Search, FileText, Users, Trophy, Camera, Settings, BarChart3, Edit3, MessageCircle, BookOpen } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
+import SignUpPromptModal from './SignUpPromptModal';
 
 export default function HomepageFeaturesCarousel() {
+  const { user } = useAuth();
+  const [signUpPrompt, setSignUpPrompt] = useState({ isOpen: false, featureName: '' });
+
+  const handleFeatureClick = (featureName: string) => {
+    if (!user) {
+      setSignUpPrompt({ isOpen: true, featureName });
+    }
+    // If user is signed in, we could redirect to the feature here
+    // For now, we'll just do nothing since the features aren't fully implemented
+  };
+
+  const handleSignUpClick = () => {
+    // This will trigger the sign-up modal in the parent component
+    // We need to emit an event or use a callback
+    const signUpEvent = new CustomEvent('openSignUpModal');
+    window.dispatchEvent(signUpEvent);
+  };
   const handleScrollLeft = () => {
     const container = document.getElementById('homepage-feature-cards-container');
     if (container) {
@@ -88,7 +108,7 @@ export default function HomepageFeaturesCarousel() {
             className="scrollbar-hide"
           >
             
-            {/* Job Search Feature Card - Non-clickable */}
+            {/* Job Search Feature Card */}
             <div 
               style={{
                 flexShrink: 0,
@@ -104,6 +124,7 @@ export default function HomepageFeaturesCarousel() {
                 overflow: 'hidden',
                 cursor: 'pointer'
               }}
+              onClick={() => handleFeatureClick('Job Search')}
               onMouseEnter={(e) => {
                 e.currentTarget.style.transform = 'scale(1.05) translateY(-5px)';
                 e.currentTarget.style.boxShadow = '0 15px 35px rgba(37, 99, 235, 0.4)';
@@ -157,7 +178,7 @@ export default function HomepageFeaturesCarousel() {
               </div>
             </div>
 
-            {/* CV Reviewer Feature Card - Non-clickable */}
+            {/* CV Reviewer Feature Card */}
             <div 
               style={{
                 flexShrink: 0,
@@ -173,6 +194,7 @@ export default function HomepageFeaturesCarousel() {
                 overflow: 'hidden',
                 cursor: 'pointer'
               }}
+              onClick={() => handleFeatureClick('CV Reviewer')}
               onMouseEnter={(e) => {
                 e.currentTarget.style.transform = 'scale(1.05) translateY(-5px)';
                 e.currentTarget.style.boxShadow = '0 15px 35px rgba(22, 163, 74, 0.4)';
@@ -226,7 +248,7 @@ export default function HomepageFeaturesCarousel() {
               </div>
             </div>
 
-            {/* Interview Prep Feature Card - Non-clickable */}
+            {/* Interview Prep Feature Card */}
             <div 
               style={{
                 flexShrink: 0,
@@ -242,6 +264,7 @@ export default function HomepageFeaturesCarousel() {
                 overflow: 'hidden',
                 cursor: 'pointer'
               }}
+              onClick={() => handleFeatureClick('Interview Prep')}
               onMouseEnter={(e) => {
                 e.currentTarget.style.transform = 'scale(1.05) translateY(-5px)';
                 e.currentTarget.style.boxShadow = '0 15px 35px rgba(217, 119, 6, 0.4)';
@@ -295,7 +318,7 @@ export default function HomepageFeaturesCarousel() {
               </div>
             </div>
 
-            {/* Video Interview Feature Card - Non-clickable */}
+            {/* Video Interview Feature Card */}
             <div 
               style={{
                 flexShrink: 0,
@@ -311,6 +334,7 @@ export default function HomepageFeaturesCarousel() {
                 overflow: 'hidden',
                 cursor: 'pointer'
               }}
+              onClick={() => handleFeatureClick('Video Interview')}
               onMouseEnter={(e) => {
                 e.currentTarget.style.transform = 'scale(1.05) translateY(-5px)';
                 e.currentTarget.style.boxShadow = '0 15px 35px rgba(236, 72, 153, 0.4)';
@@ -364,7 +388,7 @@ export default function HomepageFeaturesCarousel() {
               </div>
             </div>
 
-            {/* Talentix Points Feature Card - Non-clickable */}
+            {/* Talentix Points Feature Card */}
             <div 
               style={{
                 flexShrink: 0,
@@ -380,6 +404,7 @@ export default function HomepageFeaturesCarousel() {
                 overflow: 'hidden',
                 cursor: 'pointer'
               }}
+              onClick={() => handleFeatureClick('Talentix Points')}
               onMouseEnter={(e) => {
                 e.currentTarget.style.transform = 'scale(1.05) translateY(-5px)';
                 e.currentTarget.style.boxShadow = '0 15px 35px rgba(251, 191, 36, 0.4)';
@@ -433,7 +458,7 @@ export default function HomepageFeaturesCarousel() {
               </div>
             </div>
 
-            {/* Settings Feature Card - Non-clickable */}
+            {/* Settings Feature Card */}
             <div 
               style={{
                 flexShrink: 0,
@@ -449,6 +474,7 @@ export default function HomepageFeaturesCarousel() {
                 overflow: 'hidden',
                 cursor: 'pointer'
               }}
+              onClick={() => handleFeatureClick('Settings')}
               onMouseEnter={(e) => {
                 e.currentTarget.style.transform = 'scale(1.05) translateY(-5px)';
                 e.currentTarget.style.boxShadow = '0 15px 35px rgba(139, 92, 246, 0.4)';
@@ -502,7 +528,7 @@ export default function HomepageFeaturesCarousel() {
               </div>
             </div>
 
-            {/* Job Tracker Feature Card - Non-clickable */}
+            {/* Job Tracker Feature Card */}
             <div 
               style={{
                 flexShrink: 0,
@@ -518,6 +544,7 @@ export default function HomepageFeaturesCarousel() {
                 overflow: 'hidden',
                 cursor: 'pointer'
               }}
+              onClick={() => handleFeatureClick('Job Tracker')}
               onMouseEnter={(e) => {
                 e.currentTarget.style.transform = 'scale(1.05) translateY(-5px)';
                 e.currentTarget.style.boxShadow = '0 15px 35px rgba(16, 185, 129, 0.4)';
@@ -571,7 +598,7 @@ export default function HomepageFeaturesCarousel() {
               </div>
             </div>
 
-            {/* Cover Letter Feature Card - Non-clickable */}
+            {/* Cover Letter Feature Card */}
             <div 
               style={{
                 flexShrink: 0,
@@ -587,6 +614,7 @@ export default function HomepageFeaturesCarousel() {
                 overflow: 'hidden',
                 cursor: 'pointer'
               }}
+              onClick={() => handleFeatureClick('Cover Letter Generator')}
               onMouseEnter={(e) => {
                 e.currentTarget.style.transform = 'scale(1.05) translateY(-5px)';
                 e.currentTarget.style.boxShadow = '0 15px 35px rgba(124, 58, 237, 0.4)';
@@ -640,7 +668,7 @@ export default function HomepageFeaturesCarousel() {
               </div>
             </div>
 
-            {/* AI Chat Feature Card - Non-clickable */}
+            {/* AI Chat Feature Card */}
             <div 
               style={{
                 flexShrink: 0,
@@ -656,6 +684,7 @@ export default function HomepageFeaturesCarousel() {
                 overflow: 'hidden',
                 cursor: 'pointer'
               }}
+              onClick={() => handleFeatureClick('AI Career Chat')}
               onMouseEnter={(e) => {
                 e.currentTarget.style.transform = 'scale(1.05) translateY(-5px)';
                 e.currentTarget.style.boxShadow = '0 15px 35px rgba(234, 179, 8, 0.4)';
@@ -709,7 +738,7 @@ export default function HomepageFeaturesCarousel() {
               </div>
             </div>
 
-            {/* Career Guidance Feature Card - Non-clickable */}
+            {/* Career Guidance Feature Card */}
             <div 
               style={{
                 flexShrink: 0,
@@ -725,6 +754,7 @@ export default function HomepageFeaturesCarousel() {
                 overflow: 'hidden',
                 cursor: 'pointer'
               }}
+              onClick={() => handleFeatureClick('Career Guidance')}
               onMouseEnter={(e) => {
                 e.currentTarget.style.transform = 'scale(1.05) translateY(-5px)';
                 e.currentTarget.style.boxShadow = '0 15px 35px rgba(229, 62, 62, 0.4)';
@@ -781,6 +811,14 @@ export default function HomepageFeaturesCarousel() {
           </div>
         </div>
       </div>
+
+      {/* Sign Up Prompt Modal */}
+      <SignUpPromptModal
+        isOpen={signUpPrompt.isOpen}
+        onClose={() => setSignUpPrompt({ isOpen: false, featureName: '' })}
+        featureName={signUpPrompt.featureName}
+        onSignUpClick={handleSignUpClick}
+      />
     </div>
   );
 }

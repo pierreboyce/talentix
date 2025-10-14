@@ -16,17 +16,12 @@ export default function AuthComplete() {
     
     try {
       // TODO: Save user data to your database
-      console.log('Completing OAuth signup:', {
-        name: user?.name,
-        email: user?.email,
-        location: location,
-        provider: 'oauth'
-      });
+      
       
       // Redirect to dashboard or home page
       router.push('/dashboard');
     } catch (error) {
-      console.error('Error completing signup:', error);
+      
     } finally {
       setIsLoading(false);
     }

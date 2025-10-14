@@ -2,40 +2,38 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
   try {
-    console.log('🔍 Google OAuth callback hit!', request.url);
+    
     
     const { searchParams } = new URL(request.url);
     const code = searchParams.get('code');
     const state = searchParams.get('state');
     const error = searchParams.get('error');
 
-    console.log('🔍 All URL parameters:', Object.fromEntries(searchParams.entries()));
-    console.log('🔍 Parsed parameters:', { code: code ? 'PRESENT' : null, state, error });
-
     if (error) {
-      console.error('❌ OAuth error:', error);
+      
       return NextResponse.redirect(new URL('/?error=oauth_error', request.url));
     }
 
     if (!code || !state) {
-      console.error('❌ Missing code or state parameter');
+      
       return NextResponse.redirect(new URL('/?error=missing_params', request.url));
     }
 
     // Exchange code for access token
-    let baseUrl = process.env.NEXTAUTH_URL || request.nextUrl.origin;
+    let baseUrl = request.nextUrl.origin; // Always use the actual request origin first
     
-    // FORCE production URL if we detect production domain
+    // FORCE production URL ONLY if we detect production domain
     if (request.nextUrl.hostname === 'talentix.co.uk' || request.nextUrl.hostname === 'www.talentix.co.uk') {
       baseUrl = 'https://talentix.co.uk';
-      console.log(`🔗 FORCED production baseUrl for token exchange:`, baseUrl);
     }
+    // For localhost, always use the request origin (localhost:3000)
     
     const redirectUri = `${baseUrl}/api/auth/callback/google`;
-    console.log(`🔗 Token exchange redirect_uri:`, redirectUri);
-    console.log(`🔗 NEXTAUTH_URL:`, process.env.NEXTAUTH_URL);
-    console.log(`🔗 request.nextUrl.origin:`, request.nextUrl.origin);
-    console.log(`🔗 request.nextUrl.hostname:`, request.nextUrl.hostname);
+    
+    console.log('🔍 Google OAuth Debug:');
+    console.log('📍 Base URL:', baseUrl);
+    console.log('🔗 Redirect URI:', redirectUri);
+    console.log('🔑 Code received:', code ? 'Yes' : 'No');
     
     const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
       method: 'POST',
@@ -53,30 +51,59 @@ export async function GET(request: NextRequest) {
 
     if (!tokenResponse.ok) {
       const errorData = await tokenResponse.text();
-      console.error('❌ Token exchange failed:', tokenResponse.status, errorData);
+      console.error('❌ Google token exchange failed:', tokenResponse.status, errorData);
+      
+      // If redirect_uri_mismatch on production, try with www prefix
+      if (errorData.includes('redirect_uri_mismatch') && baseUrl === 'https://talentix.co.uk') {
+        console.log('🔄 Retrying with www prefix...');
+        const wwwRedirectUri = 'https://www.talentix.co.uk/api/auth/callback/google';
+        
+        const retryResponse = await fetch('https://oauth2.googleapis.com/token', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          body: new URLSearchParams({
+            client_id: process.env.GOOGLE_CLIENT_ID!,
+            client_secret: process.env.GOOGLE_CLIENT_SECRET!,
+            code: code,
+            grant_type: 'authorization_code',
+            redirect_uri: wwwRedirectUri,
+          }),
+        });
+        
+        if (retryResponse.ok) {
+          console.log('✅ Retry with www prefix succeeded');
+          // Continue with the retry response
+          const retryTokenData = await retryResponse.json();
+          // Process the successful response...
+          return NextResponse.redirect(new URL('/?oauth_success=true', request.url));
+        }
+      }
+      
       return NextResponse.redirect(new URL('/?error=token_exchange_failed', request.url));
     }
 
     const tokenData = await tokenResponse.json();
-    console.log('Google token response data:', tokenData);
+    
 
     // Get user profile
-    console.log('Fetching user profile from Google API...');
+    
     const profileResponse = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
       headers: {
         Authorization: `Bearer ${tokenData.access_token}`,
       },
     });
 
-    console.log('Google profile response status:', profileResponse.status);
+    
     
     if (!profileResponse.ok) {
-      console.error('❌ Failed to fetch user profile');
+      
       return NextResponse.redirect(new URL('/?error=profile_fetch_failed', request.url));
     }
 
     const profileData = await profileResponse.json();
-    console.log('Google profile data:', profileData);
+    
 
     // Create user object
     const userData = {
@@ -91,7 +118,7 @@ export async function GET(request: NextRequest) {
       updatedAt: new Date().toISOString(),
     };
 
-    console.log('✅ Google OAuth successful, redirecting to dashboard with user data');
+    
 
     // Redirect to dashboard with user data
     const dashboardUrl = new URL('/dashboard', request.url);
@@ -102,9 +129,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(dashboardUrl);
 
   } catch (error) {
-    console.error('❌ Google OAuth callback error:', error);
+    
     return NextResponse.redirect(new URL('/?error=internal_error', request.url));
   }
 }
-
 

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { ArrowLeft, Shuffle, Star, Mic, MicOff, Send, Menu, X } from 'lucide-react';
+import { ArrowLeft, Shuffle, Star, Mic, MicOff, Send } from 'lucide-react';
 import { usePoints } from '../../contexts/PointsContext';
 import { useQuests } from '../../contexts/QuestContext';
 import { useDeviceDetection } from '../../hooks/useDeviceDetection';
@@ -121,7 +121,6 @@ export default function InterviewPrepPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [progressData, setProgressData] = useState<ProgressData>({});
   const [feedbackHistory, setFeedbackHistory] = useState<FeedbackHistory[]>([]);
-  const [sidebarOpen, setSidebarOpen] = useState(false); // Mobile sidebar state
 
   const selectCategory = (categoryId: string) => {
     setSelectedCategory(categoryId);
@@ -250,7 +249,7 @@ export default function InterviewPrepPage() {
         setFeedbackHistory(prev => [newFeedback, ...prev]);
       }
     } catch (error) {
-      console.error('Evaluation error:', error);
+      
       setEvaluation({
         score: 3,
         feedback: "Your answer demonstrates good understanding. Consider adding more specific examples and structuring your response for maximum impact.",
@@ -273,7 +272,7 @@ export default function InterviewPrepPage() {
         recognition.lang = 'en-US';
         
         recognition.onstart = () => {
-          console.log('Speech recognition started');
+          
           setIsRecording(true);
         };
         
@@ -296,7 +295,7 @@ export default function InterviewPrepPage() {
         };
         
         recognition.onerror = (event: any) => {
-          console.error('Speech recognition error:', event.error);
+          
           setIsRecording(false);
           
           switch (event.error) {
@@ -304,33 +303,33 @@ export default function InterviewPrepPage() {
               // Don't show alert for no-speech, just stop recording
               break;
             case 'audio-capture':
-              alert('Microphone access denied. Please allow microphone access and try again.');
+              
               break;
             case 'not-allowed':
-              alert('Microphone access not allowed. Please enable microphone permissions.');
+              
               break;
             case 'network':
-              alert('Network error occurred during speech recognition.');
+              
               break;
             default:
-              console.log('Speech recognition error:', event.error);
+              
               break;
           }
         };
         
         recognition.onend = () => {
-          console.log('Speech recognition ended');
+          
           setIsRecording(false);
         };
         
         recognition.start();
       } catch (error) {
-        console.error('Failed to start speech recognition:', error);
+        
         setIsRecording(false);
-        alert('Failed to start speech recognition. Please try again.');
+        
       }
     } else {
-      alert('Speech recognition is not supported in your browser. Please use Chrome, Edge, or Safari.');
+      
     }
   };
 
@@ -347,43 +346,30 @@ export default function InterviewPrepPage() {
     ));
   };
 
-  // Mobile Sidebar Component
-  const renderSidebar = () => (
+  // Responsive Sidebar Component - Desktop only
+  const renderSidebar = () => {
+    // Only render sidebar on desktop
+    if (isMobile) return null;
+    
+    return (
     <div style={{
-      width: isMobile ? '100%' : '280px',
+      width: '240px',
       backgroundColor: '#1f2937',
       color: '#ffffff',
-      padding: isMobile ? '16px' : '24px 0',
-      position: isMobile ? 'fixed' : 'fixed',
+      padding: '0',
+      position: 'fixed',
+      top: '0',
+      left: '0',
       height: '100vh',
       overflowY: 'auto',
-      zIndex: isMobile ? 1000 : 'auto',
-      transform: isMobile ? (sidebarOpen ? 'translateX(0)' : 'translateX(-100%)') : 'translateX(0)',
-      transition: 'transform 0.3s ease'
+      zIndex: 10,
+      flexShrink: 0,
+      boxSizing: 'border-box'
     }}>
-      {/* Mobile Close Button */}
-      {isMobile && (
-        <button
-          onClick={() => setSidebarOpen(false)}
-          style={{
-            position: 'absolute',
-            top: '16px',
-            right: '16px',
-            background: 'none',
-            border: 'none',
-            color: '#ffffff',
-            cursor: 'pointer',
-            padding: '8px'
-          }}
-        >
-          <X style={{ width: '24px', height: '24px' }} />
-        </button>
-      )}
-
       {/* Logo/Title */}
-      <div style={{ padding: isMobile ? '0 0 24px 0' : '0 24px', marginBottom: isMobile ? '24px' : '32px' }}>
+      <div style={{ padding: '0 24px', marginBottom: '32px' }}>
         <h1 style={{ 
-          fontSize: isMobile ? '20px' : '24px', 
+          fontSize: '24px', 
           fontWeight: 'bold', 
           color: '#fbbf24',
           margin: '0',
@@ -394,8 +380,8 @@ export default function InterviewPrepPage() {
       </div>
 
       {/* Navigation Menu */}
-      <nav style={{ padding: isMobile ? '0' : '0 16px' }}>
-        <div style={{ marginBottom: isMobile ? '24px' : '32px' }}>
+      <nav style={{ padding: '0 16px' }}>
+        <div style={{ marginBottom: '32px' }}>
           <h3 style={{ 
             fontSize: '12px', 
             fontWeight: '600', 
@@ -403,15 +389,12 @@ export default function InterviewPrepPage() {
             textTransform: 'uppercase', 
             letterSpacing: '0.05em',
             marginBottom: '12px',
-            padding: isMobile ? '0' : '0 8px'
+            padding: '0 8px'
           }}>
             Practice
           </h3>
           <div 
-            onClick={() => {
-              setCurrentView('categories');
-              if (isMobile) setSidebarOpen(false);
-            }}
+            onClick={() => setCurrentView('categories')}
             style={{
               backgroundColor: (currentView as string) === 'categories' ? '#374151' : 'transparent',
               borderRadius: '8px',
@@ -424,13 +407,10 @@ export default function InterviewPrepPage() {
             }}
           >
             <span style={{ fontSize: '18px' }}>📚</span>
-            <span style={{ fontWeight: '500', fontSize: isMobile ? '14px' : '16px' }}>Question Sets</span>
+            <span style={{ fontWeight: '500', fontSize: '16px' }}>Question Sets</span>
           </div>
           <div 
-            onClick={() => {
-              setCurrentView('progress');
-              if (isMobile) setSidebarOpen(false);
-            }}
+            onClick={() => setCurrentView('progress')}
             style={{
               backgroundColor: (currentView as string) === 'progress' ? '#374151' : 'transparent',
               padding: '12px 16px',
@@ -455,15 +435,12 @@ export default function InterviewPrepPage() {
             textTransform: 'uppercase', 
             letterSpacing: '0.05em',
             marginBottom: '12px',
-            padding: isMobile ? '0' : '0 8px'
+            padding: '0 8px'
           }}>
             Tools
           </h3>
           <div 
-            onClick={() => {
-              setCurrentView('feedback');
-              if (isMobile) setSidebarOpen(false);
-            }}
+            onClick={() => setCurrentView('feedback')}
             style={{
               backgroundColor: (currentView as string) === 'feedback' ? '#374151' : 'transparent',
               padding: '12px 16px',
@@ -476,98 +453,56 @@ export default function InterviewPrepPage() {
             }}
           >
             <span style={{ fontSize: '18px' }}>🤖</span>
-            <span style={{ fontWeight: '500', fontSize: isMobile ? '14px' : '16px' }}>AI Feedback</span>
+            <span style={{ fontWeight: '500', fontSize: '16px' }}>AI Feedback</span>
           </div>
         </div>
       </nav>
     </div>
-  );
+    );
+  };
 
   if ((currentView as string) === 'categories') {
     return (
       <div style={{ 
         minHeight: '100vh', 
         background: 'linear-gradient(135deg, #fef3c7 0%, #fbbf24 50%, #f59e0b 100%)', 
-        display: 'flex',
-        width: isMobile ? '100vw' : 'auto',
-        maxWidth: isMobile ? '100vw' : 'none',
-        overflow: isMobile ? 'hidden' : 'auto'
+        position: 'relative',
+        width: '100vw',
+        overflow: isMobile ? 'hidden' : 'auto',
+        display: isMobile ? 'flex' : 'block',
+        flexDirection: isMobile ? 'column' : undefined,
+        justifyContent: isMobile ? 'flex-start' : undefined,
+        alignItems: isMobile ? 'stretch' : undefined
       }}>
         {/* Sidebar */}
         {renderSidebar()}
 
-        {/* Mobile Overlay */}
-        {isMobile && sidebarOpen && (
-          <div
-            onClick={() => setSidebarOpen(false)}
-            style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              width: '100%',
-              height: '100%',
-              backgroundColor: 'rgba(0, 0, 0, 0.5)',
-              zIndex: 999
-            }}
-          />
-        )}
-
         {/* Main Content */}
-        <div style={{ 
-          marginLeft: isMobile ? '0' : '280px', 
-          flex: 1, 
-          padding: isMobile ? '0 8px' : '32px 48px',
-          paddingTop: isMobile ? '40px' : '32px',
-          width: isMobile ? '100vw' : 'auto',
-          maxWidth: isMobile ? '100vw' : 'none',
-          boxSizing: 'border-box'
-        }}>
-          {/* Mobile Header with Menu Button */}
-          {isMobile && (
-            <div style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              right: 0,
-              backgroundColor: '#1f2937',
-              padding: '12px 16px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              zIndex: 100
-            }}>
-              <button
-                onClick={() => setSidebarOpen(true)}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  color: '#ffffff',
-                  cursor: 'pointer',
-                  padding: '8px'
-                }}
-              >
-                <Menu style={{ width: '24px', height: '24px' }} />
-              </button>
-              <h1 style={{
-                fontSize: '18px',
-                fontWeight: 'bold',
-                color: '#fbbf24',
-                margin: '0',
-                fontFamily: "'Fredoka', 'Inter', sans-serif"
-              }}>
-                Interview Prep
-              </h1>
-              <div style={{ width: '40px' }} /> {/* Spacer */}
-            </div>
-          )}
+        <div 
+          style={{ 
+            marginLeft: isMobile ? '0' : '240px',
+            padding: isMobile ? '16px' : '20px 40px',
+            width: isMobile ? '100vw' : 'calc(100vw - 240px)',
+            maxWidth: isMobile ? '100vw' : 'none',
+            boxSizing: 'border-box',
+            minHeight: isMobile ? 'auto' : '100vh',
+            overflowX: 'hidden',
+            display: isMobile ? 'flex' : 'block',
+            flexDirection: isMobile ? 'column' : undefined,
+            justifyContent: isMobile ? 'flex-start' : undefined,
+            alignItems: isMobile ? 'stretch' : undefined
+          }}>
 
           {/* Header */}
-          <div style={{ marginBottom: isMobile ? '24px' : '40px' }}>
+          <div style={{ 
+            marginBottom: isMobile ? '24px' : '40px',
+            paddingTop: isMobile ? '0' : '0'
+          }}>
             <h1 style={{ 
               fontSize: isMobile ? '28px' : '48px', 
               fontWeight: 'bold', 
               color: '#1f2937', 
-              margin: '0 0 8px 0',
+              margin: isMobile ? '0 0 12px 0' : '0 0 8px 0',
               fontFamily: "'Fredoka', 'Inter', sans-serif"
             }}>
               Interview Preparation
@@ -576,22 +511,25 @@ export default function InterviewPrepPage() {
               fontSize: isMobile ? '16px' : '20px', 
               color: '#4b5563', 
               margin: '0',
-              fontWeight: '400'
+              fontWeight: '400',
+              lineHeight: isMobile ? '1.5' : '1.4'
             }}>
               Master your interview skills with AI-powered feedback and practice
             </p>
           </div>
 
           {/* Search Bar */}
-          <div style={{ 
-            marginBottom: isMobile ? '16px' : '48px',
-            margin: isMobile ? '0 0 16px 0' : '0 auto 48px auto',
-            maxWidth: isMobile ? '100%' : '600px'
-          }}>
+          <div 
+            style={{ 
+              marginBottom: isMobile ? '32px' : '30px',
+              margin: isMobile ? '0 0 32px 0' : '0 auto 30px auto',
+              maxWidth: isMobile ? '100%' : '800px',
+              width: isMobile ? '100%' : '100%'
+            }}>
             <div style={{
               backgroundColor: '#ffffff',
               borderRadius: '12px',
-              padding: isMobile ? '12px 16px' : '16px 24px',
+              padding: isMobile ? '12px 0' : '16px 24px',
               boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
               display: 'flex',
               alignItems: 'center',
@@ -618,23 +556,24 @@ export default function InterviewPrepPage() {
           {/* Question Categories - Responsive Grid */}
           <div>
             <h2 style={{ 
-              fontSize: isMobile ? '20px' : '24px', 
+              fontSize: isMobile ? '22px' : '24px', 
               fontWeight: 'bold', 
-              color: '#1f2937', 
-              marginBottom: isMobile ? '16px' : '24px',
-              margin: isMobile ? '0 0 16px 0' : '0 0 16px 0'
+              color: '#1f2937',
+              marginBottom: isMobile ? '24px' : '24px',
+              margin: isMobile ? '0 0 24px 0' : '0 0 16px 0'
             }}>
               Question Categories
             </h2>
-            <div style={{ 
-              display: 'grid', 
-              gridTemplateColumns: isMobile ? '1fr' : isTablet ? 'repeat(2, 1fr)' : 'repeat(auto-fill, minmax(320px, 1fr))', 
-              gap: isMobile ? '12px' : '24px',
-              maxWidth: isMobile ? '100%' : '1200px',
-              padding: isMobile ? '0' : '0',
-              margin: isMobile ? '0' : '0 auto',
-              width: isMobile ? '100%' : 'auto'
-            }}>
+            <div 
+              style={{ 
+                display: 'grid', 
+                gridTemplateColumns: isMobile ? '1fr' : isTablet ? 'repeat(2, 1fr)' : 'repeat(auto-fill, minmax(280px, 1fr))', 
+                gap: isMobile ? '16px' : '20px',
+                maxWidth: isMobile ? '100%' : 'none',
+                padding: isMobile ? '0' : '0',
+                margin: isMobile ? '0' : '0',
+                width: isMobile ? '100%' : '100%'
+              }}>
               {categories
                 .filter(category => 
                   category.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -647,7 +586,7 @@ export default function InterviewPrepPage() {
                   style={{
                     backgroundColor: '#ffffff',
                     borderRadius: '16px',
-                    padding: isMobile ? '20px 16px' : '32px 24px',
+                    padding: isMobile ? '20px 16px' : '24px',
                     boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
                     cursor: 'pointer',
                     transition: 'all 0.3s ease',
@@ -718,85 +657,41 @@ export default function InterviewPrepPage() {
       <div style={{ 
         minHeight: '100vh', 
         background: 'linear-gradient(135deg, #fef3c7 0%, #fbbf24 50%, #f59e0b 100%)', 
-        display: 'flex',
-        width: isMobile ? '100vw' : 'auto',
-        maxWidth: isMobile ? '100vw' : 'none',
-        overflow: isMobile ? 'hidden' : 'auto'
+        position: 'relative',
+        width: '100vw',
+        overflow: isMobile ? 'hidden' : 'auto',
+        display: isMobile ? 'flex' : 'block',
+        flexDirection: isMobile ? 'column' : undefined,
+        justifyContent: isMobile ? 'flex-start' : undefined,
+        alignItems: isMobile ? 'stretch' : undefined
       }}>
         {/* Sidebar */}
         {renderSidebar()}
 
-        {/* Mobile Overlay */}
-        {isMobile && sidebarOpen && (
-          <div
-            onClick={() => setSidebarOpen(false)}
-            style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              width: '100%',
-              height: '100%',
-              backgroundColor: 'rgba(0, 0, 0, 0.5)',
-              zIndex: 999
-            }}
-          />
-        )}
-
         {/* Progress Content */}
         <div style={{ 
-          marginLeft: isMobile ? '0' : '280px', 
-          flex: 1, 
-          padding: isMobile ? '0 8px' : '32px 48px',
-          paddingTop: isMobile ? '40px' : '32px',
-          width: isMobile ? '100vw' : 'auto',
+          marginLeft: isMobile ? '0' : '240px',
+          padding: isMobile ? '64px 16px 16px 16px' : '20px 40px',
+          width: isMobile ? '100vw' : 'calc(100vw - 240px)',
           maxWidth: isMobile ? '100vw' : 'none',
-          boxSizing: 'border-box'
+          boxSizing: 'border-box',
+          minHeight: isMobile ? 'auto' : '100vh',
+          overflowX: 'hidden',
+          display: isMobile ? 'flex' : 'block',
+          flexDirection: isMobile ? 'column' : undefined,
+          justifyContent: isMobile ? 'flex-start' : undefined,
+          alignItems: isMobile ? 'stretch' : undefined
         }}>
-          {/* Mobile Header */}
-          {isMobile && (
-            <div style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              right: 0,
-              backgroundColor: '#1f2937',
-              padding: '12px 16px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              zIndex: 100
-            }}>
-              <button
-                onClick={() => setSidebarOpen(true)}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  color: '#ffffff',
-                  cursor: 'pointer',
-                  padding: '8px'
-                }}
-              >
-                <Menu style={{ width: '24px', height: '24px' }} />
-              </button>
-              <h1 style={{
-                fontSize: '18px',
-                fontWeight: 'bold',
-                color: '#fbbf24',
-                margin: '0',
-                fontFamily: "'Fredoka', 'Inter', sans-serif"
-              }}>
-                Progress
-              </h1>
-              <div style={{ width: '40px' }} />
-            </div>
-          )}
 
-          <div style={{ marginBottom: isMobile ? '24px' : '40px' }}>
+          <div style={{ 
+            marginBottom: isMobile ? '24px' : '40px',
+            paddingTop: isMobile ? '0' : '0'
+          }}>
             <h1 style={{ 
               fontSize: isMobile ? '28px' : '48px', 
               fontWeight: 'bold', 
               color: '#1f2937', 
-              margin: '0 0 8px 0',
+              margin: isMobile ? '0 0 12px 0' : '0 0 8px 0',
               fontFamily: "'Fredoka', 'Inter', sans-serif"
             }}>
               Your Progress
@@ -924,84 +819,40 @@ export default function InterviewPrepPage() {
       <div style={{ 
         minHeight: '100vh', 
         background: 'linear-gradient(135deg, #fef3c7 0%, #fbbf24 50%, #f59e0b 100%)', 
-        display: 'flex',
-        width: isMobile ? '100vw' : 'auto',
-        maxWidth: isMobile ? '100vw' : 'none',
-        overflow: isMobile ? 'hidden' : 'auto'
+        position: 'relative',
+        width: '100vw',
+        overflow: isMobile ? 'hidden' : 'auto',
+        display: isMobile ? 'flex' : 'block',
+        flexDirection: isMobile ? 'column' : undefined,
+        justifyContent: isMobile ? 'flex-start' : undefined,
+        alignItems: isMobile ? 'stretch' : undefined
       }}>
         {/* Sidebar */}
         {renderSidebar()}
 
-        {/* Mobile Overlay */}
-        {isMobile && sidebarOpen && (
-          <div
-            onClick={() => setSidebarOpen(false)}
-            style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              width: '100%',
-              height: '100%',
-              backgroundColor: 'rgba(0, 0, 0, 0.5)',
-              zIndex: 999
-            }}
-          />
-        )}
-
         {/* Feedback History Content */}
         <div style={{ 
-          marginLeft: isMobile ? '0' : '280px', 
-          flex: 1, 
-          padding: isMobile ? '0 8px' : '32px 48px',
-          paddingTop: isMobile ? '40px' : '32px',
-          width: isMobile ? '100vw' : 'auto',
+          marginLeft: isMobile ? '0' : '240px',
+          padding: isMobile ? '64px 16px 16px 16px' : '20px 40px',
+          width: isMobile ? '100vw' : 'calc(100vw - 240px)',
           maxWidth: isMobile ? '100vw' : 'none',
-          boxSizing: 'border-box'
+          boxSizing: 'border-box',
+          minHeight: isMobile ? 'auto' : '100vh',
+          overflowX: 'hidden',
+          display: isMobile ? 'flex' : 'block',
+          flexDirection: isMobile ? 'column' : undefined,
+          justifyContent: isMobile ? 'flex-start' : undefined,
+          alignItems: isMobile ? 'stretch' : undefined
         }}>
-          {/* Mobile Header */}
-          {isMobile && (
-            <div style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              right: 0,
-              backgroundColor: '#1f2937',
-              padding: '12px 16px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              zIndex: 100
-            }}>
-              <button
-                onClick={() => setSidebarOpen(true)}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  color: '#ffffff',
-                  cursor: 'pointer',
-                  padding: '8px'
-                }}
-              >
-                <Menu style={{ width: '24px', height: '24px' }} />
-              </button>
-              <h1 style={{
-                fontSize: '18px',
-                fontWeight: 'bold',
-                color: '#fbbf24',
-                margin: '0',
-                fontFamily: "'Fredoka', 'Inter', sans-serif"
-              }}>
-                AI Feedback
-              </h1>
-              <div style={{ width: '40px' }} />
-            </div>
-          )}
-          <div style={{ marginBottom: isMobile ? '24px' : '40px' }}>
+          <div style={{ 
+            marginBottom: isMobile ? '24px' : '40px',
+            paddingTop: isMobile ? '0' : '0'
+          }}>
             <h1 style={{ 
               fontSize: isMobile ? '28px' : '48px', 
               fontWeight: 'bold', 
               color: '#1f2937', 
-              margin: '0 0 8px 0',
+              margin: isMobile ? '0 0 12px 0' : '0 0 8px 0',
               fontFamily: "'Fredoka', 'Inter', sans-serif"
             }}>
               AI Feedback History
@@ -1144,19 +995,18 @@ export default function InterviewPrepPage() {
     );
   }
 
-  if ((currentView as string) === 'flashcards') {
+  if (currentView === 'flashcards') {
     const currentCategory = categories.find(c => c.id === selectedCategory);
     
     return (
       <div style={{ 
         minHeight: '100vh', 
         backgroundColor: '#e5e7eb', 
-        padding: isMobile ? '0 8px' : '32px 0',
-        paddingTop: isMobile ? '40px' : '32px',
-        width: isMobile ? '100vw' : 'auto',
-        maxWidth: isMobile ? '100vw' : 'none',
+        padding: isMobile ? '0' : '20px 40px',
+        paddingTop: isMobile ? '0' : '20px',
+        width: '100vw',
         boxSizing: 'border-box',
-        overflow: isMobile ? 'hidden' : 'auto'
+        overflow: isMobile ? 'auto' : 'auto'
       }}>
         {/* Mobile Header */}
         {isMobile && (
@@ -1167,56 +1017,71 @@ export default function InterviewPrepPage() {
             right: 0,
             backgroundColor: '#1f2937',
             padding: '12px 16px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            zIndex: 100
+            zIndex: 100,
+            boxSizing: 'border-box'
           }}>
-            <button
-              onClick={() => setCurrentView('categories')}
-              style={{
-                background: 'none',
-                border: 'none',
-                color: '#ffffff',
-                cursor: 'pointer',
-                padding: '8px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px'
-              }}
-            >
-              <ArrowLeft style={{ width: '20px', height: '20px' }} />
-              <span style={{ fontSize: '14px' }}>Back</span>
-            </button>
-            <h1 style={{
-              fontSize: '16px',
-              fontWeight: 'bold',
-              color: '#fbbf24',
-              margin: '0',
-              fontFamily: "'Fredoka', 'Inter', sans-serif"
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginBottom: '8px'
             }}>
-              {currentCategory?.name}
-            </h1>
-            <button
-              onClick={shuffleQuestions}
-              style={{
-                background: 'none',
-                border: 'none',
-                color: '#ffffff',
-                cursor: 'pointer',
-                padding: '8px'
-              }}
-            >
-              <Shuffle style={{ width: '20px', height: '20px' }} />
-            </button>
+              <button
+                onClick={() => setCurrentView('categories')}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: '#ffffff',
+                  cursor: 'pointer',
+                  padding: '8px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}
+              >
+                <ArrowLeft style={{ width: '20px', height: '20px' }} />
+                <span style={{ fontSize: '14px' }}>Back</span>
+              </button>
+              <button
+                onClick={shuffleQuestions}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: '#ffffff',
+                  cursor: 'pointer',
+                  padding: '8px'
+                }}
+              >
+                <Shuffle style={{ width: '20px', height: '20px' }} />
+              </button>
+            </div>
+            <div style={{ textAlign: 'center' }}>
+              <h1 style={{
+                fontSize: '16px',
+                fontWeight: 'bold',
+                color: '#fbbf24',
+                margin: '0 0 4px 0',
+                fontFamily: "'Fredoka', 'Inter', sans-serif"
+              }}>
+                {currentCategory?.name}
+              </h1>
+              <p style={{
+                fontSize: '12px',
+                color: '#9ca3af',
+                margin: '0',
+                fontWeight: '500'
+              }}>
+                Question {currentQuestionIndex + 1} of {questions.length}
+              </p>
+            </div>
           </div>
         )}
 
         <div style={{ 
-          maxWidth: isMobile ? '100%' : '1200px', 
+          maxWidth: isMobile ? '100%' : 'none', 
           margin: '0 auto', 
-          padding: isMobile ? '0' : '0 16px',
-          width: isMobile ? '100%' : 'auto'
+          padding: isMobile ? '80px 16px 16px 16px' : '0 20px',
+          width: isMobile ? '100%' : '100%'
         }}>
           {/* Desktop Header */}
           {!isMobile && (
@@ -1276,25 +1141,6 @@ export default function InterviewPrepPage() {
                 <Shuffle style={{ width: '20px', height: '20px' }} />
                 Shuffle
               </button>
-            </div>
-          )}
-
-          {/* Mobile Question Counter */}
-          {isMobile && (
-            <div style={{ 
-              textAlign: 'center', 
-              marginBottom: '16px',
-              padding: '8px 16px',
-              backgroundColor: 'rgba(255, 255, 255, 0.9)',
-              borderRadius: '20px',
-              display: 'inline-block',
-              margin: '0 auto 16px auto',
-              fontSize: '14px',
-              color: '#374151',
-              fontWeight: '600'
-            }}>
-              Question {currentQuestionIndex + 1} of {questions.length}
-              {isShuffled && <span style={{ color: '#8b5cf6', marginLeft: '8px' }}>🔀</span>}
             </div>
           )}
 
@@ -1480,8 +1326,8 @@ export default function InterviewPrepPage() {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                width: isMobile ? '50px' : '80px',
-                height: isMobile ? '50px' : '80px',
+                width: isMobile ? '60px' : '80px',
+                height: isMobile ? '60px' : '80px',
                 borderRadius: '50%',
                 fontSize: isMobile ? '20px' : '32px',
                 fontWeight: 'bold',
@@ -1521,8 +1367,8 @@ export default function InterviewPrepPage() {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                width: isMobile ? '50px' : '80px',
-                height: isMobile ? '50px' : '80px',
+                width: isMobile ? '60px' : '80px',
+                height: isMobile ? '60px' : '80px',
                 borderRadius: '50%',
                 fontSize: isMobile ? '20px' : '32px',
                 fontWeight: 'bold',

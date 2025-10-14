@@ -183,7 +183,7 @@ export function QuestProvider({ children }: { children: ReactNode }) {
           const parsed = JSON.parse(savedQuests);
           setQuests(parsed);
         } catch (error) {
-          console.error('Error loading quests:', error);
+          
           // Reset to default quests if corrupted
           setQuests(getDefaultQuests());
         }

@@ -128,7 +128,7 @@ export default function PrivacyPolicy() {
               borderRadius: '12px',
               textAlign: 'center'
             }}>
-              <p style={{ fontWeight: 'bold', marginBottom: '8px' }}>Email: talentixuk@gmail.com</p>
+              <p style={{ fontWeight: 'bold', marginBottom: '8px' }}>Email: enquiries@talentix.co.uk</p>
               <p>We're committed to protecting your privacy and will respond to your inquiries promptly.</p>
             </div>
           </div>

@@ -46,7 +46,7 @@ export default function SignIn() {
         setError(result.error || 'Sign in failed');
       }
     } catch (error) {
-      console.error('Error signing in:', error);
+      
       setError('Network error occurred');
     } finally {
       setIsLoading(false);

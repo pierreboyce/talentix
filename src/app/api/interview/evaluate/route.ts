@@ -16,7 +16,6 @@ interface AIEvaluation {
   points?: number; // Points awarded based on score
 }
 
-
 // Calculate points based on score (30/25/20/10/0 for 5/4/3/2/1)
 function calculatePoints(score: number): number {
   switch (score) {
@@ -30,12 +29,10 @@ function calculatePoints(score: number): number {
 }
 
 async function evaluateWithOpenAI(question: string, answer: string, category: string): Promise<AIEvaluation> {
-  console.log('🔍 evaluateWithOpenAI called with:', { question: question.substring(0, 50), answer: answer.substring(0, 20), category });
-  
   const usingOpenAI = Boolean(process.env.OPENAI_API_KEY);
   const usingGroq = !usingOpenAI && Boolean(process.env.GROQ_API_KEY);
   if (!usingOpenAI && !usingGroq) {
-    console.error('❌ No AI provider key found');
+    
     throw new Error('AI service not configured');
   }
 
@@ -103,7 +100,7 @@ SCORING GUIDE:
     }
 
     // Parse the JSON response - handle both markdown-wrapped and pure JSON
-    console.log('🔍 Raw OpenAI response:', responseText);
+    
     let cleanedResponse = responseText.trim();
     
     // Remove markdown code block wrapper if present
@@ -116,11 +113,11 @@ SCORING GUIDE:
     let evaluation: AIEvaluation;
     try {
       evaluation = JSON.parse(cleanedResponse) as AIEvaluation;
-      console.log('✅ JSON parsed successfully:', evaluation);
+      
     } catch (parseError) {
-      console.error('❌ JSON parse error:', parseError);
-      console.error('❌ Cleaned response that failed to parse:', cleanedResponse);
-      console.error('❌ Original response:', responseText);
+      
+      
+      
       throw new Error(`Failed to parse OpenAI response as JSON: ${parseError}`);
     }
     
@@ -137,8 +134,6 @@ SCORING GUIDE:
 
     return evaluation;
   } catch (error) {
-    console.error('❌ OpenAI evaluation error:', error);
-    console.error('❌ Error details:', JSON.stringify(error, null, 2));
     throw error;
   }
 }
@@ -340,22 +335,19 @@ export async function POST(request: NextRequest) {
     }
 
     // Use real AI (OpenAI GPT) for intelligent evaluation
-    console.log('🤖 Using OpenAI GPT for evaluation...');
+    
     const evaluation = await evaluateWithOpenAI(question, answer, category);
     
     // Add points based on score
     const points = calculatePoints(evaluation.score);
     const evaluationWithPoints = { ...evaluation, points };
     
-    console.log('✅ OpenAI evaluation successful!', { score: evaluation.score, points });
+    
 
     return NextResponse.json(evaluationWithPoints);
   } catch (error) {
-    console.error('❌ Interview evaluation error:', error);
-    console.error('❌ Full error:', JSON.stringify(error, null, 2));
-    
     // Fallback to basic evaluation if OpenAI fails
-    console.log('⚠️ Falling back to basic evaluation...');
+    
     
     // Extract data from request for fallback
     try {
@@ -369,7 +361,7 @@ export async function POST(request: NextRequest) {
       
       return NextResponse.json(fallbackWithPoints);
     } catch (fallbackError) {
-      console.error('❌ Fallback evaluation also failed:', fallbackError);
+      
       return NextResponse.json(
         { error: 'Evaluation failed' },
         { status: 500 }

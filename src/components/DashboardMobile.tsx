@@ -20,7 +20,7 @@ import {
   MessageCircle,
   Star as StarIcon
 } from 'lucide-react';
-import ResponsiveAppLauncher from './ResponsiveAppLauncher';
+import AppLauncher from './AppLauncher';
 
 interface DashboardMobileProps {
   user: any;

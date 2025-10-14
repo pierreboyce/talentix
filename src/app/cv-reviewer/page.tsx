@@ -150,7 +150,6 @@ export default function CVReviewer() {
     ];
     
     if (file && (supportedTypes.includes(file.type) || file.type.startsWith('text/'))) {
-      console.log('🔥 Processing file:', file.name, 'Type:', file.type, 'Size:', file.size);
       setUploadedFile(file);
       
       try {
@@ -161,7 +160,6 @@ export default function CVReviewer() {
           extractedText = await file.text();
         } else if (file.type === 'application/pdf') {
           // Extract text from PDF
-          console.log('📄 Processing PDF file:', file.name);
           const arrayBuffer = await file.arrayBuffer();
           const response = await fetch('/api/cv/extract-pdf', {
             method: 'POST',
@@ -181,7 +179,6 @@ export default function CVReviewer() {
         } else if (file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' || 
                    file.type === 'application/msword') {
           // Extract text from Word document
-          console.log('📄 Processing Word document:', file.name);
           const arrayBuffer = await file.arrayBuffer();
           const response = await fetch('/api/cv/extract-word', {
             method: 'POST',
@@ -315,7 +312,6 @@ export default function CVReviewer() {
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      console.log('🔥 File selected via input:', file.name);
       await processFile(file);
     }
   };
@@ -343,7 +339,6 @@ export default function CVReviewer() {
     const files = Array.from(e.dataTransfer.files);
     if (files.length > 0) {
       const file = files[0];
-      console.log('🔥 File dropped:', file.name);
       await processFile(file);
     }
   };
@@ -435,7 +430,6 @@ export default function CVReviewer() {
       e.stopPropagation();
     }
     
-    console.log('🔥 ANALYZE BUTTON CLICKED!', { isMobile, cvText: !!cvText });
     
     if (!cvText) {
       console.log('❌ No CV text available for analysis');
@@ -444,13 +438,11 @@ export default function CVReviewer() {
     
     // Check subscription limits for free tier users
     if (subscription.tier === 'free' && dailyUsage >= 1) {
-      console.log('💰 Free tier limit reached, showing Pro popup');
       // Show Pro upgrade popup
       setShowProPopup(true);
       return;
     }
     
-    console.log('🚀 Starting CV analysis...');
     setIsAnalyzing(true);
     try {
       const response = await fetch('/api/cv/analyze', {
@@ -875,7 +867,7 @@ export default function CVReviewer() {
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              feedback && setCurrentView('edit');
+              if (feedback) setCurrentView('edit');
             }}
             style={{
               display: 'flex',
@@ -904,7 +896,6 @@ export default function CVReviewer() {
           <div style={{ marginTop: 'auto' }}>
             <button
               onClick={async (e) => {
-                console.log('🔥 DASHBOARD BUTTON CLICKED!!! 🔥');
                 e.preventDefault();
                 e.stopPropagation();
                 console.log('🔙 CV Reviewer: Back button clicked on mobile');
@@ -955,7 +946,6 @@ export default function CVReviewer() {
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
-                  console.log('🔥 MOBILE DASHBOARD BUTTON CLICKED!!! 🔥');
                   window.location.href = '/dashboard';
                 }}
                 style={{
@@ -1150,14 +1140,12 @@ export default function CVReviewer() {
                         type="file"
                         accept=".pdf,.txt,.doc,.docx"
                         onChange={(e) => {
-                          console.log('🔥 ISOLATED FILE INPUT TRIGGERED!');
                           const event = e as any;
                           event.stopPropagation();
                           event.preventDefault();
                           handleFileUpload(e);
                         }}
                         onClick={(e) => {
-                          console.log('🔥 ISOLATED FILE INPUT CLICKED!');
                           e.stopPropagation();
                         }}
                         style={{
@@ -1208,7 +1196,6 @@ export default function CVReviewer() {
                         if (e.target.value.trim()) {
                           setCvText(e.target.value);
                           setUploadedFile(new File([e.target.value], 'pasted-cv.txt', { type: 'text/plain' }));
-                          console.log('🔥 CV text pasted manually');
                         }
                       }}
                       style={{
@@ -1239,14 +1226,9 @@ export default function CVReviewer() {
                   e.preventDefault();
                   e.stopPropagation();
                   
-                  console.log('🔥 FILE UPLOAD BUTTON CLICKED ON MOBILE:', isMobile);
-                  console.log('🔥 Current URL:', window.location.href);
-                  console.log('🔥 File input ref:', fileInputRef.current);
                   
                   if (fileInputRef.current) {
-                    console.log('🔥 Attempting to trigger file input...');
                     fileInputRef.current.click();
-                    console.log('🔥 File input clicked!');
                   } else {
                     console.error('🔥 File input ref is null!');
                   }
@@ -1366,7 +1348,6 @@ export default function CVReviewer() {
               <button
                 onClick={() => {
                   alert('Dashboard button clicked!');
-                  console.log('🔥 DASHBOARD CLICKED! 🔥');
                   window.location.href = '/dashboard';
                 }}
                 style={{
@@ -1578,7 +1559,6 @@ export default function CVReviewer() {
               <button
                 onClick={() => {
                   alert('Dashboard button clicked!');
-                  console.log('🔥 DASHBOARD CLICKED! 🔥');
                   window.location.href = '/dashboard';
                 }}
                 style={{

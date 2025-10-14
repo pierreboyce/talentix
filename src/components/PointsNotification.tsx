@@ -73,8 +73,3 @@ export default function PointsNotification() {
   );
 }
 
-
-
-
-
-

@@ -81,7 +81,7 @@ function ResetPasswordContent() {
         setError(data.error || 'Failed to reset password');
       }
     } catch (error) {
-      console.error('Reset password error:', error);
+      
       setError('Network error. Please try again.');
     } finally {
       setIsLoading(false);

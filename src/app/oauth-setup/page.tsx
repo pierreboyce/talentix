@@ -52,11 +52,11 @@ function OAuthSetupContent() {
             router.replace('/dashboard');
             return;
           } catch (e) {
-            console.error('Auto-complete OAuth setup failed:', e);
+            
           }
         }
       } catch (error) {
-        console.error('Error parsing OAuth data:', error);
+        
         router.push('/');
       }
     } else {
@@ -97,7 +97,7 @@ function OAuthSetupContent() {
       // Redirect to dashboard
       router.push('/dashboard');
     } catch (error) {
-      console.error('Error setting up OAuth user:', error);
+      
       setIsLoading(false);
     }
   };

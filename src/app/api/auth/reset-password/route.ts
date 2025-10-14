@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import { database } from '../../../../lib/database-memory';
 
 export async function POST(request: NextRequest) {
   try {
@@ -36,16 +37,15 @@ export async function POST(request: NextRequest) {
       // Hash the new password
       const hashedPassword = await bcrypt.hash(newPassword, 12);
 
-      // TODO: Update user's password in your database
-      // For now, we'll just simulate success
-      // In a real app, you'd update the user's password here
-      console.log(`Would update password for user: ${email}`);
+      // Update user's password in database
+      const success = await database.updatePassword(email, newPassword);
       
-      // Example database update (replace with your actual database logic):
-      // await db.user.update({
-      //   where: { email },
-      //   data: { password: hashedPassword }
-      // });
+      if (!success) {
+        return NextResponse.json(
+          { error: 'User not found' },
+          { status: 404 }
+        );
+      }
 
       return NextResponse.json({
         success: true,

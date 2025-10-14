@@ -172,7 +172,7 @@ export default function WorkshopsDetailPage() {
               
               <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
                 <button
-                  onClick={() => router.push('/contact')}
+                  onClick={() => window.open('mailto:enquiries@talentix.co.uk?subject=Workshop Booking Request&body=Hi Talentix Team,%0D%0A%0D%0AI would like to book a workshop for my school/organization.%0D%0A%0D%0APlease contact me with more details.%0D%0A%0D%0AThank you!', '_blank')}
                   style={{
                     background: 'linear-gradient(135deg, #16a34a 0%, #22c55e 100%)',
                     color: 'white',
@@ -198,7 +198,7 @@ export default function WorkshopsDetailPage() {
                 </button>
                 
                 <button
-                  onClick={() => window.open('mailto:talentixuk@gmail.com?subject=Workshop Inquiry', '_blank')}
+                  onClick={() => window.open('mailto:enquiries@talentix.co.uk?subject=Workshop Information Request&body=Hi Talentix Team,%0D%0A%0D%0AI would like more information about your workshops.%0D%0A%0D%0APlease send me details about:%0D%0A- Workshop types available%0D%0A- Pricing and packages%0D%0A- Scheduling options%0D%0A%0D%0AThank you!', '_blank')}
                   style={{
                     background: 'linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%)',
                     color: 'white',
@@ -256,5 +256,4 @@ export default function WorkshopsDetailPage() {
     </div>
   );
 }
-
 

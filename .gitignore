@@ -95,6 +95,9 @@ tmp/
 *.sqlite
 *.sqlite3
 
+# User data directory
+/data/
+
 # Cache files
 .cache/
 .parcel-cache/

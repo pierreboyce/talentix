@@ -38,5 +38,3 @@ export function useMobileStyles() {
   return { isMobile, getMobileStyle, getMobileClassName };
 }
 
-
-

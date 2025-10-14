@@ -102,7 +102,7 @@ const featuredJobs: JobPostCardProps[] = [
     companyLogo: 'ShoppingBag',
     jobTitle: 'Customer Advisor',
     description: 'Help customers find the right products, introduce them to new things, and make their shopping experience better.',
-    applyLink: 'https://www.boots.jobs/retail/customer-advisor/',
+    applyLink: 'https://www.boots.jobs/search-jobs',
   },
   {
     companyName: 'Tesco',
@@ -116,11 +116,17 @@ const featuredJobs: JobPostCardProps[] = [
     companyLogo: 'Coffee',
     jobTitle: 'Barista (Part-time)',
     description: 'Create amazing coffee experiences for our customers. Perfect for students with flexible scheduling available.',
-    applyLink: 'https://www.costa.co.uk/careers/job-search/',
+    applyLink: 'https://www.costacareers.co.uk',
   },
 ];
 
 function HomeContent() {
+  // EMERGENCY FIX: Don't render homepage content if we're not on the homepage
+  if (typeof window !== "undefined" && window.location.pathname !== '/') {
+    console.log('🚫 Homepage component blocked - not on homepage path:', window.location.pathname);
+    return null;
+  }
+
   const { user, loading } = useAuth();
   const { isMobile } = useDeviceDetection();
   const router = useRouter();
@@ -161,6 +167,19 @@ function HomeContent() {
   const [showWhatWeDoModal, setShowWhatWeDoModal] = useState(false);
   const [oauthError, setOauthError] = useState<string | null>(null);
 
+  // Listen for custom events from feature carousel
+  useEffect(() => {
+    const handleOpenSignUpModal = () => {
+      setShowSignUpModal(true);
+    };
+
+    window.addEventListener('openSignUpModal', handleOpenSignUpModal);
+    
+    return () => {
+      window.removeEventListener('openSignUpModal', handleOpenSignUpModal);
+    };
+  }, []);
+
   // Removed mobile conditional rendering to prevent hydration issues
 
   useEffect(() => {
@@ -169,31 +188,36 @@ function HomeContent() {
     }
   }, []);
 
+  // Add redirect guard to prevent multiple redirects
+  const [hasRedirected, setHasRedirected] = useState(false);
+
   useEffect(() => {
-    console.log('🏠 Homepage useEffect:', { 
+    console.log('🏠 Homepage useEffect (SHOULD NOT RUN ON DASHBOARD):', { 
+      currentPath: typeof window !== "undefined" ? window.location.pathname : 'unknown',
       user: !!user, 
       isLoaded, 
       loading, 
+      hasRedirected,
       hasUserData: !!(user?.email || user?.name),
       localStorage: typeof window !== "undefined" ? !!localStorage.getItem('talentix_user') : false
     });
     
-    // Only redirect if we have a complete user object and everything is loaded
-    if (typeof window !== "undefined" && user && user.email && isLoaded && !loading) {
+    // Only redirect if we have a complete user object and everything is loaded AND we haven't redirected yet
+    // AND we're actually on the homepage (not already on dashboard)
+    if (typeof window !== "undefined" && user && user.email && isLoaded && !loading && !hasRedirected && window.location.pathname === '/') {
       console.log('🏠 Complete user found, setting score and redirecting to dashboard');
+      setHasRedirected(true); // Prevent multiple redirects
       setScore(user.score || 0);
       setLocation(user.location || "Manchester");
       
-      // Add a small delay to ensure state is fully set
-      setTimeout(() => {
-        router.push('/dashboard');
-      }, 100);
-    } else if (typeof window !== "undefined" && !user && isLoaded && !loading) {
+      // Use router.replace instead of push to prevent back navigation issues
+      router.replace('/dashboard');
+    } else if (typeof window !== "undefined" && !user && isLoaded && !loading && !hasRedirected) {
       console.log('🏠 No user found, resetting to defaults');
       setScore(0);
       setLocation("Manchester");
     }
-  }, [user, router, isLoaded, loading]);
+  }, [user, router, isLoaded, loading, hasRedirected]);
 
   // Handle OAuth errors
   useEffect(() => {
@@ -394,7 +418,7 @@ function HomeContent() {
             priority
           />
           <h2 
-            className="text-2xl md:text-3xl lg:text-4xl text-white leading-tight mb-4"
+            className="text-sm md:text-base lg:text-lg text-white leading-tight mb-4"
             style={{ 
               fontFamily: "'Fredoka', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
               marginTop: '-8px'
@@ -410,10 +434,7 @@ function HomeContent() {
               zIndex: 1
             }}
           >
-            <span className="mobile-two-col">
-              <span className="phrase">for <span className="yellow-gradient-text">teenagers</span></span>
-              <span className="phrase second-phrase"><span className="desktop-only">by a </span><span className="mobile-only">by </span><span className="yellow-gradient-text">teenager</span><span className="mobile-only-s">s</span></span>
-            </span>
+            for <span className="yellow-gradient-text">teenagers</span> by a <span className="yellow-gradient-text">teenager</span>
           </h1>
           <div className="flex flex-col items-center gap-4 mt-32">
             <button 
@@ -901,37 +922,11 @@ function HomeContent() {
                 Send us a message anytime!
               </p>
               <a 
-                href="mailto:talentixuk@gmail.com"
+                href="mailto:enquiries@talentix.co.uk"
                 className="inline-block bg-gradient-to-r from-purple-500 to-pink-500 text-white px-10 py-4 rounded-3xl font-black text-xl transition-all duration-300 hover:shadow-2xl hover:scale-105 group-hover:animate-pulse"
                 style={{ textDecoration: 'none', fontFamily: 'Fredoka, sans-serif' }}
               >
-                talentixuk@gmail.com
-              </a>
-            </div>
-            
-            {/* Phone Card - Enhanced */}
-            <div 
-              className="group bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl border-4 border-gradient-to-r from-blue-300 to-cyan-300 transform transition-all duration-500 hover:scale-110 hover:-rotate-2 hover:shadow-3xl"
-              style={{ 
-                padding: '40px 30px',
-                boxShadow: '0 25px 50px rgba(59, 130, 246, 0.3)',
-                border: '4px solid transparent',
-                background: 'linear-gradient(white, white) padding-box, linear-gradient(135deg, #3b82f6, #06b6d4) border-box'
-              }}
-            >
-              <div className="text-8xl mb-6 group-hover:animate-bounce">📱</div>
-              <h3 className="text-3xl font-black text-gray-900 mb-4" style={{ fontFamily: 'Fredoka, sans-serif' }}>
-                Call Us
-              </h3>
-              <p className="text-lg text-gray-600 mb-6 font-medium" style={{ fontFamily: 'Fredoka, sans-serif' }}>
-                Give us a ring!
-              </p>
-              <a 
-                href="tel:07828946517"
-                className="inline-block bg-gradient-to-r from-blue-500 to-cyan-500 text-white px-10 py-4 rounded-3xl font-black text-xl transition-all duration-300 hover:shadow-2xl hover:scale-105 group-hover:animate-pulse"
-                style={{ textDecoration: 'none', fontFamily: 'Fredoka, sans-serif' }}
-              >
-                07828 946517
+                enquiries@talentix.co.uk
               </a>
             </div>
           </div>

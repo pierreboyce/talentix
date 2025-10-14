@@ -9,9 +9,10 @@ import ForgotPasswordModal from './ForgotPasswordModal';
 interface SignInModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onForgotPassword?: () => void;
 }
 
-export default function SignInModal({ isOpen, onClose }: SignInModalProps) {
+export default function SignInModal({ isOpen, onClose, onForgotPassword }: SignInModalProps) {
   const { signIn, signInWithProvider } = useAuth();
   const router = useRouter();
   const [signInMethod, setSignInMethod] = useState<'initial' | 'email'>('initial');
@@ -60,6 +61,7 @@ export default function SignInModal({ isOpen, onClose }: SignInModalProps) {
 
   const handleEmailSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('🚨 SIGNIN MODAL - handleEmailSignIn called');
     setIsLoading(true);
     setError('');
     
@@ -69,12 +71,21 @@ export default function SignInModal({ isOpen, onClose }: SignInModalProps) {
         password: formData.password
       });
 
+      console.log('🚨 SIGNIN MODAL - signin result:', result);
+
       if (result.success) {
+        console.log('✅ SIGNIN MODAL - Success! Cleaning up and redirecting');
         handleClose();
-        // Force a full page redirect instead of router.push
+        
+        // Clean up any potentially problematic signin flags
+        localStorage.removeItem('talentix_signin_success');
+        localStorage.removeItem('signin_in_progress');
+        
+        // Use router navigation instead of window.location.href to avoid full page reload
         setTimeout(() => {
+          console.log('✅ SIGNIN MODAL - Using router navigation to dashboard');
           window.location.href = '/dashboard';
-        }, 500);
+        }, 100);
       } else {
         setError(result.error || 'Sign in failed');
       }
@@ -163,7 +174,10 @@ export default function SignInModal({ isOpen, onClose }: SignInModalProps) {
       >
         {/* Close Button - moved to top left */}
         <button
-          onClick={handleClose}
+          onClick={(e) => {
+            e.stopPropagation();
+            handleClose();
+          }}
           style={{
             position: 'absolute',
             top: '16px',
@@ -179,7 +193,14 @@ export default function SignInModal({ isOpen, onClose }: SignInModalProps) {
             alignItems: 'center',
             justifyContent: 'center',
             borderRadius: '50%',
-            transition: 'background-color 0.2s'
+            transition: 'background-color 0.2s',
+            zIndex: 10000001
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.1)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = 'transparent';
           }}
         >
           <X size={24} />
@@ -443,7 +464,15 @@ export default function SignInModal({ isOpen, onClose }: SignInModalProps) {
               <div style={{ textAlign: 'center', marginTop: '16px' }}>
                 <button
                   type="button"
-                  onClick={() => setShowForgotPasswordModal(true)}
+                  onClick={() => {
+                    if (onForgotPassword) {
+                      onForgotPassword();
+                    } else {
+                      // Fallback to internal state if no callback provided
+                      setShowForgotPasswordModal(true);
+                      handleClose();
+                    }
+                  }}
                   style={{
                     background: 'none',
                     border: 'none',

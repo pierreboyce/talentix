@@ -7,12 +7,14 @@ interface ProBannerProps {
   showBanner?: boolean;
   className?: string;
   style?: React.CSSProperties;
+  feature?: string;
 }
 
 export default function ProBanner({ 
   showBanner = true, 
   className = '',
-  style = {} 
+  style = {},
+  feature = ''
 }: ProBannerProps) {
   const { subscription } = useSubscription();
 
@@ -20,6 +22,22 @@ export default function ProBanner({
   if (!showBanner || subscription.tier !== 'free') {
     return null;
   }
+
+  // Get custom message based on feature
+  const getFeatureMessage = (featureName: string) => {
+    switch (featureName) {
+      case 'cv-reviewer':
+        return 'Unlimited Reviews with Talentix Pro ✨';
+      case 'video-interview':
+        return 'Unlimited Practice with Talentix Pro ✨';
+      case 'career-guidance':
+        return 'Unlimited Guides with Talentix Pro ✨';
+      default:
+        return 'Available with Talentix Pro ✨';
+    }
+  };
+
+  const message = getFeatureMessage(feature);
 
   return (
     <div 
@@ -66,7 +84,7 @@ export default function ProBanner({
           textOverflow: 'ellipsis',
           maxWidth: '100%'
         }}>
-          Available with Talentix Pro ✨
+          {message}
         </span>
         
         {/* Tooltip arrow */}

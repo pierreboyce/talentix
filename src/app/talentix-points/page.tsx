@@ -2,10 +2,11 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Trophy, Award, Download, Star, Target, CheckCircle, Clock, Zap, TrendingUp } from 'lucide-react';
+import { Trophy, Award, Download, Star, Target, CheckCircle, Clock, Zap, TrendingUp, Menu, X } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { usePoints } from '../../contexts/PointsContext';
 import { useQuests } from '../../contexts/QuestContext';
+import { useDeviceDetection } from '../../hooks/useDeviceDetection';
 
 interface Achievement {
   id: string;
@@ -30,40 +31,16 @@ interface Quest {
 export default function TalentixPoints() {
   const router = useRouter();
   const { user } = useAuth(); // Get actual user data
+  const { isMobile, isTablet, screenWidth } = useDeviceDetection();
+  
+  // Define mobile as screens under 768px as requested
+  const isMobileScreen = screenWidth < 768;
   
   const [currentView, setCurrentView] = useState<'overview' | 'achievements' | 'quests'>('overview');
+  const [showMobileSidebar, setShowMobileSidebar] = useState(false);
   const { points: userPoints, addPoints } = usePoints(); // Use shared points context
   const { quests, getActiveQuests, getCompletedQuests } = useQuests(); // Use quest system
   
-  // Get user's actual name or fallback to default
-  const getUserName = () => {
-    // First priority: user.name from AuthContext
-    if (user?.name && user.name.trim()) return user.name.trim();
-    
-    // Second priority: user.email prefix from AuthContext
-    if (user?.email && user.email.trim()) {
-      const emailPrefix = user.email.split('@')[0];
-      if (emailPrefix && emailPrefix.trim()) return emailPrefix.trim();
-    }
-    
-    // Third priority: try to get from localStorage directly
-    try {
-      const storedUser = localStorage.getItem('talentix_user');
-      if (storedUser) {
-        const userData = JSON.parse(storedUser);
-        if (userData?.name && userData.name.trim()) return userData.name.trim();
-        if (userData?.email && userData.email.trim()) {
-          const emailPrefix = userData.email.split('@')[0];
-          if (emailPrefix && emailPrefix.trim()) return emailPrefix.trim();
-        }
-      }
-    } catch (error) {
-      console.error('Error parsing stored user data:', error);
-    }
-    
-    // Final fallback
-    return 'Talentix User';
-  };
   
   const levels = [
     { name: 'Bronze', points: 100, color: '#cd7f32', icon: '🥉' },
@@ -240,42 +217,11 @@ export default function TalentixPoints() {
     }
   ]; */
   
-  // Debug function to add points
-  const addDebugPoints = () => {
-    addPoints(100, 'Debug points added');
-  };
 
   const downloadCertificate = async (achievement: Achievement) => {
-    const currentLevel = getCurrentLevel();
-    const userName = getUserName(); // Get actual user name
     const certificateId = `TLX-${achievement.name.substring(0, 3).toUpperCase()}-${Date.now().toString().slice(-6)}`;
 
-    // Enhanced debug logging for production troubleshooting
-    const debugInfo = {
-      user,
-      userName,
-      userEmail: user?.email,
-      userID: user?.id,
-      localStorage_user: localStorage.getItem('talentix_user'),
-      localStorage_session: localStorage.getItem('talentix_session'),
-      window_location: window.location.href,
-      domain: window.location.hostname,
-      authContext_user: user,
-      getUserName_result: getUserName()
-    };
-    
-    console.log('🔍 PRODUCTION Certificate download debug:', debugInfo);
-    
-    // Also send debug info to server for logging
-    try {
-      await fetch('/api/debug/user-data', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(debugInfo)
-      });
-    } catch (e) {
-      console.log('Debug logging failed (non-critical):', e);
-    }
+    console.log('🎓 Downloading certificate for achievement:', achievement.name);
 
     try {
       // Determine the level for the certificate image
@@ -285,16 +231,14 @@ export default function TalentixPoints() {
       else if (achievement.name.toLowerCase().includes('diamond')) level = 'Diamond';
       else if (achievement.name.toLowerCase().includes('platinum')) level = 'Platinum';
 
-      // Call the API to generate personalized certificate image
+      // Call the API to generate certificate image
       const response = await fetch('/api/certificates/generate-image', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          level,
-          userName,
-          achievementName: achievement.name
+          level
         })
       });
 
@@ -307,7 +251,7 @@ export default function TalentixPoints() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `Talentix-${level}-Certificate-${userName.replace(/\s+/g, '-')}.png`;
+      a.download = `Talentix-${level}-Certificate.png`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -316,12 +260,12 @@ export default function TalentixPoints() {
       // Show success message with LinkedIn instructions
       setTimeout(() => {
         const verificationUrl = typeof window !== 'undefined' ? `${window.location.origin}/certificates/${certificateId}` : `https://talentix.vercel.app/certificates/${certificateId}`;
-        alert(`🎉 Personalized certificate image downloaded successfully for ${userName}!\n\n📎 Ready for LinkedIn:\n• Certificate ID: ${certificateId}\n• Verification URL: ${verificationUrl}\n\n💡 Your certificate image now has your name on it!`);
+        alert(`🎉 Certificate downloaded successfully!\n\n📎 Ready for LinkedIn:\n• Certificate ID: ${certificateId}\n• Verification URL: ${verificationUrl}\n\n💡 Your achievement certificate is ready to share!`);
       }, 500);
 
     } catch (error) {
       console.error('Error downloading certificate:', error);
-      alert('Sorry, there was an error generating your personalized certificate. Please try again.');
+      alert('Sorry, there was an error generating your certificate. Please try again.');
     }
   };
 
@@ -334,19 +278,174 @@ export default function TalentixPoints() {
     }
   };
 
+  const handleViewChange = (view: 'overview' | 'achievements' | 'quests') => {
+    setCurrentView(view);
+    // Close mobile sidebar when navigation item is clicked
+    if (isMobileScreen) {
+      setShowMobileSidebar(false);
+    }
+  };
+
   return (
     <div style={{
       minHeight: '100vh',
       background: 'linear-gradient(135deg, #fef3c7 0%, #fbbf24 50%, #f59e0b 100%)',
-      display: 'flex'
+      display: 'flex',
+      position: 'relative'
     }}>
-      {/* Left Sidebar */}
+      {/* Mobile Top Navigation */}
+      {isMobileScreen && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          backgroundColor: '#1f2937',
+          zIndex: 1000,
+          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
+        }}>
+          {/* Header Bar */}
+          <div style={{
+            height: '64px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '0 16px'
+          }}>
+            <h1 style={{
+              color: '#fbbf24',
+              fontSize: '20px',
+              fontWeight: 'bold',
+              margin: '0',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px'
+            }}>
+              🏆 Talentix Points
+            </h1>
+            <button
+              onClick={() => setShowMobileSidebar(!showMobileSidebar)}
+              style={{
+                backgroundColor: 'transparent',
+                border: 'none',
+                color: '#ffffff',
+                cursor: 'pointer',
+                padding: '8px',
+                borderRadius: '4px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+            >
+              {showMobileSidebar ? <X size={24} /> : <Menu size={24} />}
+            </button>
+          </div>
+          
+          {/* Navigation Dropdown */}
+          {showMobileSidebar && (
+            <div style={{
+              backgroundColor: '#374151',
+              borderTop: '1px solid #4b5563',
+              padding: '16px'
+            }}>
+              {/* Progress Section */}
+              <div style={{ marginBottom: '20px' }}>
+                <h3 style={{ 
+                  color: '#9ca3af', 
+                  fontSize: '12px', 
+                  fontWeight: '600', 
+                  textTransform: 'uppercase', 
+                  margin: '0 0 12px 0', 
+                  letterSpacing: '0.05em' 
+                }}>
+                  PROGRESS
+                </h3>
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                  {[
+                    { id: 'overview', label: 'Overview', icon: '📊' },
+                    { id: 'achievements', label: 'Achievements', icon: '🏅' },
+                    { id: 'quests', label: 'Quests', icon: '⚡' }
+                  ].map((item) => (
+                    <button
+                      key={item.id}
+                      onClick={() => handleViewChange(item.id as any)}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        padding: '10px 16px',
+                        backgroundColor: currentView === item.id ? '#1f2937' : 'rgba(255, 255, 255, 0.1)',
+                        color: '#ffffff',
+                        border: 'none',
+                        borderRadius: '8px',
+                        cursor: 'pointer',
+                        fontSize: '14px',
+                        fontWeight: '500',
+                        transition: 'all 0.2s ease',
+                        flex: '1',
+                        minWidth: '120px'
+                      }}
+                    >
+                      <span style={{ fontSize: '16px' }}>{item.icon}</span>
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              
+              {/* Tools Section */}
+              <div>
+                <h3 style={{ 
+                  color: '#9ca3af', 
+                  fontSize: '12px', 
+                  fontWeight: '600', 
+                  textTransform: 'uppercase', 
+                  margin: '0 0 12px 0', 
+                  letterSpacing: '0.05em' 
+                }}>
+                  TOOLS
+                </h3>
+                <div style={{ display: 'flex', gap: '8px', flexDirection: 'column' }}>
+                  <button
+                    onClick={() => {
+                      router.push('/dashboard');
+                      setShowMobileSidebar(false);
+                    }}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      padding: '10px 16px',
+                      backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                      color: '#ffffff',
+                      border: 'none',
+                      borderRadius: '8px',
+                      cursor: 'pointer',
+                      fontSize: '14px',
+                      fontWeight: '500',
+                      textAlign: 'left',
+                      width: '100%',
+                      transition: 'all 0.2s ease'
+                    }}
+                  >
+                    ← Back to Dashboard
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Desktop Sidebar - Hidden on Mobile */}
+      {!isMobileScreen && (
       <div style={{
         width: '280px',
         backgroundColor: '#1f2937',
         position: 'fixed',
         height: '100vh',
-        padding: '24px'
+          padding: '24px',
+          overflowY: 'auto'
       }}>
         <div style={{ marginBottom: '32px' }}>
           <h1 style={{
@@ -376,7 +475,7 @@ export default function TalentixPoints() {
           ].map((item) => (
             <button
               key={item.id}
-              onClick={() => setCurrentView(item.id as any)}
+              onClick={() => handleViewChange(item.id as any)}
               style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -448,60 +547,53 @@ export default function TalentixPoints() {
           >
             ← Back to Dashboard
           </button>
-          
-          {/* Debug Button */}
-          <button
-            onClick={addDebugPoints}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '12px',
-              padding: '12px 16px',
-              backgroundColor: '#ef4444',
-              color: '#ffffff',
-              border: 'none',
-              borderRadius: '8px',
-              cursor: 'pointer',
-              fontSize: '14px',
-              fontWeight: '600',
-              textAlign: 'left',
-              width: '100%',
-              marginTop: '16px',
-              transition: 'all 0.2s ease'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = '#dc2626';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = '#ef4444';
-            }}
-          >
-            🐛 Add 100 Points (Debug)
-          </button>
         </nav>
       </div>
+      )}
+
+      {/* Mobile Overlay */}
+      {isMobileScreen && showMobileSidebar && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.3)',
+            zIndex: 999
+          }}
+          onClick={() => setShowMobileSidebar(false)}
+        />
+      )}
 
       {/* Main Content */}
       <div style={{
-        marginLeft: '280px',
+        marginLeft: isMobileScreen ? '0' : '280px',
+        marginTop: isMobileScreen ? '64px' : '0',
         flex: 1,
-        padding: '32px 48px'
+        width: isMobileScreen ? '100%' : 'calc(100% - 280px)',
+        padding: isMobileScreen ? '20px 16px' : '32px 48px',
+        minHeight: isMobileScreen ? 'calc(100vh - 64px)' : '100vh',
+        maxWidth: isMobileScreen ? '100%' : 'none'
       }}>
         {currentView === 'overview' && (
           <>
-            <div style={{ marginBottom: '32px' }}>
+            <div style={{ marginBottom: isMobileScreen ? '24px' : '32px' }}>
               <h1 style={{
-                fontSize: '48px',
+                fontSize: isMobileScreen ? '32px' : '48px',
                 fontWeight: 'bold',
                 color: '#1f2937',
-                margin: '0 0 16px 0'
+                margin: '0 0 16px 0',
+                lineHeight: isMobileScreen ? '1.2' : 'normal'
               }}>
                 Your Progress
               </h1>
               <p style={{
-                fontSize: '18px',
+                fontSize: isMobileScreen ? '16px' : '18px',
                 color: '#4b5563',
-                margin: '0'
+                margin: '0',
+                lineHeight: '1.5'
               }}>
                 Track your journey and unlock achievements to showcase your skills
               </p>
@@ -510,24 +602,42 @@ export default function TalentixPoints() {
             {/* Current Level Display */}
             <div style={{
               backgroundColor: '#ffffff',
-              borderRadius: '16px',
-              padding: '40px',
+              borderRadius: isMobileScreen ? '12px' : '16px',
+              padding: isMobileScreen ? '20px' : '40px',
               boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
               border: '2px solid #e5e7eb',
-              marginBottom: '32px'
+              marginBottom: isMobileScreen ? '24px' : '32px'
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
+              <div style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'space-between', 
+                marginBottom: '24px',
+                flexDirection: isMobileScreen ? 'column' : 'row',
+                textAlign: isMobileScreen ? 'center' : 'left',
+                gap: isMobileScreen ? '20px' : '0'
+              }}>
                 <div>
-                  <h2 style={{ fontSize: '32px', fontWeight: 'bold', color: '#1f2937', margin: '0 0 8px 0' }}>
+                  <h2 style={{ 
+                    fontSize: isMobileScreen ? '24px' : '32px', 
+                    fontWeight: 'bold', 
+                    color: '#1f2937', 
+                    margin: '0 0 8px 0',
+                    lineHeight: '1.2'
+                  }}>
                     {getCurrentLevel().icon} {getCurrentLevel().name}
                   </h2>
-                  <p style={{ fontSize: '20px', color: '#4b5563', margin: '0' }}>
+                  <p style={{ 
+                    fontSize: isMobileScreen ? '18px' : '20px', 
+                    color: '#4b5563', 
+                    margin: '0' 
+                  }}>
                     {userPoints.toLocaleString()} Talentix Points
                   </p>
                 </div>
                 <div style={{
-                  width: '120px',
-                  height: '120px',
+                  width: isMobileScreen ? '100px' : '120px',
+                  height: isMobileScreen ? '100px' : '120px',
                   borderRadius: '50%',
                   background: `conic-gradient(${getCurrentLevel().color} ${getNextLevel() ? (userPoints / getNextLevel()!.points) * 360 : 360}deg, #e5e7eb 0deg)`,
                   display: 'flex',
@@ -536,14 +646,14 @@ export default function TalentixPoints() {
                   position: 'relative'
                 }}>
                   <div style={{
-                    width: '90px',
-                    height: '90px',
+                    width: isMobileScreen ? '75px' : '90px',
+                    height: isMobileScreen ? '75px' : '90px',
                     borderRadius: '50%',
                     backgroundColor: '#ffffff',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    fontSize: '40px'
+                    fontSize: isMobileScreen ? '32px' : '40px'
                   }}>
                     {getCurrentLevel().icon}
                   </div>
@@ -582,23 +692,24 @@ export default function TalentixPoints() {
             {/* Quick Stats */}
             <div style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-              gap: '24px',
-              marginBottom: '32px'
+              gridTemplateColumns: isMobileScreen ? '1fr' : 'repeat(auto-fit, minmax(200px, 1fr))',
+              gap: isMobileScreen ? '16px' : '24px',
+              marginBottom: isMobileScreen ? '24px' : '32px',
+              width: '100%'
             }}>
               <div style={{
                 backgroundColor: '#ffffff',
                 borderRadius: '12px',
-                padding: '24px',
+                padding: isMobileScreen ? '20px' : '24px',
                 boxShadow: '0 2px 4px -1px rgba(0, 0, 0, 0.1)',
                 border: '2px solid #e5e7eb',
                 textAlign: 'center'
               }}>
-                <div style={{ fontSize: '32px', marginBottom: '8px' }}>🏆</div>
-                <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#1f2937', marginBottom: '4px' }}>
+                <div style={{ fontSize: isMobileScreen ? '28px' : '32px', marginBottom: '8px' }}>🏆</div>
+                <div style={{ fontSize: isMobileScreen ? '20px' : '24px', fontWeight: 'bold', color: '#1f2937', marginBottom: '4px' }}>
                   {achievements.filter(a => a.unlocked).length}
                 </div>
-                <div style={{ fontSize: '14px', color: '#6b7280' }}>
+                <div style={{ fontSize: isMobileScreen ? '13px' : '14px', color: '#6b7280' }}>
                   Achievements Unlocked
                 </div>
               </div>
@@ -606,16 +717,16 @@ export default function TalentixPoints() {
               <div style={{
                 backgroundColor: '#ffffff',
                 borderRadius: '12px',
-                padding: '24px',
+                padding: isMobileScreen ? '20px' : '24px',
                 boxShadow: '0 2px 4px -1px rgba(0, 0, 0, 0.1)',
                 border: '2px solid #e5e7eb',
                 textAlign: 'center'
               }}>
-                <div style={{ fontSize: '32px', marginBottom: '8px' }}>⚡</div>
-                <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#1f2937', marginBottom: '4px' }}>
+                <div style={{ fontSize: isMobileScreen ? '28px' : '32px', marginBottom: '8px' }}>⚡</div>
+                <div style={{ fontSize: isMobileScreen ? '20px' : '24px', fontWeight: 'bold', color: '#1f2937', marginBottom: '4px' }}>
                   {quests.filter(q => q.completed).length}
                 </div>
-                <div style={{ fontSize: '14px', color: '#6b7280' }}>
+                <div style={{ fontSize: isMobileScreen ? '13px' : '14px', color: '#6b7280' }}>
                   Quests Completed
                 </div>
               </div>
@@ -623,16 +734,16 @@ export default function TalentixPoints() {
               <div style={{
                 backgroundColor: '#ffffff',
                 borderRadius: '12px',
-                padding: '24px',
+                padding: isMobileScreen ? '20px' : '24px',
                 boxShadow: '0 2px 4px -1px rgba(0, 0, 0, 0.1)',
                 border: '2px solid #e5e7eb',
                 textAlign: 'center'
               }}>
-                <div style={{ fontSize: '32px', marginBottom: '8px' }}>🎯</div>
-                <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#1f2937', marginBottom: '4px' }}>
+                <div style={{ fontSize: isMobileScreen ? '28px' : '32px', marginBottom: '8px' }}>🎯</div>
+                <div style={{ fontSize: isMobileScreen ? '20px' : '24px', fontWeight: 'bold', color: '#1f2937', marginBottom: '4px' }}>
                   {Math.round((achievements.filter(a => a.unlocked).length / achievements.length) * 100)}%
                 </div>
-                <div style={{ fontSize: '14px', color: '#6b7280' }}>
+                <div style={{ fontSize: isMobileScreen ? '13px' : '14px', color: '#6b7280' }}>
                   Progress Complete
                 </div>
               </div>
@@ -642,19 +753,21 @@ export default function TalentixPoints() {
 
         {currentView === 'achievements' && (
           <>
-            <div style={{ marginBottom: '32px' }}>
+            <div style={{ marginBottom: isMobileScreen ? '24px' : '32px' }}>
               <h1 style={{
-                fontSize: '48px',
+                fontSize: isMobileScreen ? '32px' : '48px',
                 fontWeight: 'bold',
                 color: '#1f2937',
-                margin: '0 0 16px 0'
+                margin: '0 0 16px 0',
+                lineHeight: isMobileScreen ? '1.2' : 'normal'
               }}>
                 Achievements
               </h1>
               <p style={{
-                fontSize: '18px',
+                fontSize: isMobileScreen ? '16px' : '18px',
                 color: '#4b5563',
-                margin: '0'
+                margin: '0',
+                lineHeight: '1.5'
               }}>
                 Unlock certificates to showcase your progress on LinkedIn and other platforms
               </p>
@@ -663,16 +776,17 @@ export default function TalentixPoints() {
             {/* Achievements Grid */}
             <div style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))',
-              gap: '24px'
+              gridTemplateColumns: isMobileScreen ? '1fr' : 'repeat(auto-fit, minmax(350px, 1fr))',
+              gap: isMobileScreen ? '16px' : '24px',
+              width: '100%'
             }}>
               {achievements.map((achievement) => (
                 <div
                   key={achievement.id}
                   style={{
                     backgroundColor: '#ffffff',
-                    borderRadius: '16px',
-                    padding: '32px',
+                    borderRadius: isMobileScreen ? '12px' : '16px',
+                    padding: isMobileScreen ? '20px' : '32px',
                     boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
                     border: `3px solid ${achievement.unlocked ? '#10b981' : '#e5e7eb'}`,
                     opacity: achievement.unlocked ? 1 : 0.6,
@@ -824,19 +938,21 @@ export default function TalentixPoints() {
 
         {currentView === 'quests' && (
           <>
-            <div style={{ marginBottom: '32px' }}>
+            <div style={{ marginBottom: isMobileScreen ? '24px' : '32px' }}>
               <h1 style={{
-                fontSize: '48px',
+                fontSize: isMobileScreen ? '32px' : '48px',
                 fontWeight: 'bold',
                 color: '#1f2937',
-                margin: '0 0 16px 0'
+                margin: '0 0 16px 0',
+                lineHeight: isMobileScreen ? '1.2' : 'normal'
               }}>
                 Daily Quests
               </h1>
               <p style={{
-                fontSize: '18px',
+                fontSize: isMobileScreen ? '16px' : '18px',
                 color: '#4b5563',
-                margin: '0'
+                margin: '0',
+                lineHeight: '1.5'
               }}>
                 Complete quests to earn XP and level up your Talentix journey
               </p>
@@ -862,8 +978,9 @@ export default function TalentixPoints() {
 
                 <div style={{
                   display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))',
-                  gap: '20px'
+                  gridTemplateColumns: isMobileScreen ? '1fr' : 'repeat(auto-fit, minmax(400px, 1fr))',
+                  gap: isMobileScreen ? '16px' : '20px',
+                  width: '100%'
                 }}>
                   {quests
                     .filter(quest => quest.category === category)
@@ -872,8 +989,8 @@ export default function TalentixPoints() {
                         key={quest.id}
                         style={{
                           backgroundColor: '#ffffff',
-                          borderRadius: '16px',
-                          padding: '24px',
+                          borderRadius: isMobileScreen ? '12px' : '16px',
+                          padding: isMobileScreen ? '20px' : '24px',
                           boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
                           border: `2px solid ${quest.completed ? '#10b981' : '#e5e7eb'}`,
                           opacity: quest.completed ? 0.8 : 1

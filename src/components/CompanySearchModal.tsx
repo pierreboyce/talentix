@@ -24,8 +24,8 @@ interface JobResult {
 }
 
 export default function CompanySearchModal({ searchQuery, onClose }: CompanySearchModalProps) {
-  console.log('🔍 CompanySearchModal rendered with query:', searchQuery);
-  console.log('🔍 CompanySearchModal component is being rendered!');
+  
+  
   
   const [selectedFilter, setSelectedFilter] = useState<string>('all');
 
@@ -105,7 +105,7 @@ export default function CompanySearchModal({ searchQuery, onClose }: CompanySear
 
   // Get search results with improved matching
   const getSearchResults = (query: string): JobResult[] => {
-    console.log('🔍 Getting search results for:', query);
+    
     
     if (!query || query.trim() === '') return jobDatabase.slice(0, 20); // Show first 20 for empty query
     
@@ -159,7 +159,7 @@ export default function CompanySearchModal({ searchQuery, onClose }: CompanySear
       results = jobDatabase.slice(0, 20);
     }
     
-    console.log('🔍 Found', results.length, 'results');
+    
     return results.slice(0, 40); // Limit to 40 results
   };
 
@@ -378,17 +378,4 @@ export default function CompanySearchModal({ searchQuery, onClose }: CompanySear
     </div>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
 

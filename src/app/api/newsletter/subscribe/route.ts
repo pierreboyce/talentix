@@ -16,18 +16,17 @@ const apiInstance = new brevo.ContactsApi();
 
 export async function POST(request: NextRequest) {
   try {
-    // Debug: Log environment variables (without exposing the full API key)
-    console.log('🔍 Environment check:');
-    console.log('BREVO_API_KEY exists:', !!process.env.BREVO_API_KEY);
-    console.log('BREVO_LIST_ID:', process.env.BREVO_LIST_ID);
+    
+    
+    
+    
     if (process.env.BREVO_API_KEY) {
-      console.log('API Key length:', process.env.BREVO_API_KEY.length);
-      console.log('API Key starts with:', process.env.BREVO_API_KEY.substring(0, 10) + '...');
+      // API key is available
     }
 
     // Set API key from environment
     if (!process.env.BREVO_API_KEY) {
-      console.error('❌ BREVO_API_KEY not found in environment');
+      
       return NextResponse.json(
         { error: 'Newsletter service not configured' },
         { status: 500 }
@@ -74,12 +73,7 @@ export async function POST(request: NextRequest) {
     // Add contact to Brevo
     const response = await apiInstance.createContact(createContact);
 
-    console.log('✅ Successfully added to Brevo newsletter:', {
-      email: createContact.email,
-      id: response.body?.id || 'created',
-      listId: listId,
-      name: fullName
-    });
+    
 
     return NextResponse.json(
       { 
@@ -94,17 +88,10 @@ export async function POST(request: NextRequest) {
     );
 
   } catch (error: any) {
-    console.error('Newsletter subscription error:', error);
+    
     
     // Log detailed error information for debugging
     if (error.response) {
-      console.error('❌ Brevo API Error Details:');
-      console.error('Status:', error.response.status);
-      console.error('Status Text:', error.response.statusText);
-      console.error('Response Body:', JSON.stringify(error.response.data, null, 2));
-      console.error('Request URL:', error.config?.url);
-      console.error('Request Method:', error.config?.method);
-      console.error('Request Data:', JSON.stringify(error.config?.data, null, 2));
     }
     
     // Handle Brevo specific errors
@@ -116,7 +103,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (error.response?.data?.message) {
-      console.error('Brevo API error message:', error.response.data.message);
+      
       return NextResponse.json(
         { error: `Brevo API Error: ${error.response.data.message}` },
         { status: 500 }
@@ -172,7 +159,7 @@ export async function GET(request: NextRequest) {
       };
     }) || [];
 
-    console.log(`📊 Retrieved ${formattedSubscribers.length} subscribers from Brevo list ${listId}`);
+    
 
     return NextResponse.json({
       subscribers: formattedSubscribers,
@@ -184,10 +171,10 @@ export async function GET(request: NextRequest) {
     });
 
   } catch (error: any) {
-    console.error('Error fetching Brevo subscribers:', error);
+    
     
     if (error.response?.body?.message) {
-      console.error('Brevo API error:', error.response.body.message);
+      
     }
     
     return NextResponse.json(
