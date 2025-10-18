@@ -44,6 +44,13 @@ const jobFeaturesApps: AppItem[] = [
     color: 'bg-gradient-to-br from-teal-400 to-teal-600'
   },
   {
+    id: 'apprenticeship-tracker',
+    name: 'Apprenticeship Tracker',
+    emoji: '📋',
+    href: '/apprenticeship-tracker',
+    color: 'bg-gradient-to-br from-blue-400 to-blue-600'
+  },
+  {
     id: 'cv-reviewer',
     name: 'CV Reviewer',
     emoji: '📄',

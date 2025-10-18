@@ -358,6 +358,17 @@ export default function NavigationMobile() {
                   
                   {/* Row 4 */}
                   <button 
+                    onClick={() => handleMenuItemClick(() => router.push('/apprenticeship-tracker'))}
+                    className="mobile-nav-item text-center bg-gradient-to-r from-blue-300 to-blue-400 text-gray-800 hover:from-blue-400 hover:to-blue-500 transform hover:scale-105 active:scale-95"
+                    style={{ fontFamily: 'Fredoka, sans-serif', padding: '16px 12px', borderRadius: '12px' }}
+                  >
+                    <div className="flex flex-col items-center gap-1">
+                      <span className="text-2xl">📋</span>
+                      <span className="font-semibold text-sm">Apprenticeship</span>
+                    </div>
+                  </button>
+                  
+                  <button 
                     onClick={() => handleMenuItemClick(() => router.push('/cover-letter'))}
                     className="mobile-nav-item text-center bg-gradient-to-r from-indigo-300 to-indigo-400 text-gray-800 hover:from-indigo-400 hover:to-indigo-500 transform hover:scale-105 active:scale-95"
                     style={{ fontFamily: 'Fredoka, sans-serif', padding: '16px 12px', borderRadius: '12px' }}
