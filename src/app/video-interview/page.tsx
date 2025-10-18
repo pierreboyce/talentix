@@ -5,8 +5,10 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '../../contexts/AuthContext';
 import { usePoints } from '../../contexts/PointsContext';
 import { useSubscription } from '../../contexts/SubscriptionContext';
-import { Play, Square, RotateCcw, Send, Clock, Mic, Video, ArrowLeft, CheckCircle, Search, Settings, Lightbulb, Shuffle, Menu } from 'lucide-react';
+import { Play, Square, RotateCcw, Send, Clock, Mic, Video, ArrowLeft, CheckCircle, Search, Settings, Lightbulb, Shuffle, Menu, Sparkles } from 'lucide-react';
 import { useDeviceDetection } from '../../hooks/useDeviceDetection';
+import TailorInterviewModal from '../../components/TailorInterviewModal';
+import TailoringLoadingModal from '../../components/TailoringLoadingModal';
 
 // Hardcoded interview questions
 const interviewQuestions = [
@@ -100,6 +102,9 @@ export default function VideoInterviewPage(): React.ReactElement {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showHowItWorksModal, setShowHowItWorksModal] = useState(false);
   const [questionsUsed, setQuestionsUsed] = useState(0); // Track questions used for free tier
+  const [showTailorModal, setShowTailorModal] = useState(false);
+  const [isTailoring, setIsTailoring] = useState(false);
+  const [tailoringDetails, setTailoringDetails] = useState({ companyName: '', jobRole: '' });
   
   // Initialize questions used from localStorage (user-specific)
   useEffect(() => {
@@ -211,17 +216,20 @@ export default function VideoInterviewPage(): React.ReactElement {
     setCurrentQuestion(interviewQuestions[randomIndex]);
   };
 
-  const startPractice = async () => {
+  const startPractice = async (skipQuestionGeneration = false) => {
     console.log('🚀 startPractice function called');
     console.log('🔍 Current URL before startPractice:', window.location.href);
+    
     // Check if user can use video interview feature
     const canProceed = checkCanUseVideoInterview();
     if (!canProceed) {
       return; // Paywall triggered, stop here
     }
 
-    // Get random question and track usage
-    getRandomQuestionAndTrackUsage();
+    // Get random question and track usage (unless we already have a tailored question)
+    if (!skipQuestionGeneration) {
+      getRandomQuestionAndTrackUsage();
+    }
     
     console.log('🎯 Setting stage to planning...');
     setStage('planning');
@@ -396,7 +404,7 @@ export default function VideoInterviewPage(): React.ReactElement {
       } else if (timeLeft === 0) {
         if (stage === 'planning') {
           setStage('recording');
-          setTimeLeft(30);
+          setTimeLeft(60);
           startRecording();
         } else if (stage === 'recording' && isRecording) {
           stopRecording();
@@ -427,7 +435,7 @@ export default function VideoInterviewPage(): React.ReactElement {
     const fileSizeMB = recordedBlob.size / (1024 * 1024);
     
     if (recordedBlob.size > maxSize) {
-      alert(`Video file is too large (${fileSizeMB.toFixed(1)}MB). Please try recording a shorter answer (maximum 30 seconds) or refresh the page to try again with better compression.`);
+      alert(`Video file is too large (${fileSizeMB.toFixed(1)}MB). Please try recording a shorter answer (maximum 1 minute) or refresh the page to try again with better compression.`);
       return;
     }
     
@@ -484,6 +492,71 @@ export default function VideoInterviewPage(): React.ReactElement {
     
     if (streamRef.current) {
       streamRef.current.getTracks().forEach(track => track.stop());
+    }
+  };
+
+  const handleTailorInterview = async (companyName: string, jobRole: string) => {
+    console.log('🎯 Tailoring video interview for:', { companyName, jobRole });
+    setShowTailorModal(false);
+    
+    // Show loading modal
+    setTailoringDetails({ companyName, jobRole });
+    setIsTailoring(true);
+    
+    try {
+      const response = await fetch('/api/interview/tailor', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          companyName,
+          jobRole,
+          questionCount: 5
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success && data.questions && data.questions.length > 0) {
+        // Get a random tailored question
+        const randomIndex = Math.floor(Math.random() * data.questions.length);
+        const tailoredQuestion = data.questions[randomIndex];
+        
+        setCurrentQuestion({
+          id: tailoredQuestion.id,
+          category: tailoredQuestion.category,
+          question: tailoredQuestion.question,
+          difficulty: tailoredQuestion.difficulty
+        });
+        
+        // Track usage for tailored questions too
+        if (user?.email) {
+          const currentUsage = parseInt(localStorage.getItem(`video_interview_questions_used_${user.email}`) || '0');
+          const newUsage = currentUsage + 1;
+          localStorage.setItem(`video_interview_questions_used_${user.email}`, newUsage.toString());
+          setQuestionsUsed(newUsage);
+          window.dispatchEvent(new CustomEvent('talentix-usage-update'));
+        }
+        
+        // Hide loading modal
+        setIsTailoring(false);
+        
+        // Show success message
+        const successMsg = `✅ Generated tailored question!\n${jobRole ? `For: ${jobRole}\n` : ''}${companyName ? `At: ${companyName}\n` : ''}\n\nStarting practice now...`;
+        alert(successMsg);
+        
+        // Automatically start practice with the tailored question (skip random question generation)
+        setTimeout(() => {
+          startPractice(true); // true = skip question generation
+        }, 300);
+      } else {
+        throw new Error(data.error || 'Failed to generate questions');
+      }
+    } catch (error: any) {
+      console.error('Error tailoring video interview:', error);
+      setIsTailoring(false);
+      alert(`❌ Failed to generate tailored questions.\n\n${error.message || 'Please try again.'}`);
     }
   };
 
@@ -855,9 +928,106 @@ export default function VideoInterviewPage(): React.ReactElement {
 
             <div style={{ 
               textAlign: 'center', 
-              marginTop: isMobile ? '20px' : '24px',
-              paddingBottom: isMobile ? '40px' : '0'
+              marginTop: isMobile ? '20px' : '32px',
+              paddingBottom: isMobile ? '40px' : '0',
+              display: 'flex',
+              flexDirection: isMobile ? 'column' : 'row',
+              gap: '16px',
+              justifyContent: 'center',
+              alignItems: 'center'
             }}>
+              <button
+                onClick={(e) => {
+                  console.log('✨ Tailor interview button clicked!');
+                  e.preventDefault();
+                  e.stopPropagation();
+                  e.nativeEvent?.stopImmediatePropagation();
+                  setShowTailorModal(true);
+                }}
+                style={{
+                  background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 50%, #f59e0b 100%)',
+                  backgroundSize: '200% 100%',
+                  border: isMobile ? '3px solid #fbbf24' : '3px solid #fde047',
+                  borderRadius: isMobile ? '20px' : '16px',
+                  color: '#ffffff',
+                  fontSize: isMobile ? '18px' : '18px',
+                  fontWeight: 'bold',
+                  textDecoration: 'none',
+                  cursor: 'pointer',
+                  padding: isMobile ? '18px 32px' : '16px 32px',
+                  minHeight: isMobile ? '60px' : '56px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '10px',
+                  maxWidth: isMobile ? '100%' : 'none',
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                  fontFamily: "'Fredoka', 'Inter', sans-serif",
+                  boxShadow: '0 8px 25px -6px rgba(245, 158, 11, 0.5), 0 0 0 0 rgba(245, 158, 11, 0.4)',
+                  position: 'relative',
+                  zIndex: 999998,
+                  outline: 'none',
+                  touchAction: 'manipulation',
+                  userSelect: 'none',
+                  WebkitTouchCallout: 'none',
+                  WebkitUserSelect: 'none',
+                  isolation: 'isolate',
+                  width: isMobile ? '100%' : 'auto',
+                  overflow: 'hidden',
+                  textShadow: '0 2px 4px rgba(0,0,0,0.2)',
+                  animation: 'shimmer 3s infinite linear'
+                }}
+                onMouseEnter={isMobile ? undefined : (e) => {
+                  e.currentTarget.style.transform = 'translateY(-3px) scale(1.05)';
+                  e.currentTarget.style.boxShadow = '0 12px 35px -8px rgba(245, 158, 11, 0.7), 0 0 20px 2px rgba(251, 191, 36, 0.3)';
+                  e.currentTarget.style.backgroundPosition = '100% 0';
+                }}
+                onMouseLeave={isMobile ? undefined : (e) => {
+                  e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                  e.currentTarget.style.boxShadow = '0 8px 25px -6px rgba(245, 158, 11, 0.5), 0 0 0 0 rgba(245, 158, 11, 0.4)';
+                  e.currentTarget.style.backgroundPosition = '0% 0';
+                }}
+                onTouchStart={isMobile ? (e) => {
+                  console.log('✨ Tailor interview button touch start!');
+                  e.stopPropagation();
+                  e.currentTarget.style.transform = 'scale(0.95)';
+                } : undefined}
+                onTouchEnd={isMobile ? (e) => {
+                  console.log('✨ Tailor interview button touch end!');
+                  e.stopPropagation();
+                  e.currentTarget.style.transform = 'scale(1)';
+                  setShowTailorModal(true);
+                } : undefined}
+              >
+                {/* Shine effect overlay */}
+                <div style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: '-100%',
+                  width: '100%',
+                  height: '100%',
+                  background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent)',
+                  animation: 'shine 3s infinite',
+                  pointerEvents: 'none'
+                }}></div>
+                
+                <Sparkles style={{ 
+                  width: isMobile ? '24px' : '22px', 
+                  height: isMobile ? '24px' : '22px', 
+                  pointerEvents: 'none',
+                  animation: 'sparkle 2s infinite ease-in-out',
+                  filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))'
+                }} />
+                <span style={{ 
+                  pointerEvents: 'none',
+                  position: 'relative',
+                  zIndex: 1,
+                  letterSpacing: '0.3px'
+                }}>
+                  ✨ Tailor Your Interview ✨
+                </span>
+              </button>
+              
               <button
                 onClick={(e) => {
                   console.log('💡 Learn how it works button clicked!');
@@ -1985,7 +2155,7 @@ export default function VideoInterviewPage(): React.ReactElement {
                   </div>
                   <div>
                     <h3 style={{ fontWeight: '600', color: '#1f2937', marginBottom: '4px', margin: '0 0 4px 0' }}>Record Your Answer</h3>
-                    <p style={{ fontSize: '14px', color: '#6b7280', margin: '0' }}>Record a 30-second video response with clear audio</p>
+                    <p style={{ fontSize: '14px', color: '#6b7280', margin: '0' }}>Record a 1-minute video response with clear audio</p>
                   </div>
                 </div>
                 
@@ -2025,7 +2195,42 @@ export default function VideoInterviewPage(): React.ReactElement {
           from { transform: rotate(0deg); }
           to { transform: rotate(360deg); }
         }
+        @keyframes shimmer {
+          0% { background-position: 0% 0%; }
+          100% { background-position: 200% 0%; }
+        }
+        @keyframes shine {
+          0% { left: -100%; }
+          20% { left: 100%; }
+          100% { left: 100%; }
+        }
+        @keyframes sparkle {
+          0%, 100% { 
+            transform: rotate(0deg) scale(1);
+            opacity: 1;
+          }
+          50% { 
+            transform: rotate(180deg) scale(1.2);
+            opacity: 0.8;
+          }
+        }
       `}</style>
+
+      {/* Tailor Interview Modal */}
+      <TailorInterviewModal
+        isOpen={showTailorModal}
+        onClose={() => setShowTailorModal(false)}
+        onSubmit={handleTailorInterview}
+        isMobile={isMobile}
+      />
+
+      {/* Tailoring Loading Modal */}
+      <TailoringLoadingModal
+        isOpen={isTailoring}
+        companyName={tailoringDetails.companyName}
+        jobRole={tailoringDetails.jobRole}
+        isMobile={isMobile}
+      />
     </div>
   );
 }

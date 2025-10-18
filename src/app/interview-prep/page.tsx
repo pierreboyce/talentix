@@ -1,10 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { ArrowLeft, Shuffle, Star, Mic, MicOff, Send } from 'lucide-react';
+import { ArrowLeft, Shuffle, Star, Mic, MicOff, Send, Sparkles } from 'lucide-react';
 import { usePoints } from '../../contexts/PointsContext';
 import { useQuests } from '../../contexts/QuestContext';
 import { useDeviceDetection } from '../../hooks/useDeviceDetection';
+import TailorInterviewModal from '../../components/TailorInterviewModal';
+import TailoringLoadingModal from '../../components/TailoringLoadingModal';
 
 // Question database
 const questionDatabase = {
@@ -121,6 +123,9 @@ export default function InterviewPrepPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [progressData, setProgressData] = useState<ProgressData>({});
   const [feedbackHistory, setFeedbackHistory] = useState<FeedbackHistory[]>([]);
+  const [showTailorModal, setShowTailorModal] = useState(false);
+  const [isTailoring, setIsTailoring] = useState(false);
+  const [tailoringDetails, setTailoringDetails] = useState({ companyName: '', jobRole: '' });
 
   const selectCategory = (categoryId: string) => {
     setSelectedCategory(categoryId);
@@ -130,6 +135,58 @@ export default function InterviewPrepPage() {
     setUserAnswer('');
     setEvaluation(null);
     setCurrentView('flashcards');
+  };
+
+  const handleTailorInterview = async (companyName: string, jobRole: string) => {
+    console.log('🎯 Tailoring interview for:', { companyName, jobRole });
+    setShowTailorModal(false);
+    
+    // Show loading modal
+    setTailoringDetails({ companyName, jobRole });
+    setIsTailoring(true);
+    
+    try {
+      const response = await fetch('/api/interview/tailor', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          companyName,
+          jobRole,
+          questionCount: 10
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success && data.questions && data.questions.length > 0) {
+        // Create a new custom category with the tailored questions
+        const tailoredQuestions = data.questions.map((q: any) => q.question);
+        
+        // Set up a special tailored category
+        setSelectedCategory('tailored');
+        setQuestions(tailoredQuestions);
+        setCurrentQuestionIndex(0);
+        setIsShuffled(false);
+        setUserAnswer('');
+        setEvaluation(null);
+        setCurrentView('flashcards');
+        
+        // Hide loading modal
+        setIsTailoring(false);
+        
+        // Show success message
+        const successMsg = `✅ Generated ${data.questions.length} tailored questions!\n${jobRole ? `For: ${jobRole}\n` : ''}${companyName ? `At: ${companyName}` : ''}`;
+        setTimeout(() => alert(successMsg), 100);
+      } else {
+        throw new Error(data.error || 'Failed to generate questions');
+      }
+    } catch (error: any) {
+      console.error('Error tailoring interview:', error);
+      setIsTailoring(false);
+      alert(`❌ Failed to generate tailored questions.\n\n${error.message || 'Please try again.'}`);
+    }
   };
 
   const shuffleQuestions = () => {
@@ -498,15 +555,58 @@ export default function InterviewPrepPage() {
             marginBottom: isMobile ? '24px' : '40px',
             paddingTop: isMobile ? '0' : '0'
           }}>
-            <h1 style={{ 
-              fontSize: isMobile ? '28px' : '48px', 
-              fontWeight: 'bold', 
-              color: '#1f2937', 
-              margin: isMobile ? '0 0 12px 0' : '0 0 8px 0',
-              fontFamily: "'Fredoka', 'Inter', sans-serif"
+            <div style={{ 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              alignItems: isMobile ? 'flex-start' : 'center',
+              flexDirection: isMobile ? 'column' : 'row',
+              gap: isMobile ? '16px' : '0',
+              marginBottom: isMobile ? '12px' : '8px'
             }}>
-              Interview Preparation
-            </h1>
+              <div>
+                <h1 style={{ 
+                  fontSize: isMobile ? '28px' : '48px', 
+                  fontWeight: 'bold', 
+                  color: '#1f2937', 
+                  margin: '0',
+                  fontFamily: "'Fredoka', 'Inter', sans-serif"
+                }}>
+                  Interview Preparation
+                </h1>
+              </div>
+              <button
+                onClick={() => setShowTailorModal(true)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: isMobile ? '12px 20px' : '12px 24px',
+                  background: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)',
+                  color: '#ffffff',
+                  border: 'none',
+                  borderRadius: '12px',
+                  fontSize: isMobile ? '14px' : '16px',
+                  fontWeight: 'bold',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                  boxShadow: '0 4px 12px rgba(139, 92, 246, 0.3)',
+                  fontFamily: "'Fredoka', 'Inter', sans-serif",
+                  width: isMobile ? '100%' : 'auto',
+                  justifyContent: 'center'
+                }}
+                onMouseEnter={!isMobile ? (e) => {
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                  e.currentTarget.style.boxShadow = '0 6px 20px rgba(139, 92, 246, 0.4)';
+                } : undefined}
+                onMouseLeave={!isMobile ? (e) => {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(139, 92, 246, 0.3)';
+                } : undefined}
+              >
+                <Sparkles style={{ width: '18px', height: '18px' }} />
+                Tailor Interview
+              </button>
+            </div>
             <p style={{ 
               fontSize: isMobile ? '16px' : '20px', 
               color: '#4b5563', 
@@ -648,6 +748,22 @@ export default function InterviewPrepPage() {
             </div>
           </div>
         </div>
+
+        {/* Tailor Interview Modal */}
+        <TailorInterviewModal
+          isOpen={showTailorModal}
+          onClose={() => setShowTailorModal(false)}
+          onSubmit={handleTailorInterview}
+          isMobile={isMobile}
+        />
+
+        {/* Tailoring Loading Modal */}
+        <TailoringLoadingModal
+          isOpen={isTailoring}
+          companyName={tailoringDetails.companyName}
+          jobRole={tailoringDetails.jobRole}
+          isMobile={isMobile}
+        />
       </div>
     );
   }
@@ -810,6 +926,22 @@ export default function InterviewPrepPage() {
             })}
           </div>
         </div>
+
+        {/* Tailor Interview Modal */}
+        <TailorInterviewModal
+          isOpen={showTailorModal}
+          onClose={() => setShowTailorModal(false)}
+          onSubmit={handleTailorInterview}
+          isMobile={isMobile}
+        />
+
+        {/* Tailoring Loading Modal */}
+        <TailoringLoadingModal
+          isOpen={isTailoring}
+          companyName={tailoringDetails.companyName}
+          jobRole={tailoringDetails.jobRole}
+          isMobile={isMobile}
+        />
       </div>
     );
   }
@@ -991,12 +1123,30 @@ export default function InterviewPrepPage() {
             </div>
           )}
         </div>
+
+        {/* Tailor Interview Modal */}
+        <TailorInterviewModal
+          isOpen={showTailorModal}
+          onClose={() => setShowTailorModal(false)}
+          onSubmit={handleTailorInterview}
+          isMobile={isMobile}
+        />
+
+        {/* Tailoring Loading Modal */}
+        <TailoringLoadingModal
+          isOpen={isTailoring}
+          companyName={tailoringDetails.companyName}
+          jobRole={tailoringDetails.jobRole}
+          isMobile={isMobile}
+        />
       </div>
     );
   }
 
   if (currentView === 'flashcards') {
-    const currentCategory = categories.find(c => c.id === selectedCategory);
+    const currentCategory = selectedCategory === 'tailored' 
+      ? { id: 'tailored', name: '✨ Tailored Questions', icon: '🎯', color: 'bg-yellow-50 hover:bg-yellow-100 border-yellow-200' }
+      : categories.find(c => c.id === selectedCategory);
     
     return (
       <div style={{ 
@@ -1500,6 +1650,22 @@ export default function InterviewPrepPage() {
             to { transform: rotate(360deg); }
           }
         `}</style>
+
+        {/* Tailor Interview Modal */}
+        <TailorInterviewModal
+          isOpen={showTailorModal}
+          onClose={() => setShowTailorModal(false)}
+          onSubmit={handleTailorInterview}
+          isMobile={isMobile}
+        />
+
+        {/* Tailoring Loading Modal */}
+        <TailoringLoadingModal
+          isOpen={isTailoring}
+          companyName={tailoringDetails.companyName}
+          jobRole={tailoringDetails.jobRole}
+          isMobile={isMobile}
+        />
       </div>
     );
   }
