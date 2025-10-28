@@ -34,6 +34,7 @@ export default function Navigation() {
   });
   const [isDesktop, setIsDesktop] = useState(false); // Default to mobile-first
   const [isLoaded, setIsLoaded] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
 
   // MOBILE TEST - ALWAYS VISIBLE ON MOBILE
   const isMobileTest = typeof window !== 'undefined' && window.innerWidth < 768;
@@ -69,6 +70,10 @@ export default function Navigation() {
         window.removeEventListener('resize', checkScreenSize);
       }
     };
+  }, []);
+
+  useEffect(() => {
+    setIsMounted(true);
   }, []);
 
   // Listen for pricing modal events from PaywallGuard
@@ -143,7 +148,7 @@ export default function Navigation() {
   }, [showCommunityModal, showSuccessModal]);
 
   const isExcludedPage = (
-    pathname === '/' ||
+    pathname === '/' || // Landing page header should NOT be sticky
     pathname === '/dashboard' ||
     pathname === '/our-story' ||
     pathname.startsWith('/our-services')
@@ -177,118 +182,7 @@ export default function Navigation() {
         {/* Right side navigation */}
         {!user && (
           <div style={{ position: 'relative' }}>
-
-            {/* MOBILE FIRST: Force show mobile navigation when width < 768px */}
-            {(typeof window !== 'undefined' && window.innerWidth < 768) && (
-              <div style={{ 
-                display: 'flex',
-                flexDirection: 'row',
-                flexWrap: 'nowrap',
-                gap: '3px',
-                justifyContent: 'flex-end',
-                alignItems: 'center',
-                maxWidth: '320px',
-                backgroundColor: 'rgba(255,0,0,0.8)', // BRIGHT RED to be visible
-                padding: '8px',
-                borderRadius: '10px',
-                border: '2px solid yellow' // Yellow border for extra visibility
-              }}>
-                <div style={{
-                  color: 'white',
-                  fontSize: '8px',
-                  marginRight: '5px',
-                  fontWeight: 'bold'
-                }}>
-                  MOBILE: {typeof window !== 'undefined' ? window.innerWidth : 'SSR'}px
-                </div>
-                <button 
-                  onClick={() => router.push('/our-story')} 
-                  style={{
-                    background: 'linear-gradient(135deg, #fef3c7 0%, #fde047 100%)',
-                    color: '#374151',
-                    padding: '4px 6px',
-                    borderRadius: '10px',
-                    border: 'none',
-                    fontSize: '8px',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                    fontFamily: "'Fredoka', sans-serif",
-                    whiteSpace: 'nowrap',
-                    minWidth: '45px',
-                    textAlign: 'center',
-                    flexShrink: 0
-                  }}
-                >
-                  📖 Story
-                </button>
-                
-                <button 
-                  onClick={() => router.push('/our-services')} 
-                  style={{
-                    background: 'linear-gradient(135deg, #ddd6fe 0%, #a78bfa 100%)',
-                    color: '#374151',
-                    padding: '4px 6px',
-                    borderRadius: '10px',
-                    border: 'none',
-                    fontSize: '8px',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                    fontFamily: "'Fredoka', sans-serif",
-                    whiteSpace: 'nowrap',
-                    minWidth: '50px',
-                    textAlign: 'center',
-                    flexShrink: 0
-                  }}
-                >
-                  🛠️ Services
-                </button>
-                
-                <button 
-                  onClick={() => setShowSignInModal(true)} 
-                  style={{
-                    background: 'linear-gradient(135deg, #bfdbfe 0%, #60a5fa 100%)',
-                    color: '#374151',
-                    padding: '4px 6px',
-                    borderRadius: '10px',
-                    border: 'none',
-                    fontSize: '8px',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                    fontFamily: "'Fredoka', sans-serif",
-                    whiteSpace: 'nowrap',
-                    minWidth: '40px',
-                    textAlign: 'center',
-                    flexShrink: 0
-                  }}
-                >
-                  🔐 Sign In
-                </button>
-                
-                <button 
-                  onClick={() => setShowSignUpModal(true)} 
-                  style={{
-                    background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
-                    color: '#000000',
-                    padding: '4px 6px',
-                    borderRadius: '10px',
-                    border: 'none',
-                    fontSize: '8px',
-                    fontWeight: '700',
-                    cursor: 'pointer',
-                    fontFamily: "'Fredoka', sans-serif",
-                    whiteSpace: 'nowrap',
-                    minWidth: '45px',
-                    textAlign: 'center',
-                    flexShrink: 0
-                  }}
-                >
-                  🚀 Sign Up
-                </button>
-              </div>
-            )}
-
-            {/* DESKTOP: Show when width >= 768px */}
-            {(typeof window !== 'undefined' && window.innerWidth >= 768) && (
+            {isMounted && (
               <div className="flex items-center space-x-3">
                 <button 
                   onClick={() => setShowCommunityModal(true)}

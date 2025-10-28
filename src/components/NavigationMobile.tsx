@@ -20,9 +20,20 @@ export default function NavigationMobile() {
   const [showSignUpModal, setShowSignUpModal] = useState(false);
   const [showSignInModal, setShowSignInModal] = useState(false);
   const [showPricingModal, setShowPricingModal] = useState(false);
+  const [showHeaderPanel, setShowHeaderPanel] = useState(false);
+  const [isPanelAnimating, setIsPanelAnimating] = useState(false);
+  const [showCommunityModal, setShowCommunityModal] = useState(false);
+  const [formData, setFormData] = useState({
+    fullName: '',
+    email: '',
+    age: '',
+    location: '',
+    hearAbout: ''
+  });
 
   // Define pages where the header should not be sticky
   const excludedPages = [
+    '/', // Landing page should NOT be sticky
     '/our-story',
     '/our-services',
     '/video-interview',
@@ -46,9 +57,17 @@ export default function NavigationMobile() {
     ? 'fixed top-0 left-0 right-0 z-[9999]'
     : 'relative';
 
-  // Close menu when route changes
+  // Close menus/panels when route changes
   useEffect(() => {
     setShowMobileMenu(false);
+    if (showHeaderPanel) {
+      setIsPanelAnimating(true);
+      const t = setTimeout(() => {
+        setShowHeaderPanel(false);
+        setIsPanelAnimating(false);
+      }, 200);
+      return () => clearTimeout(t);
+    }
   }, [pathname]);
 
   // Close menu when clicking outside
@@ -107,11 +126,11 @@ export default function NavigationMobile() {
     };
   }, []);
 
-  // Prevent body scroll when any modal is open
+  // Prevent body scroll when any modal or header panel is open
   useEffect(() => {
     if (typeof document === 'undefined') return;
     
-    const isAnyModalOpen = showSignInModal || showSignUpModal || showPricingModal;
+    const isAnyModalOpen = showSignInModal || showSignUpModal || showPricingModal || showHeaderPanel || showCommunityModal;
     if (isAnyModalOpen) {
       document.body.style.overflow = 'hidden';
       document.body.classList.add('talentix-modal-open');
@@ -125,7 +144,7 @@ export default function NavigationMobile() {
       document.body.style.overflow = 'unset';
       document.body.classList.remove('talentix-modal-open');
     };
-  }, [showSignInModal, showSignUpModal, showPricingModal]);
+  }, [showSignInModal, showSignUpModal, showPricingModal, showHeaderPanel, showCommunityModal]);
 
   // Modal close handlers
   const handleCloseSignIn = () => {
@@ -163,6 +182,40 @@ export default function NavigationMobile() {
     }, 150);
   };
 
+  // Toggle header panel for non-authenticated users
+  const toggleHeaderPanel = () => {
+    if (showHeaderPanel) {
+      setIsPanelAnimating(true);
+      setTimeout(() => {
+        setShowHeaderPanel(false);
+        setIsPanelAnimating(false);
+      }, 200);
+    } else {
+      setShowHeaderPanel(true);
+    }
+  };
+
+  // Community form handling (minimal)
+  const handleCommunitySubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.fullName || !formData.email || !formData.age || !formData.location || !formData.hearAbout) {
+      return;
+    }
+    try {
+      const response = await fetch('/api/newsletter/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      });
+      if (response.ok) {
+        setFormData({ fullName: '', email: '', age: '', location: '', hearAbout: '' });
+        setShowCommunityModal(false);
+      }
+    } catch (err) {
+      // Silently ignore for now
+    }
+  };
+
   // Don't render mobile navigation on hidden pages
   if (isHiddenPage) {
     return null;
@@ -188,59 +241,38 @@ export default function NavigationMobile() {
 
           {/* Navigation buttons on the right - aligned horizontally with logo */}
           {!user ? (
-            <div className="flex items-center space-x-2" style={{ flexWrap: 'nowrap', overflow: 'hidden' }}>
-              <button 
-                onClick={() => {
-                  setShowSignUpModal(false);
-                  setShowPricingModal(false);
-                  setShowSignInModal(true);
-                }}
-                style={{
-                  background: 'linear-gradient(135deg, #bfdbfe 0%, #60a5fa 100%)',
-                  color: '#374151',
-                  padding: '6px 12px',
-                  borderRadius: '16px',
-                  border: 'none',
-                  fontSize: '10px',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                  transition: 'all 0.3s ease',
-                  boxShadow: '0 2px 6px rgba(96, 165, 250, 0.3)',
-                  fontFamily: "'Fredoka', sans-serif",
-                  whiteSpace: 'nowrap',
-                  flexShrink: 0,
-                  minWidth: '65px'
-                }}
-              >
-                🔐 Sign In
-              </button>
-              
-              <button 
-                onClick={() => {
-                  setShowSignInModal(false);
-                  setShowPricingModal(false);
-                  setShowSignUpModal(true);
-                }}
-                style={{
-                  background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
-                  color: '#000000',
-                  padding: '6px 12px',
-                  borderRadius: '16px',
-                  border: 'none',
-                  fontSize: '10px',
-                  fontWeight: '700',
-                  cursor: 'pointer',
-                  transition: 'all 0.3s ease',
-                  boxShadow: '0 2px 6px rgba(251, 191, 36, 0.4)',
-                  fontFamily: "'Fredoka', sans-serif",
-                  whiteSpace: 'nowrap',
-                  flexShrink: 0,
-                  minWidth: '70px'
-                }}
-              >
-                🚀 Sign Up
-              </button>
-            </div>
+            /* Non-auth: show gold burger */
+            <button
+              onClick={toggleHeaderPanel}
+              style={{ 
+                position: 'relative',
+                minHeight: '48px', 
+                minWidth: '48px',
+                padding: '12px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundImage: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
+                boxShadow: '0 8px 16px rgba(245, 158, 11, 0.35)',
+                borderRadius: '12px',
+                border: 'none',
+                outline: 'none',
+                cursor: 'pointer',
+                transition: 'all 200ms ease',
+                transform: 'scale(1)'
+              }}
+              onMouseDown={(e) => { e.currentTarget.style.transform = 'scale(0.95)'; }}
+              onMouseUp={(e) => { e.currentTarget.style.transform = 'scale(1)'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)'; }}
+              aria-label={showHeaderPanel ? 'Close menu' : 'Open menu'}
+              aria-expanded={showHeaderPanel}
+            >
+              <div style={{ display: 'grid', gap: '3px' }}>
+                <span style={{ width: '22px', height: '3px', background: '#000', borderRadius: '2px', display: 'block' }} />
+                <span style={{ width: '22px', height: '3px', background: '#000', borderRadius: '2px', display: 'block' }} />
+                <span style={{ width: '22px', height: '3px', background: '#000', borderRadius: '2px', display: 'block' }} />
+              </div>
+            </button>
           ) : (
             /* Authenticated user navigation - Show hamburger menu */
             <button
@@ -473,9 +505,253 @@ export default function NavigationMobile() {
       {/* Spacer for sticky header */}
       {isSticky && <div style={{ height: '70px' }} />}
       
-      {/* Modals rendered as portals to body */}
+      {/* Header panel, community modal, and auth modals rendered as portals to body */}
       {typeof window !== 'undefined' && createPortal(
         <>
+          {(showHeaderPanel || isPanelAnimating) && (
+            <div
+              className="modal-overlay mobile-panel-overlay"
+              onClick={toggleHeaderPanel}
+              style={{ 
+                display: 'flex', 
+                alignItems: 'stretch', 
+                justifyContent: 'flex-end', 
+                background: 'rgba(0,0,0,0.35)',
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                height: '100dvh',
+                minHeight: '100dvh'
+              }}
+            >
+              <aside
+                role="dialog"
+                aria-modal="true"
+                style={{
+                  height: '100dvh',
+                  minHeight: '100dvh',
+                  width: '280px',
+                  maxWidth: '80vw',
+                  background: 'linear-gradient(180deg, #fff7cc 0%, #fff3b0 6%, #ffffff 24%, #ffffff 100%)',
+                  boxShadow: '-8px 0 28px rgba(245, 158, 11, 0.35), -2px 0 0 rgba(251, 191, 36, 0.65) inset',
+                  transform: showHeaderPanel ? 'translateX(0)' : 'translateX(100%)',
+                  transition: 'transform 280ms cubic-bezier(0.22, 1, 0.36, 1)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  overflowY: 'auto',
+                  WebkitOverflowScrolling: 'touch',
+                  boxSizing: 'border-box'
+                }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', padding: '20px 20px 0 20px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <span style={{ fontSize: '18px' }}>🚀</span>
+                    <div
+                      style={{
+                        fontWeight: 900,
+                        fontFamily: 'Fredoka, Inter, sans-serif',
+                        letterSpacing: '-0.2px',
+                        background: 'linear-gradient(135deg, #111111 0%, #2b2b2b 40%, #4a4a4a 100%)',
+                        WebkitBackgroundClip: 'text',
+                        WebkitTextFillColor: 'transparent'
+                      }}
+                    >
+                      Welcome To Talentix
+                    </div>
+                  </div>
+                  <button onClick={toggleHeaderPanel} style={{ border: 'none', background: 'transparent', fontSize: '20px', cursor: 'pointer' }}>✕</button>
+                </div>
+                <div style={{ height: '6px', borderRadius: '9999px', background: 'linear-gradient(90deg, #fde047, #f59e0b, #fbbf24)', boxShadow: '0 6px 14px rgba(245, 158, 11, 0.35)', marginBottom: '16px', marginLeft: '20px', marginRight: '20px' }} />
+                <div style={{ display: 'grid', gap: '10px', padding: '0 20px', paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 24px)' }}>
+                  <button
+                    onClick={() => { setShowCommunityModal(true); toggleHeaderPanel(); }}
+                    style={{
+                      background: 'linear-gradient(135deg, #dcfce7 0%, #22c55e 100%)',
+                      color: '#374151',
+                      padding: '12px 16px',
+                      borderRadius: '12px',
+                      border: 'none',
+                      fontSize: '14px',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      boxShadow: '0 4px 12px rgba(34, 197, 94, 0.25)',
+                      fontFamily: 'Fredoka, sans-serif'
+                    }}
+                  >
+                    🌟 Join Our Community
+                  </button>
+                  <button
+                    onClick={() => { toggleHeaderPanel(); router.push('/our-story'); }}
+                    style={{
+                      background: 'linear-gradient(135deg, #fef3c7 0%, #fde047 100%)',
+                      color: '#374151',
+                      padding: '12px 16px',
+                      borderRadius: '12px',
+                      border: 'none',
+                      fontSize: '14px',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      boxShadow: '0 4px 12px rgba(253, 224, 71, 0.25)',
+                      fontFamily: 'Fredoka, sans-serif'
+                    }}
+                  >
+                    📖 Our Story
+                  </button>
+                  <button
+                    onClick={() => { toggleHeaderPanel(); router.push('/our-services'); }}
+                    style={{
+                      background: 'linear-gradient(135deg, #ddd6fe 0%, #a78bfa 100%)',
+                      color: '#374151',
+                      padding: '12px 16px',
+                      borderRadius: '12px',
+                      border: 'none',
+                      fontSize: '14px',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      boxShadow: '0 4px 12px rgba(167, 139, 250, 0.25)',
+                      fontFamily: 'Fredoka, sans-serif'
+                    }}
+                  >
+                    🛠️ Our Services
+                  </button>
+                  <button
+                    onClick={() => { setShowSignInModal(true); toggleHeaderPanel(); }}
+                    style={{
+                      background: 'linear-gradient(135deg, #bfdbfe 0%, #60a5fa 100%)',
+                      color: '#374151',
+                      padding: '12px 16px',
+                      borderRadius: '12px',
+                      border: 'none',
+                      fontSize: '14px',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      boxShadow: '0 4px 12px rgba(96, 165, 250, 0.25)',
+                      fontFamily: 'Fredoka, sans-serif'
+                    }}
+                  >
+                    🔐 Sign In
+                  </button>
+                  <button
+                    onClick={() => { setShowSignUpModal(true); toggleHeaderPanel(); }}
+                    style={{
+                      background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
+                      color: '#000000',
+                      padding: '12px 16px',
+                      borderRadius: '12px',
+                      border: 'none',
+                      fontSize: '14px',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      boxShadow: '0 6px 16px rgba(251, 191, 36, 0.35)',
+                      fontFamily: 'Fredoka, sans-serif'
+                    }}
+                  >
+                    🚀 Sign Up
+                  </button>
+                </div>
+              </aside>
+            </div>
+          )}
+
+          {/* Simple Community Modal */}
+          {showCommunityModal && (
+            <div
+              className="modal-overlay"
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              onClick={() => setShowCommunityModal(false)}
+            >
+              <div
+                style={{
+                  backgroundColor: 'rgba(255,255,255,0.98)',
+                  borderRadius: '16px',
+                  padding: '24px',
+                  width: '92%',
+                  maxWidth: '460px',
+                  boxShadow: '0 20px 40px rgba(0,0,0,0.2)'
+                }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                  <h3 style={{ fontFamily: 'Fredoka, sans-serif', fontWeight: 800, fontSize: '20px' }}>🌟 Join Our Community! 🌟</h3>
+                  <button onClick={() => setShowCommunityModal(false)} style={{ border: 'none', background: 'transparent', fontSize: '20px', cursor: 'pointer' }}>✕</button>
+                </div>
+                <p style={{ color: '#4b5563', marginBottom: '12px', textAlign: 'center' }}>Be the first to know about new features, career tips, and exclusive opportunities!</p>
+                <form onSubmit={handleCommunitySubmit}>
+                  <div style={{ marginBottom: '10px' }}>
+                    <input
+                      type="text"
+                      placeholder="Full Name"
+                      value={formData.fullName}
+                      onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+                      required
+                      className="input-field"
+                      style={{ width: '100%' }}
+                    />
+                  </div>
+                  <div style={{ marginBottom: '16px' }}>
+                    <input
+                      type="email"
+                      placeholder="Email Address"
+                      value={formData.email}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      required
+                      className="input-field"
+                      style={{ width: '100%' }}
+                    />
+                  </div>
+                  <div style={{ marginBottom: '16px' }}>
+                    <input
+                      type="number"
+                      placeholder="Age"
+                      min={13}
+                      max={100}
+                      value={formData.age}
+                      onChange={(e) => setFormData({ ...formData, age: e.target.value })}
+                      required
+                      className="input-field"
+                      style={{ width: '100%' }}
+                    />
+                  </div>
+                  <div style={{ marginBottom: '16px' }}>
+                    <input
+                      type="text"
+                      placeholder="Location (e.g., London, UK)"
+                      value={formData.location}
+                      onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                      required
+                      className="input-field"
+                      style={{ width: '100%' }}
+                    />
+                  </div>
+                  <div style={{ marginBottom: '16px' }}>
+                    <select
+                      value={formData.hearAbout}
+                      onChange={(e) => setFormData({ ...formData, hearAbout: e.target.value })}
+                      required
+                      className="input-field"
+                      style={{ width: '100%' }}
+                    >
+                      <option value="">Select an option</option>
+                      <option value="social-media">Social Media</option>
+                      <option value="friend">Friend/Family</option>
+                      <option value="search-engine">Search Engine</option>
+                      <option value="school">School/University</option>
+                      <option value="job-center">Job Center</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
+                  <button type="submit" className="btn-nav-desktop" style={{ width: '100%', background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)', color: '#fff' }}>
+                    🚀 Join Community 🚀
+                  </button>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* Existing auth/pricing modals */}
           <SignUpModal 
             isOpen={showSignUpModal} 
             onClose={handleCloseSignUp} 

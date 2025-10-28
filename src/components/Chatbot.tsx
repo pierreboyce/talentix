@@ -142,14 +142,15 @@ export default function Chatbot({ userName }: ChatbotProps) {
     <>
       {/* Floating Chat Icon - Modern & Fun */}
       <button
+        className="chatbot-button-fixed"
         onClick={() => setIsOpen(!isOpen)}
         style={{ 
           position: 'fixed', 
-          bottom: '24px',
-          right: '24px',
+          bottom: '20px',
+          right: '20px',
           zIndex: 999999,
-          width: '64px',
-          height: '64px',
+          width: '60px',
+          height: '60px',
           background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
           borderRadius: '50%',
           border: 'none',
@@ -159,7 +160,8 @@ export default function Chatbot({ userName }: ChatbotProps) {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          fontSize: '28px'
+          fontSize: '28px',
+          transform: 'scale(1) translateY(0)'
         }}
         onMouseEnter={(e) => {
           e.currentTarget.style.transform = 'scale(1.1) translateY(-2px)';
@@ -177,15 +179,16 @@ export default function Chatbot({ userName }: ChatbotProps) {
       {/* Modern Chat Window */}
       {isOpen && typeof window !== 'undefined' && createPortal(
         <div 
-          className="chat-window-fade-in"
+          className="chat-window-fade-in chatbot-window-responsive"
           style={{
             position: 'fixed',
-            bottom: '100px',
-            right: '24px',
+            bottom: '90px',
+            right: '20px',
             top: '20px',
             zIndex: 9999998,
             width: '400px',
-            maxHeight: 'calc(100vh - 120px)',
+            maxWidth: 'calc(100vw - 40px)',
+            maxHeight: 'calc(100vh - 110px)',
             height: 'auto',
             backgroundColor: '#ffffff',
             borderRadius: '20px',

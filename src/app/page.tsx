@@ -684,7 +684,7 @@ function HomeContent() {
               e.currentTarget.style.boxShadow = '0 10px 25px -5px rgba(0, 0, 0, 0.1)';
             }}
             >
-              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '32px' }}>
+              <div className="stack-on-mobile" style={{ display: 'flex', alignItems: 'flex-start', gap: '32px' }}>
                 <div style={{ flexShrink: 0 }}>
                   <Image
                     src="/pierre headshot.jpeg"
@@ -768,7 +768,7 @@ function HomeContent() {
               e.currentTarget.style.boxShadow = '0 10px 25px -5px rgba(0, 0, 0, 0.1)';
             }}
             >
-              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '32px' }}>
+              <div className="stack-on-mobile" style={{ display: 'flex', alignItems: 'flex-start', gap: '32px' }}>
                 <div style={{ flexShrink: 0 }}>
                   <Image
                     src="/talentix our services.jpeg"
@@ -834,6 +834,7 @@ function HomeContent() {
               </div>
             </div>
           </div>
+          
 
           {/* Footer Links */}
           <div className="mt-16 pt-8 border-t border-gray-300 text-center">
