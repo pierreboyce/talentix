@@ -620,6 +620,7 @@ export default function Dashboard() {
           handleScrollLeft={handleScrollLeft}
           handleScrollRight={handleScrollRight}
           scrollContainerRef={scrollContainerRef}
+          subscription={subscription}
         />
         
         {/* Mobile Modals */}

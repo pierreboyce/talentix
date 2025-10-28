@@ -49,13 +49,50 @@ export default function NavigationMobile() {
   );
   const isSticky = !isExcludedPage;
   const headerPositionClass = isSticky
-    ? 'fixed top-0 left-0 right-0 z-[9999]'
+    ? 'fixed top-0 left-0 right-0 z-[2147483647]'
     : 'relative';
 
   // Close menu when route changes
   useEffect(() => {
     setShowMobileMenu(false);
   }, [pathname]);
+
+  // Lock body scroll when menu is open
+  useEffect(() => {
+    if (showMobileMenu) {
+      // Save current scroll position
+      const scrollY = window.scrollY;
+      
+      // Lock body scroll
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.left = '0';
+      document.body.style.right = '0';
+      document.body.style.width = '100%';
+      document.body.style.overflow = 'hidden';
+      document.body.style.height = '100vh';
+      
+      // iOS/Safari specific fixes
+      document.body.style.touchAction = 'none';
+      (document.body.style as any).WebkitOverflowScrolling = 'auto';
+      
+      return () => {
+        // Restore scroll position when menu closes
+        document.body.style.position = '';
+        document.body.style.top = '';
+        document.body.style.left = '';
+        document.body.style.right = '';
+        document.body.style.width = '';
+        document.body.style.overflow = '';
+        document.body.style.height = '';
+        document.body.style.touchAction = '';
+        (document.body.style as any).WebkitOverflowScrolling = '';
+        
+        // Restore scroll position
+        window.scrollTo(0, scrollY);
+      };
+    }
+  }, [showMobileMenu]);
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -214,10 +251,10 @@ export default function NavigationMobile() {
 
   return (
     <>
-      <header className={`mobile-menu-container w-full bg-white border-b border-gray-200/80 ${headerPositionClass}`} style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+      <header className={`mobile-menu-container w-full bg-white border-b border-gray-200/80 ${headerPositionClass}`} style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)', zIndex: 2147483647, backgroundColor: 'white', position: isSticky ? 'fixed' : 'relative', top: isSticky ? 0 : 'auto', left: isSticky ? 0 : 'auto', right: isSticky ? 0 : 'auto', width: '100%' }}>
         <div className="mx-auto flex items-center justify-between px-4 py-3" style={{ height: '70px', width: '90%', maxWidth: '90vw' }}>
           {/* Logo on the left */}
-          <div className="flex items-center">
+          <div className="flex items-center" style={{ zIndex: 2147483647, position: 'relative' }}>
             <Link href="/" className="flex items-center">
               <Image
                 src="/tixlogo.png"
@@ -244,7 +281,8 @@ export default function NavigationMobile() {
                        boxShadow: '0 10px 25px rgba(245, 158, 11, 0.4), 0 4px 12px rgba(245, 158, 11, 0.3)',
                        borderRadius: '16px',
                        border: '2px solid rgba(255, 255, 255, 0.3)',
-                       backdropFilter: 'blur(8px)'
+                       backdropFilter: 'blur(8px)',
+                       zIndex: 2147483647
               }}
               aria-label={showMobileMenu ? 'Close menu' : 'Open menu'}
               aria-expanded={showMobileMenu}
@@ -270,9 +308,6 @@ export default function NavigationMobile() {
         </div>
 
       </header>
-      
-      {/* Spacer for sticky header */}
-      {isSticky && <div style={{ height: '70px' }} />}
 
       {/* Backdrop Blur Overlay */}
       {showMobileMenu && (
@@ -283,7 +318,7 @@ export default function NavigationMobile() {
             animation: 'fadeIn 0.3s ease-out',
             touchAction: 'none',
             overflow: 'hidden',
-            zIndex: 9998
+            zIndex: 2147483645
           }}
           onClick={toggleMobileMenu}
           onTouchMove={(e) => e.preventDefault()}
@@ -304,8 +339,9 @@ export default function NavigationMobile() {
           borderLeft: '3px solid rgba(251, 191, 36, 0.3)',
           borderTopLeftRadius: '24px',
           borderBottomLeftRadius: '24px',
-          zIndex: 10000,
-          opacity: 1
+          zIndex: 2147483646,
+          opacity: 1,
+          overscrollBehavior: 'contain'
         }}
             onClick={(e) => e.stopPropagation()}
         onTouchMove={(e) => e.stopPropagation()}

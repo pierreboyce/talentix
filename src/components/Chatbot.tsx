@@ -26,6 +26,7 @@ export default function Chatbot({ userName }: ChatbotProps) {
   ]);
   const [inputMessage, setInputMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -35,6 +36,48 @@ export default function Chatbot({ userName }: ChatbotProps) {
   useEffect(() => {
     scrollToBottom();
   }, [messages, isTyping]);
+
+  // Detect mobile device
+  useEffect(() => {
+    const checkMobile = () => {
+      const mobile = window.innerWidth < 768;
+      console.log('🔍 Chatbot Mobile Detection:', mobile, 'Width:', window.innerWidth);
+      setIsMobile(mobile);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  // Restore scroll when chat closes on mobile
+  useEffect(() => {
+    if (isMobile && !isOpen && document.body.style.position === 'fixed') {
+      const scrollY = parseInt(document.body.getAttribute('data-scroll-y') || '0');
+      const scrollX = parseInt(document.body.getAttribute('data-scroll-x') || '0');
+      
+      console.log('🔓 Restoring scroll to - Y:', scrollY, 'X:', scrollX);
+      
+      // Remove locks first
+      document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.left = '';
+      document.body.style.width = '';
+      
+      // Use requestAnimationFrame to ensure unlock completes before scrolling
+      requestAnimationFrame(() => {
+        // Restore scroll position
+        window.scrollTo({ top: scrollY, left: scrollX, behavior: 'instant' });
+        console.log('✅ Scroll restored to Y:', scrollY, 'X:', scrollX);
+        
+        // Clean up attributes
+        document.body.removeAttribute('data-scroll-y');
+        document.body.removeAttribute('data-scroll-x');
+      });
+    }
+  }, [isMobile, isOpen]);
 
   // Listen for external open chat events
   useEffect(() => {
@@ -138,15 +181,59 @@ export default function Chatbot({ userName }: ChatbotProps) {
     setInputMessage(question);
   };
 
+  const handleToggleChat = () => {
+    if (!isOpen && isMobile) {
+      // Store current scroll position
+      const scrollY = window.scrollY;
+      const scrollX = window.scrollX;
+      console.log('🔒 Storing scroll position - Y:', scrollY, 'X:', scrollX);
+      
+      // Store scroll position
+      document.body.setAttribute('data-scroll-y', scrollY.toString());
+      document.body.setAttribute('data-scroll-x', scrollX.toString());
+      
+      // Scroll to BOTTOM IMMEDIATELY with behavior instant
+      const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+      window.scrollTo({ top: maxScroll, left: 0, behavior: 'instant' });
+      console.log('📜 Scrolling to bottom... maxScroll:', maxScroll);
+      
+      // Use requestAnimationFrame to ensure scroll completes before locking
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          // Lock scroll after scrolling to bottom
+          document.body.style.overflow = 'hidden';
+          document.body.style.position = 'fixed';
+          document.body.style.top = `-${maxScroll}px`;
+          document.body.style.left = '0';
+          document.body.style.width = '100%';
+          
+          console.log('✅ Body locked at bottom position');
+        });
+      });
+    }
+    setIsOpen(!isOpen);
+  };
+
+  // Don't render chatbot on mobile at all
+  if (isMobile) {
+    return null;
+  }
+
   return (
-    <>
-      {/* Floating Chat Icon - Modern & Fun */}
+    <div>
+      {/* Floating Chat Icon - Modern & Fun - Optimized for Mobile */}
       <button
-        onClick={() => setIsOpen(!isOpen)}
+        className="ai-chatbot-fixed-button"
+        onClick={(e) => {
+          e.preventDefault();
+          handleToggleChat();
+        }}
         style={{ 
           position: 'fixed', 
-          bottom: '24px',
-          right: '24px',
+          bottom: '20px',
+          right: '20px',
+          left: 'auto',
+          top: 'auto',
           zIndex: 999999,
           width: '64px',
           height: '64px',
@@ -159,7 +246,21 @@ export default function Chatbot({ userName }: ChatbotProps) {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          fontSize: '28px'
+          fontSize: '28px',
+          WebkitTransform: 'translateZ(0)',
+          transform: 'translateZ(0)',
+          WebkitTapHighlightColor: 'transparent',
+          touchAction: 'manipulation',
+          margin: '0',
+          padding: '0'
+        }}
+        onTouchStart={(e) => {
+          e.currentTarget.style.transform = 'scale(1.05) translateZ(0)';
+          e.currentTarget.style.boxShadow = '0 12px 32px rgba(251, 191, 36, 0.6)';
+        }}
+        onTouchEnd={(e) => {
+          e.currentTarget.style.transform = 'scale(1) translateZ(0)';
+          e.currentTarget.style.boxShadow = '0 8px 24px rgba(251, 191, 36, 0.4)';
         }}
         onMouseEnter={(e) => {
           e.currentTarget.style.transform = 'scale(1.1) translateY(-2px)';
@@ -175,28 +276,72 @@ export default function Chatbot({ userName }: ChatbotProps) {
       </button>
 
       {/* Modern Chat Window */}
-      {isOpen && typeof window !== 'undefined' && createPortal(
-        <div 
-          className="chat-window-fade-in"
-          style={{
-            position: 'fixed',
-            bottom: '100px',
-            right: '24px',
-            top: '20px',
-            zIndex: 9999998,
-            width: '400px',
-            maxHeight: 'calc(100vh - 120px)',
-            height: 'auto',
-            backgroundColor: '#ffffff',
-            borderRadius: '20px',
-            boxShadow: '0 20px 40px rgba(0, 0, 0, 0.15)',
-            border: '3px solid #fbbf24',
-            display: 'flex',
-            flexDirection: 'column',
-            overflow: 'hidden',
-            opacity: '1',
-            visibility: 'visible'
-          }}>
+      {isOpen && typeof window !== 'undefined' && (() => {
+        console.log('💬 Chat Opening - isMobile:', isMobile, 'Window Width:', window.innerWidth);
+        console.log('🎨 Rendering modal now...');
+        console.log('📍 Modal positioning - isMobile:', isMobile, 'ScrollY:', window.scrollY);
+        return createPortal(
+        <>
+          {/* Backdrop - Mobile Only */}
+          {isMobile && (
+            <div
+              onClick={handleToggleChat}
+              style={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                width: '100vw',
+                height: '100vh',
+                backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                zIndex: 9999997,
+                backdropFilter: 'blur(4px)',
+                WebkitBackdropFilter: 'blur(4px)',
+                pointerEvents: 'auto'
+              }}
+            />
+          )}
+          
+          {/* Chat Window */}
+          <div 
+            style={{
+              position: 'fixed',
+              zIndex: 9999998,
+              pointerEvents: 'auto',
+              backgroundColor: '#ffffff',
+              borderRadius: '20px',
+              boxShadow: '0 20px 40px rgba(0, 0, 0, 0.15)',
+              border: '3px solid #fbbf24',
+              display: 'flex',
+              flexDirection: 'column',
+              overflow: 'auto',
+              visibility: 'visible',
+              opacity: 1,
+              margin: 0,
+              ...(isMobile ? {
+                // Mobile: Fixed center positioning
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                WebkitTransform: 'translate(-50%, -50%)',
+                marginTop: 0,
+                marginLeft: 0,
+                width: '90vw',
+                maxWidth: '400px',
+                height: 'auto',
+                maxHeight: '85vh'
+              } : {
+                // Desktop: Side positioned
+                top: '20px',
+                bottom: '100px',
+                right: '24px',
+                left: 'auto',
+                transform: 'none',
+                width: '400px',
+                maxHeight: 'calc(100vh - 120px)'
+              })
+            }}>
           {/* Header */}
           <div style={{
             background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
@@ -238,7 +383,7 @@ export default function Chatbot({ userName }: ChatbotProps) {
             </div>
             </div>
             <button
-              onClick={() => setIsOpen(false)}
+              onClick={handleToggleChat}
               style={{
                 background: 'rgba(255, 255, 255, 0.2)',
                 border: 'none',
@@ -459,12 +604,14 @@ export default function Chatbot({ userName }: ChatbotProps) {
                 }}
               >
                 {isTyping ? '⏳' : '🚀'}
-                </button>
+              </button>
             </div>
           </div>
-        </div>,
+        </div>
+        </>,
         document.body
-      )}
+      );
+      })()}
 
       {/* Add CSS animations */}
       <style jsx>{`
@@ -479,21 +626,15 @@ export default function Chatbot({ userName }: ChatbotProps) {
           }
         }
         
-        .chat-window-fade-in {
-          animation: fadeInUp 0.4s ease-out forwards;
-        }
-        
-        @keyframes fadeInUp {
+        @keyframes fadeIn {
           from {
             opacity: 0;
-            transform: translateY(20px) scale(0.95);
           }
           to {
             opacity: 1;
-            transform: translateY(0) scale(1);
           }
         }
       `}</style>
-    </>
+    </div>
   );
 } 

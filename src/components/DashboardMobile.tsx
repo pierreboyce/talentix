@@ -38,6 +38,7 @@ interface DashboardMobileProps {
   handleScrollLeft: () => void;
   handleScrollRight: () => void;
   scrollContainerRef: React.RefObject<HTMLDivElement | null>;
+  subscription: any;
 }
 
 export default function DashboardMobile({
@@ -55,7 +56,8 @@ export default function DashboardMobile({
   handlePointsNavigation,
   handleScrollLeft,
   handleScrollRight,
-  scrollContainerRef
+  scrollContainerRef,
+  subscription
 }: DashboardMobileProps) {
   const router = useRouter();
 
@@ -86,14 +88,37 @@ export default function DashboardMobile({
                 }}>
                   {greeting}
                 </h2>
-                <h3 style={{
-                  fontSize: '1rem',
-                  fontWeight: '600',
-                  color: '#4b5563',
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
                   margin: '0 0 12px 0'
                 }}>
-                  {userName}
-                </h3>
+                  <h3 style={{
+                    fontSize: '1rem',
+                    fontWeight: '600',
+                    color: '#4b5563',
+                    margin: 0
+                  }}>
+                    {userName}
+                  </h3>
+                  {subscription?.tier === 'pro' && (
+                    <span style={{
+                      background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
+                      borderRadius: '8px',
+                      padding: '4px 8px',
+                      fontSize: '0.75rem',
+                      fontWeight: 'bold',
+                      color: '#1f2937',
+                      boxShadow: '0 2px 4px rgba(251, 191, 36, 0.3)',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px'
+                    }}>
+                      ⚡ Pro
+                    </span>
+                  )}
+                </div>
                 
                 {/* Mobile Edit Buttons */}
                 <div style={{
@@ -1165,37 +1190,336 @@ export default function DashboardMobile({
         </div>
       </div>
 
-      {/* Floating AI Chat Button */}
-      <div
-        onClick={() => router.push('/ai-chat')}
+      {/* Recommended Jobs Section - Mobile */}
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mb-8">
+        <div style={{
+          textAlign: 'center',
+          marginBottom: '24px',
+          background: 'linear-gradient(135deg, #fef3c7 0%, #fde047 50%, #facc15 100%)',
+          borderRadius: '16px',
+          padding: '20px',
+          boxShadow: '0 8px 25px rgba(251, 191, 36, 0.3)'
+        }}>
+          <h2 style={{
+            fontSize: '2rem',
+            fontWeight: 'bold',
+            color: '#1f2937',
+            margin: '0 0 8px 0',
+            fontFamily: 'Fredoka',
+            textShadow: '2px 2px 4px rgba(0,0,0,0.1)'
+          }}>
+            Recommended Jobs
+          </h2>
+          <p style={{
+            fontSize: '1rem',
+            color: '#4b5563',
+            margin: '0',
+            fontWeight: '500'
+          }}>
+            Perfect opportunities for you
+          </p>
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          {[
+            { companyLogo: '🍔', companyName: "McDonald's", jobTitle: 'Crew Member', description: 'Join our team and gain valuable experience in fast-paced customer service environment.' },
+            { companyLogo: '💊', companyName: 'Boots', jobTitle: 'Sales Assistant', description: 'Help customers find health and beauty products while developing retail skills.' },
+            { companyLogo: '🛒', companyName: 'Tesco', jobTitle: 'Customer Assistant', description: 'Be part of a great team helping customers with their shopping needs.' }
+          ].map((job, index) => (
+            <div
+              key={index}
         style={{
-          position: 'fixed',
-          bottom: '20px',
-          right: '20px',
-          width: '60px',
-          height: '60px',
-          borderRadius: '50%',
-          background: 'linear-gradient(135deg, #06b6d4, #0891b2)',
+                backgroundColor: '#ffffff',
+                borderRadius: '12px',
+                padding: '16px',
+                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                border: '2px solid #e5e7eb'
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+                <div style={{
+                  width: '40px',
+                  height: '40px',
+                  borderRadius: '8px',
+                  backgroundColor: '#fef3c7',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          cursor: 'pointer',
-          boxShadow: '0 8px 25px rgba(6, 182, 212, 0.4)',
-          zIndex: 1000,
-          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-          border: '3px solid #ffffff'
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.transform = 'scale(1.1)';
-          e.currentTarget.style.boxShadow = '0 12px 35px rgba(6, 182, 212, 0.6)';
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.transform = 'scale(1)';
-          e.currentTarget.style.boxShadow = '0 8px 25px rgba(6, 182, 212, 0.4)';
-        }}
-      >
-        <span style={{ fontSize: '28px' }}>🤖</span>
+                  fontSize: '20px'
+                }}>
+                  {job.companyLogo}
+                </div>
+                <div style={{ flex: 1 }}>
+                  <h3 style={{ fontSize: '16px', fontWeight: 'bold', color: '#1f2937', margin: '0 0 2px 0' }}>
+                    {job.jobTitle}
+                  </h3>
+                  <p style={{ fontSize: '14px', color: '#6b7280', margin: '0' }}>
+                    {job.companyName}
+                  </p>
+                </div>
+                <div style={{ textAlign: 'right' }}>
+                  <p style={{ fontSize: '14px', fontWeight: 'bold', color: '#059669', margin: '0' }}>
+                    £8.50-£11/hr
+                  </p>
+                </div>
+              </div>
+              <p style={{ fontSize: '13px', color: '#4b5563', lineHeight: '1.4', marginBottom: '12px' }}>
+                {job.description}
+              </p>
+              <button
+                style={{
+                  width: '100%',
+                  padding: '10px',
+                  backgroundColor: '#fbbf24',
+                  color: '#1f2937',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontWeight: '600',
+                  fontSize: '14px',
+                  cursor: 'pointer'
+                }}
+              >
+                Apply Now →
+              </button>
+            </div>
+          ))}
+        </div>
       </div>
+
+      {/* Achievement Gallery - Mobile */}
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mb-8" style={{ marginTop: '48px' }}>
+        <div style={{
+          textAlign: 'center',
+          marginBottom: '24px',
+          background: 'linear-gradient(135deg, #e0f2fe 0%, #0ea5e9 50%, #0284c7 100%)',
+          borderRadius: '16px',
+          padding: '20px',
+          boxShadow: '0 8px 25px rgba(14, 165, 233, 0.3)'
+        }}>
+          <h2 style={{
+            fontSize: '2rem',
+            fontWeight: 'bold',
+            color: '#ffffff',
+            margin: '0 0 8px 0',
+            fontFamily: 'Fredoka',
+            textShadow: '2px 2px 4px rgba(0,0,0,0.3)'
+          }}>
+            🏆 Achievement Gallery 🏆
+          </h2>
+          <p style={{
+            fontSize: '1rem',
+            color: '#e0f2fe',
+            margin: '0',
+            fontWeight: '600'
+          }}>
+            Unlock badges as you progress!
+          </p>
+        </div>
+
+        <div style={{ 
+          display: 'grid', 
+          gridTemplateColumns: '1fr 1fr',
+          gap: '12px',
+          width: '100%',
+          boxSizing: 'border-box'
+        }}>
+          {[
+            { name: 'First Login', emoji: '🎉', unlocked: true, description: 'Welcome!' },
+            { name: 'CV Master', emoji: '📄', unlocked: userPoints >= 50, description: 'Upload CV' },
+            { name: 'Interview Ready', emoji: '🎤', unlocked: userPoints >= 100, description: 'Practice' },
+            { name: 'Job Hunter', emoji: '🔍', unlocked: userPoints >= 150, description: 'Apply to 5' },
+            { name: 'Social Star', emoji: '⭐', unlocked: userPoints >= 200, description: 'Share profile' },
+            { name: 'Career Champion', emoji: '👑', unlocked: userPoints >= 500, description: 'Silver level' }
+          ].map((badge, index) => (
+            <div
+              key={index}
+              style={{
+                backgroundColor: badge.unlocked ? '#ffffff' : '#f3f4f6',
+                borderRadius: '10px',
+                padding: '10px',
+                textAlign: 'center',
+                boxShadow: badge.unlocked ? '0 4px 15px rgba(0, 0, 0, 0.1)' : '0 2px 8px rgba(0, 0, 0, 0.05)',
+                border: badge.unlocked ? '2px solid #fbbf24' : '2px solid #e5e7eb',
+                opacity: badge.unlocked ? 1 : 0.6,
+                minWidth: 0,
+                width: '100%',
+                boxSizing: 'border-box',
+                overflow: 'hidden'
+              }}
+            >
+              <div style={{
+                fontSize: '1.5rem',
+                marginBottom: '4px',
+                filter: badge.unlocked ? 'none' : 'grayscale(100%)'
+              }}>
+                {badge.emoji}
+              </div>
+              <h3 style={{
+                fontSize: '11px',
+                fontWeight: 'bold',
+                color: badge.unlocked ? '#1f2937' : '#6b7280',
+                margin: '0 0 2px 0',
+                wordWrap: 'break-word'
+              }}>
+                {badge.name}
+              </h3>
+              <p style={{
+                fontSize: '9px',
+                color: badge.unlocked ? '#4b5563' : '#9ca3af',
+                margin: '0',
+                wordWrap: 'break-word'
+              }}>
+                {badge.description}
+              </p>
+              {badge.unlocked && (
+                <div style={{
+                  marginTop: '6px',
+                  padding: '3px 6px',
+                  backgroundColor: '#dcfce7',
+                  color: '#166534',
+                  borderRadius: '10px',
+                  fontSize: '9px',
+                  fontWeight: '600'
+                }}>
+                  ✅ Unlocked!
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Your Career Journey - Mobile */}
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mb-8" style={{ marginTop: '48px' }}>
+        <div style={{
+          textAlign: 'center',
+          marginBottom: '24px',
+          background: 'linear-gradient(135deg, #fce7f3 0%, #ec4899 50%, #be185d 100%)',
+          borderRadius: '16px',
+          padding: '20px',
+          boxShadow: '0 8px 25px rgba(236, 72, 153, 0.3)'
+        }}>
+          <h2 style={{
+            fontSize: '2rem',
+            fontWeight: 'bold',
+            color: '#ffffff',
+            margin: '0 0 8px 0',
+            fontFamily: 'Fredoka',
+            textShadow: '2px 2px 4px rgba(0,0,0,0.3)'
+          }}>
+            📊 Your Career Journey 📊
+          </h2>
+          <p style={{
+            fontSize: '1rem',
+            color: '#fce7f3',
+            margin: '0',
+            fontWeight: '600'
+          }}>
+            Track your progress!
+          </p>
+        </div>
+
+        <div style={{ 
+          display: 'grid', 
+          gridTemplateColumns: '1fr 1fr',
+          gap: '12px',
+          width: '100%',
+          boxSizing: 'border-box'
+        }}>
+          {[
+            { title: 'Days Active', value: '1', emoji: '📅', color: '#3b82f6', bgColor: '#dbeafe' },
+            { title: 'CVs Reviewed', value: '0', emoji: '📄', color: '#10b981', bgColor: '#dcfce7' },
+            { title: 'Interview Prep', value: '0', emoji: '🎤', color: '#f59e0b', bgColor: '#fef3c7' },
+            { title: 'Jobs Applied', value: '0', emoji: '🎯', color: '#8b5cf6', bgColor: '#e0e7ff' }
+          ].map((stat, index) => (
+            <div
+              key={index}
+              style={{
+                backgroundColor: stat.bgColor,
+                borderRadius: '12px',
+                padding: '12px',
+                textAlign: 'center',
+                boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1)',
+                border: `2px solid ${stat.color}20`,
+                minWidth: 0,
+                width: '100%',
+                boxSizing: 'border-box',
+                overflow: 'hidden'
+              }}
+            >
+              <div style={{ fontSize: '1.5rem', marginBottom: '4px' }}>
+                {stat.emoji}
+      </div>
+              <div style={{
+                fontSize: '1.5rem',
+                fontWeight: 'bold',
+                color: stat.color,
+                margin: '0 0 4px 0',
+                fontFamily: 'Fredoka'
+              }}>
+                {stat.value}
+              </div>
+              <h3 style={{
+                fontSize: '11px',
+                fontWeight: 'bold',
+                color: '#1f2937',
+                margin: '0',
+                wordWrap: 'break-word'
+              }}>
+                {stat.title}
+              </h3>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Daily Motivation - Mobile */}
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mb-8" style={{ marginTop: '48px' }}>
+        <div style={{
+          background: 'linear-gradient(135deg, #f3e8ff 0%, #8b5cf6 50%, #7c3aed 100%)',
+          borderRadius: '16px',
+          padding: '24px',
+          textAlign: 'center',
+          boxShadow: '0 8px 25px rgba(139, 92, 246, 0.3)',
+          position: 'relative',
+          overflow: 'hidden'
+        }}>
+          <div style={{ position: 'absolute', top: '5px', left: '10px', fontSize: '3rem', opacity: '0.2', color: '#ffffff' }}>"</div>
+          <div style={{ position: 'absolute', bottom: '5px', right: '10px', fontSize: '3rem', opacity: '0.2', color: '#ffffff', transform: 'rotate(180deg)' }}>"</div>
+          
+          <div style={{ position: 'relative', zIndex: 2 }}>
+            <h2 style={{
+              fontSize: '1.5rem',
+              fontWeight: 'bold',
+              color: '#ffffff',
+              margin: '0 0 16px 0',
+              fontFamily: 'Fredoka',
+              textShadow: '2px 2px 4px rgba(0,0,0,0.3)'
+            }}>
+              💪 Daily Motivation 💪
+            </h2>
+            <blockquote style={{
+              fontSize: '1rem',
+              color: '#f3e8ff',
+              margin: '0 0 12px 0',
+              lineHeight: '1.5',
+              fontStyle: 'italic',
+              fontWeight: '500'
+            }}>
+              "Your future career is created by what you do today, not tomorrow."
+            </blockquote>
+            <p style={{
+              fontSize: '0.875rem',
+              color: '#e0e7ff',
+              margin: '0',
+              fontWeight: '600'
+            }}>
+              — The Talentix Team ✨
+            </p>
+          </div>
+        </div>
+      </div>
+
     </div>
   );
 }

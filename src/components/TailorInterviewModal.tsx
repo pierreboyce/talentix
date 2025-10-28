@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Briefcase, Building2, Sparkles } from 'lucide-react';
 
 interface TailorInterviewModalProps {
@@ -18,6 +18,61 @@ export default function TailorInterviewModal({
 }: TailorInterviewModalProps) {
   const [companyName, setCompanyName] = useState('');
   const [jobRole, setJobRole] = useState('');
+
+  // Auto-scroll to bottom and lock body when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      // Store current scroll position
+      const scrollY = window.scrollY;
+      const scrollX = window.scrollX;
+      
+      // Calculate scroll position (50% down the page to show modal)
+      const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+      const targetScroll = Math.floor(maxScroll * 0.5);
+      
+      // First, scroll instantly to target
+      window.scrollTo({ top: targetScroll, left: 0, behavior: 'instant' });
+      
+      // Then use requestAnimationFrame to ensure scroll completes
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          const currentScrollY = window.scrollY;
+          
+          // Now lock the body at this position
+          document.body.style.position = 'fixed';
+          document.body.style.top = `-${currentScrollY}px`;
+          document.body.style.left = '0';
+          document.body.style.right = '0';
+          document.body.style.width = '100%';
+          document.body.style.overflow = 'hidden';
+          
+          // Store original position
+          document.body.setAttribute('data-scroll-y', String(scrollY));
+          document.body.setAttribute('data-scroll-x', String(scrollX));
+        });
+      });
+      
+      return () => {
+        // Unlock body
+        document.body.style.position = '';
+        document.body.style.top = '';
+        document.body.style.left = '';
+        document.body.style.right = '';
+        document.body.style.width = '';
+        document.body.style.overflow = '';
+        
+        // Restore scroll position
+        const originalY = parseInt(document.body.getAttribute('data-scroll-y') || '0');
+        const originalX = parseInt(document.body.getAttribute('data-scroll-x') || '0');
+        
+        window.scrollTo({ top: originalY, left: originalX, behavior: 'instant' });
+        
+        // Clean up
+        document.body.removeAttribute('data-scroll-y');
+        document.body.removeAttribute('data-scroll-x');
+      };
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -40,15 +95,25 @@ export default function TailorInterviewModal({
       onClick={handleClose}
       style={{
         position: 'fixed',
-        inset: '0',
-        backgroundColor: 'rgba(0, 0, 0, 0.6)',
-        backdropFilter: 'blur(4px)',
-        WebkitBackdropFilter: 'blur(4px)',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        width: '100%',
+        height: '100%',
+        minHeight: '100vh',
+        minWidth: '100vw',
+        backgroundColor: 'rgba(0, 0, 0, 0.75)',
+        backdropFilter: 'blur(30px)',
+        WebkitBackdropFilter: 'blur(30px)',
         display: 'flex',
+        flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        zIndex: 999999,
-        padding: isMobile ? '40px 20px' : '60px 16px'
+        zIndex: 2147483646,
+        padding: isMobile ? '20px' : '40px',
+        overflow: 'hidden',
+        margin: 0
       }}
     >
       <div
@@ -56,14 +121,15 @@ export default function TailorInterviewModal({
         style={{
           backgroundColor: '#ffffff',
           borderRadius: isMobile ? '24px' : '20px',
-          maxWidth: isMobile ? '100%' : '580px',
+          maxWidth: isMobile ? '90%' : '500px',
           width: '100%',
           padding: isMobile ? '28px 20px' : '32px',
           position: 'relative',
+          margin: 'auto',
           boxShadow: '0 20px 60px -10px rgba(0, 0, 0, 0.3)',
           border: '3px solid #fde047',
-          maxHeight: isMobile ? '90vh' : 'auto',
-          overflowY: isMobile ? 'auto' : 'visible'
+          maxHeight: isMobile ? '85vh' : '90vh',
+          overflowY: 'auto'
         }}
       >
         {/* Close Button */}

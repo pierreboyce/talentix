@@ -40,6 +40,16 @@
     height: 100vh !important;
     z-index: 9999999 !important;
   }
+  
+  /* AI Chatbot Fixed Button - Force position on mobile and desktop */
+  .ai-chatbot-fixed-button {
+    position: fixed !important;
+    bottom: 20px !important;
+    right: 20px !important;
+    left: auto !important;
+    top: auto !important;
+    z-index: 999999 !important;
+  }
 }
 
 :root {

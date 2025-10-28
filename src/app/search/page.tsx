@@ -413,10 +413,11 @@ function SearchPageContent() {
               alignItems: 'center',
               backgroundColor: '#f9fafb',
               borderRadius: '12px',
-              padding: '12px 16px',
-              border: '1px solid #e5e7eb'
+              padding: '8px 12px',
+              border: '1px solid #e5e7eb',
+              gap: '8px'
             }}>
-              <Search style={{ width: '18px', height: '18px', color: '#6b7280', marginRight: '12px' }} />
+              <Search style={{ width: '18px', height: '18px', color: '#6b7280', flexShrink: 0 }} />
               <input
                 type="text"
                 value={searchQuery}
@@ -430,7 +431,9 @@ function SearchPageContent() {
                   fontSize: '16px',
                   backgroundColor: 'transparent',
                   pointerEvents: 'auto',
-                  touchAction: 'manipulation'
+                  touchAction: 'manipulation',
+                  minWidth: 0,
+                  width: '100%'
                 }}
                 autoComplete="off"
                 autoCapitalize="off"
@@ -440,8 +443,7 @@ function SearchPageContent() {
                 type="submit"
                 className="job-mobile-button"
                 style={{
-                  marginLeft: '8px',
-                  padding: '8px 12px',
+                  padding: '8px 16px',
                   backgroundColor: '#fbbf24',
                   color: '#1f2937',
                   border: 'none',
@@ -449,8 +451,10 @@ function SearchPageContent() {
                   fontWeight: '600',
                   cursor: 'pointer',
                   fontSize: '14px',
-                  minWidth: '50px',
-                  flexShrink: 0
+                  minWidth: '60px',
+                  maxWidth: '60px',
+                  flexShrink: 0,
+                  whiteSpace: 'nowrap'
                 }}
               >
                 Go
@@ -812,9 +816,10 @@ function SearchPageContent() {
               padding: '16px 24px',
               boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
               border: '2px solid #e5e7eb',
-              maxWidth: '600px'
+              maxWidth: '600px',
+              gap: '16px'
             }}>
-              <Search style={{ width: '20px', height: '20px', color: '#6b7280', marginRight: '16px' }} />
+              <Search style={{ width: '20px', height: '20px', color: '#6b7280', flexShrink: 0 }} />
               <input
                 type="text"
                 value={searchQuery}
@@ -825,20 +830,23 @@ function SearchPageContent() {
                   border: 'none',
                   outline: 'none',
                   fontSize: '16px',
-                  backgroundColor: 'transparent'
+                  backgroundColor: 'transparent',
+                  minWidth: 0,
+                  width: '100%'
                 }}
               />
               <button
                 type="submit"
                 style={{
-                  marginLeft: '16px',
-                  padding: '8px 16px',
+                  padding: '8px 20px',
                   backgroundColor: '#fbbf24',
                   color: '#1f2937',
                   border: 'none',
                   borderRadius: '8px',
                   fontWeight: '600',
-                  cursor: 'pointer'
+                  cursor: 'pointer',
+                  whiteSpace: 'nowrap',
+                  flexShrink: 0
                 }}
               >
                 Search
