@@ -274,35 +274,43 @@ export default function NavigationMobile() {
               </div>
             </button>
           ) : (
-            /* Authenticated user navigation - Show hamburger menu */
+            /* Authenticated user navigation - Show hamburger menu (uses side panel) */
             <button
-              onClick={toggleMobileMenu}
-              className="touch-target relative p-3 rounded-xl text-white shadow-lg transition-all duration-200 active:scale-95 border-0 outline-none"
+              onClick={toggleHeaderPanel}
               style={{ 
+                position: 'relative',
                 minHeight: '48px', 
                 minWidth: '48px',
+                padding: '12px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 backgroundImage: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
-                boxShadow: '0 8px 16px rgba(245, 158, 11, 0.35)'
+                boxShadow: '0 8px 16px rgba(245, 158, 11, 0.35)',
+                borderRadius: '12px',
+                border: 'none',
+                outline: 'none',
+                cursor: 'pointer',
+                transition: 'all 200ms ease',
+                transform: 'scale(1)'
               }}
-              aria-label={showMobileMenu ? 'Close menu' : 'Open menu'}
-              aria-expanded={showMobileMenu}
+              onMouseDown={(e) => { e.currentTarget.style.transform = 'scale(0.95)'; }}
+              onMouseUp={(e) => { e.currentTarget.style.transform = 'scale(1)'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)'; }}
+              aria-label={showHeaderPanel ? 'Close menu' : 'Open menu'}
+              aria-expanded={showHeaderPanel}
             >
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d={showMobileMenu ? 'M5 5L19 19' : 'M3 7H21'} stroke="white" strokeWidth="2.5" strokeLinecap="round"/>
-                <path d={showMobileMenu ? 'M19 5L5 19' : 'M3 12H21'} stroke="white" strokeWidth="2.5" strokeLinecap="round"/>
-                {!showMobileMenu && (
-                  <path d="M3 17H21" stroke="white" strokeWidth="2.5" strokeLinecap="round"/>
-                )}
-              </svg>
+              <div style={{ display: 'grid', gap: '3px' }}>
+                <span style={{ width: '22px', height: '3px', background: '#000', borderRadius: '2px', display: 'block' }} />
+                <span style={{ width: '22px', height: '3px', background: '#000', borderRadius: '2px', display: 'block' }} />
+                <span style={{ width: '22px', height: '3px', background: '#000', borderRadius: '2px', display: 'block' }} />
+              </div>
             </button>
           )}
         </div>
 
-        {/* Mobile Menu Dropdown with Animation - Only for authenticated users */}
-        {user && (
+        {/* Mobile Menu Dropdown removed - using side panel instead */}
+        {false && user && (
           <div 
             className={`absolute top-full left-0 right-0 bg-white/98 backdrop-blur-sm border-b border-gray-200 shadow-xl z-30 overflow-hidden transition-all duration-300 ease-out ${
               showMobileMenu ? 'max-h-[80vh] opacity-100' : 'max-h-0 opacity-0'
@@ -559,98 +567,367 @@ export default function NavigationMobile() {
                         WebkitTextFillColor: 'transparent'
                       }}
                     >
-                      Welcome To Talentix
+                      {user ? 'Explore Talentix' : 'Welcome To Talentix'}
                     </div>
                   </div>
                   <button onClick={toggleHeaderPanel} style={{ border: 'none', background: 'transparent', fontSize: '20px', cursor: 'pointer' }}>✕</button>
                 </div>
                 <div style={{ height: '6px', borderRadius: '9999px', background: 'linear-gradient(90deg, #fde047, #f59e0b, #fbbf24)', boxShadow: '0 6px 14px rgba(245, 158, 11, 0.35)', marginBottom: '16px', marginLeft: '20px', marginRight: '20px' }} />
                 <div style={{ display: 'grid', gap: '10px', padding: '0 20px', paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 24px)' }}>
-                  <button
-                    onClick={() => { setShowCommunityModal(true); toggleHeaderPanel(); }}
-                    style={{
-                      background: 'linear-gradient(135deg, #dcfce7 0%, #22c55e 100%)',
-                      color: '#374151',
-                      padding: '12px 16px',
-                      borderRadius: '12px',
-                      border: 'none',
-                      fontSize: '14px',
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                      boxShadow: '0 4px 12px rgba(34, 197, 94, 0.25)',
-                      fontFamily: 'Fredoka, sans-serif'
-                    }}
-                  >
-                    🌟 Join Our Community
-                  </button>
-                  <button
-                    onClick={() => { toggleHeaderPanel(); router.push('/our-story'); }}
-                    style={{
-                      background: 'linear-gradient(135deg, #fef3c7 0%, #fde047 100%)',
-                      color: '#374151',
-                      padding: '12px 16px',
-                      borderRadius: '12px',
-                      border: 'none',
-                      fontSize: '14px',
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                      boxShadow: '0 4px 12px rgba(253, 224, 71, 0.25)',
-                      fontFamily: 'Fredoka, sans-serif'
-                    }}
-                  >
-                    📖 Our Story
-                  </button>
-                  <button
-                    onClick={() => { toggleHeaderPanel(); router.push('/our-services'); }}
-                    style={{
-                      background: 'linear-gradient(135deg, #ddd6fe 0%, #a78bfa 100%)',
-                      color: '#374151',
-                      padding: '12px 16px',
-                      borderRadius: '12px',
-                      border: 'none',
-                      fontSize: '14px',
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                      boxShadow: '0 4px 12px rgba(167, 139, 250, 0.25)',
-                      fontFamily: 'Fredoka, sans-serif'
-                    }}
-                  >
-                    🛠️ Our Services
-                  </button>
-                  <button
-                    onClick={() => { setShowSignInModal(true); toggleHeaderPanel(); }}
-                    style={{
-                      background: 'linear-gradient(135deg, #bfdbfe 0%, #60a5fa 100%)',
-                      color: '#374151',
-                      padding: '12px 16px',
-                      borderRadius: '12px',
-                      border: 'none',
-                      fontSize: '14px',
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                      boxShadow: '0 4px 12px rgba(96, 165, 250, 0.25)',
-                      fontFamily: 'Fredoka, sans-serif'
-                    }}
-                  >
-                    🔐 Sign In
-                  </button>
-                  <button
-                    onClick={() => { setShowSignUpModal(true); toggleHeaderPanel(); }}
-                    style={{
-                      background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
-                      color: '#000000',
-                      padding: '12px 16px',
-                      borderRadius: '12px',
-                      border: 'none',
-                      fontSize: '14px',
-                      fontWeight: 700,
-                      cursor: 'pointer',
-                      boxShadow: '0 6px 16px rgba(251, 191, 36, 0.35)',
-                      fontFamily: 'Fredoka, sans-serif'
-                    }}
-                  >
-                    🚀 Sign Up
-                  </button>
+                  {!user ? (
+                    <>
+                      {/* Non-authenticated menu */}
+                      <button
+                        onClick={() => { setShowCommunityModal(true); toggleHeaderPanel(); }}
+                        style={{
+                          background: 'linear-gradient(135deg, #dcfce7 0%, #22c55e 100%)',
+                          color: '#374151',
+                          padding: '12px 16px',
+                          borderRadius: '12px',
+                          border: 'none',
+                          fontSize: '14px',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                          boxShadow: '0 4px 12px rgba(34, 197, 94, 0.25)',
+                          fontFamily: 'Fredoka, sans-serif'
+                        }}
+                      >
+                        🌟 Join Our Community
+                      </button>
+                      <button
+                        onClick={() => { toggleHeaderPanel(); router.push('/our-story'); }}
+                        style={{
+                          background: 'linear-gradient(135deg, #fef3c7 0%, #fde047 100%)',
+                          color: '#374151',
+                          padding: '12px 16px',
+                          borderRadius: '12px',
+                          border: 'none',
+                          fontSize: '14px',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                          boxShadow: '0 4px 12px rgba(253, 224, 71, 0.25)',
+                          fontFamily: 'Fredoka, sans-serif'
+                        }}
+                      >
+                        📖 Our Story
+                      </button>
+                      <button
+                        onClick={() => { toggleHeaderPanel(); router.push('/our-services'); }}
+                        style={{
+                          background: 'linear-gradient(135deg, #ddd6fe 0%, #a78bfa 100%)',
+                          color: '#374151',
+                          padding: '12px 16px',
+                          borderRadius: '12px',
+                          border: 'none',
+                          fontSize: '14px',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                          boxShadow: '0 4px 12px rgba(167, 139, 250, 0.25)',
+                          fontFamily: 'Fredoka, sans-serif'
+                        }}
+                      >
+                        🛠️ Our Services
+                      </button>
+                      <button
+                        onClick={() => { setShowSignInModal(true); toggleHeaderPanel(); }}
+                        style={{
+                          background: 'linear-gradient(135deg, #bfdbfe 0%, #60a5fa 100%)',
+                          color: '#374151',
+                          padding: '12px 16px',
+                          borderRadius: '12px',
+                          border: 'none',
+                          fontSize: '14px',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                          boxShadow: '0 4px 12px rgba(96, 165, 250, 0.25)',
+                          fontFamily: 'Fredoka, sans-serif'
+                        }}
+                      >
+                        🔐 Sign In
+                      </button>
+                      <button
+                        onClick={() => { setShowSignUpModal(true); toggleHeaderPanel(); }}
+                        style={{
+                          background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
+                          color: '#000000',
+                          padding: '12px 16px',
+                          borderRadius: '12px',
+                          border: 'none',
+                          fontSize: '14px',
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                          boxShadow: '0 6px 16px rgba(251, 191, 36, 0.35)',
+                          fontFamily: 'Fredoka, sans-serif'
+                        }}
+                      >
+                        🚀 Sign Up
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      {/* Authenticated menu */}
+                      <button
+                        onClick={() => { toggleHeaderPanel(); router.push('/dashboard'); }}
+                        style={{
+                          background: 'linear-gradient(135deg, #bfdbfe 0%, #60a5fa 100%)',
+                          color: '#374151',
+                          padding: '12px 16px',
+                          borderRadius: '12px',
+                          border: 'none',
+                          fontSize: '14px',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                          boxShadow: '0 4px 12px rgba(96, 165, 250, 0.25)',
+                          fontFamily: 'Fredoka, sans-serif'
+                        }}
+                      >
+                        🏠 Dashboard
+                      </button>
+                      <button
+                        onClick={() => { toggleHeaderPanel(); router.push('/cv-reviewer'); }}
+                        style={{
+                          background: 'linear-gradient(135deg, #dcfce7 0%, #22c55e 100%)',
+                          color: '#374151',
+                          padding: '12px 16px',
+                          borderRadius: '12px',
+                          border: 'none',
+                          fontSize: '14px',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                          boxShadow: '0 4px 12px rgba(34, 197, 94, 0.25)',
+                          fontFamily: 'Fredoka, sans-serif'
+                        }}
+                      >
+                        📄 CV Reviewer
+                      </button>
+                      <button
+                        onClick={() => { toggleHeaderPanel(); router.push('/search'); }}
+                        style={{
+                          background: 'linear-gradient(135deg, #ddd6fe 0%, #a78bfa 100%)',
+                          color: '#374151',
+                          padding: '12px 16px',
+                          borderRadius: '12px',
+                          border: 'none',
+                          fontSize: '14px',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                          boxShadow: '0 4px 12px rgba(167, 139, 250, 0.25)',
+                          fontFamily: 'Fredoka, sans-serif'
+                        }}
+                      >
+                        💼 Job Search
+                      </button>
+                      <button
+                        onClick={() => { toggleHeaderPanel(); router.push('/interview-prep'); }}
+                        style={{
+                          background: 'linear-gradient(135deg, #fef3c7 0%, #fde047 100%)',
+                          color: '#374151',
+                          padding: '12px 16px',
+                          borderRadius: '12px',
+                          border: 'none',
+                          fontSize: '14px',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                          boxShadow: '0 4px 12px rgba(253, 224, 71, 0.25)',
+                          fontFamily: 'Fredoka, sans-serif'
+                        }}
+                      >
+                        🎭 Interview Prep
+                      </button>
+                      <button
+                        onClick={() => { toggleHeaderPanel(); router.push('/video-interview'); }}
+                        style={{
+                          background: 'linear-gradient(135deg, #fecaca 0%, #f87171 100%)',
+                          color: '#374151',
+                          padding: '12px 16px',
+                          borderRadius: '12px',
+                          border: 'none',
+                          fontSize: '14px',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                          boxShadow: '0 4px 12px rgba(248, 113, 113, 0.25)',
+                          fontFamily: 'Fredoka, sans-serif'
+                        }}
+                      >
+                        🎬 Video Interview
+                      </button>
+                      <button
+                        onClick={() => { toggleHeaderPanel(); router.push('/job-tracker'); }}
+                        style={{
+                          background: 'linear-gradient(135deg, #ccfbf1 0%, #5eead4 100%)',
+                          color: '#374151',
+                          padding: '12px 16px',
+                          borderRadius: '12px',
+                          border: 'none',
+                          fontSize: '14px',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                          boxShadow: '0 4px 12px rgba(94, 234, 212, 0.25)',
+                          fontFamily: 'Fredoka, sans-serif'
+                        }}
+                      >
+                        📊 Job Tracker
+                      </button>
+                      <button
+                        onClick={() => { toggleHeaderPanel(); router.push('/apprenticeship-tracker'); }}
+                        style={{
+                          background: 'linear-gradient(135deg, #e0e7ff 0%, #a5b4fc 100%)',
+                          color: '#374151',
+                          padding: '12px 16px',
+                          borderRadius: '12px',
+                          border: 'none',
+                          fontSize: '14px',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                          boxShadow: '0 4px 12px rgba(165, 180, 252, 0.25)',
+                          fontFamily: 'Fredoka, sans-serif'
+                        }}
+                      >
+                        📋 Apprenticeship
+                      </button>
+                      <button
+                        onClick={() => { toggleHeaderPanel(); router.push('/cover-letter'); }}
+                        style={{
+                          background: 'linear-gradient(135deg, #fed7aa 0%, #fb923c 100%)',
+                          color: '#374151',
+                          padding: '12px 16px',
+                          borderRadius: '12px',
+                          border: 'none',
+                          fontSize: '14px',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                          boxShadow: '0 4px 12px rgba(251, 146, 60, 0.25)',
+                          fontFamily: 'Fredoka, sans-serif'
+                        }}
+                      >
+                        ✍️ Cover Letter
+                      </button>
+                      <button
+                        onClick={() => { toggleHeaderPanel(); router.push('/score'); }}
+                        style={{
+                          background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
+                          color: '#000000',
+                          padding: '12px 16px',
+                          borderRadius: '12px',
+                          border: 'none',
+                          fontSize: '14px',
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                          boxShadow: '0 6px 16px rgba(251, 191, 36, 0.35)',
+                          fontFamily: 'Fredoka, sans-serif'
+                        }}
+                      >
+                        🎯 Talentix Points
+                      </button>
+                      <button
+                        onClick={() => { toggleHeaderPanel(); router.push('/ai-chat'); }}
+                        style={{
+                          background: 'linear-gradient(135deg, #cffafe 0%, #06b6d4 100%)',
+                          color: '#374151',
+                          padding: '12px 16px',
+                          borderRadius: '12px',
+                          border: 'none',
+                          fontSize: '14px',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                          boxShadow: '0 4px 12px rgba(6, 182, 212, 0.25)',
+                          fontFamily: 'Fredoka, sans-serif'
+                        }}
+                      >
+                        🤖 AI Chat
+                      </button>
+                      <button
+                        onClick={() => { toggleHeaderPanel(); router.push('/career-guidance'); }}
+                        style={{
+                          background: 'linear-gradient(135deg, #d9f99d 0%, #84cc16 100%)',
+                          color: '#374151',
+                          padding: '12px 16px',
+                          borderRadius: '12px',
+                          border: 'none',
+                          fontSize: '14px',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                          boxShadow: '0 4px 12px rgba(132, 204, 22, 0.25)',
+                          fontFamily: 'Fredoka, sans-serif'
+                        }}
+                      >
+                        🎓 Career Guidance
+                      </button>
+                      <button
+                        onClick={() => { toggleHeaderPanel(); router.push('/dashboard/subscription'); }}
+                        style={{
+                          background: 'linear-gradient(135deg, #f3e8ff 0%, #c084fc 100%)',
+                          color: '#374151',
+                          padding: '12px 16px',
+                          borderRadius: '12px',
+                          border: 'none',
+                          fontSize: '14px',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                          boxShadow: '0 4px 12px rgba(192, 132, 252, 0.25)',
+                          fontFamily: 'Fredoka, sans-serif'
+                        }}
+                      >
+                        💎 Subscription
+                      </button>
+                      <button
+                        onClick={() => { toggleHeaderPanel(); router.push('/settings'); }}
+                        style={{
+                          background: 'linear-gradient(135deg, #e5e7eb 0%, #9ca3af 100%)',
+                          color: '#374151',
+                          padding: '12px 16px',
+                          borderRadius: '12px',
+                          border: 'none',
+                          fontSize: '14px',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                          boxShadow: '0 4px 12px rgba(156, 163, 175, 0.25)',
+                          fontFamily: 'Fredoka, sans-serif'
+                        }}
+                      >
+                        ⚙️ Settings
+                      </button>
+                      <button
+                        onClick={() => { toggleHeaderPanel(); router.push('/our-story'); }}
+                        style={{
+                          background: 'linear-gradient(135deg, #fef3c7 0%, #fde047 100%)',
+                          color: '#374151',
+                          padding: '12px 16px',
+                          borderRadius: '12px',
+                          border: 'none',
+                          fontSize: '14px',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                          boxShadow: '0 4px 12px rgba(253, 224, 71, 0.25)',
+                          fontFamily: 'Fredoka, sans-serif'
+                        }}
+                      >
+                        📖 Our Story
+                      </button>
+                      <button
+                        onClick={() => { 
+                          if (typeof window !== 'undefined') {
+                            window.dispatchEvent(new CustomEvent('talentix-sign-out'));
+                          }
+                          toggleHeaderPanel(); 
+                        }}
+                        style={{
+                          background: 'linear-gradient(135deg, #fecaca 0%, #ef4444 100%)',
+                          color: '#ffffff',
+                          padding: '12px 16px',
+                          borderRadius: '12px',
+                          border: 'none',
+                          fontSize: '14px',
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                          boxShadow: '0 4px 12px rgba(239, 68, 68, 0.25)',
+                          fontFamily: 'Fredoka, sans-serif'
+                        }}
+                      >
+                        🚪 Sign Out
+                      </button>
+                    </>
+                  )}
                 </div>
               </aside>
             </div>
