@@ -41,14 +41,11 @@
     z-index: 9999999 !important;
   }
   
-  /* AI Chatbot Fixed Button - Force position on mobile and desktop */
-  .ai-chatbot-fixed-button {
-    position: fixed !important;
-    bottom: 20px !important;
-    right: 20px !important;
-    left: auto !important;
-    top: auto !important;
-    z-index: 999999 !important;
+  /* Mobile panel overlay - override with dvh for mobile devices */
+  .mobile-panel-overlay {
+    height: 100dvh !important;
+    min-height: 100dvh !important;
+    max-height: 100dvh !important;
   }
 }
 
@@ -953,10 +950,10 @@ button.font-fredoka,
     gap: 16px !important;
   }
   
-  /* Fixed positioned elements on mobile */
-  [style*="position: fixed"] {
+  /* Fixed positioned elements on mobile - DISABLED to allow chatbot, modals, etc. */
+  /* [style*="position: fixed"] {
     position: relative !important;
-  }
+  } */
   
   /* Overflow handling */
   body {
@@ -1392,6 +1389,45 @@ html {
 
 .mobile-nav {
   display: block;
+}
+
+/* Homepage: stack image + text for Our Story/Services on mobile */
+@media (max-width: 767px) {
+  .stack-on-mobile {
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 16px !important;
+  }
+}
+
+/* Chatbot button - always fixed and visible on all devices */
+.chatbot-button-fixed {
+  position: fixed !important;
+  bottom: 20px !important;
+  right: 20px !important;
+  z-index: 999999 !important;
+}
+
+/* Mobile: ensure chatbot is fully visible and accessible */
+@media (max-width: 767px) {
+  .chatbot-button-fixed {
+    position: fixed !important;
+    bottom: 20px !important;
+    right: 20px !important;
+    width: 56px !important;
+    height: 56px !important;
+    font-size: 26px !important;
+  }
+  
+  /* Chatbot window responsive on mobile */
+  .chatbot-window-responsive {
+    left: 20px !important;
+    right: 20px !important;
+    width: calc(100vw - 40px) !important;
+    max-width: calc(100vw - 40px) !important;
+    bottom: 86px !important;
+    top: 20px !important;
+  }
 }
 
 @media (min-width: 768px) {

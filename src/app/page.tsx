@@ -121,7 +121,11 @@ const featuredJobs: JobPostCardProps[] = [
 ];
 
 function HomeContent() {
-  // Note: Removed window check to prevent hydration issues
+  // EMERGENCY FIX: Don't render homepage content if we're not on the homepage
+  if (typeof window !== "undefined" && window.location.pathname !== '/') {
+    console.log('🚫 Homepage component blocked - not on homepage path:', window.location.pathname);
+    return null;
+  }
 
   const { user, loading } = useAuth();
   const { isMobile } = useDeviceDetection();
@@ -383,6 +387,7 @@ function HomeContent() {
     <div 
       className="min-h-screen bg-white text-gray-800"
       suppressHydrationWarning
+      data-is-mobile={isMobile ? 'true' : 'false'}
     >
       {/* New Hero Section */}
       <section className="relative min-h-screen flex flex-col items-center justify-center text-center px-6 overflow-hidden">
@@ -657,101 +662,86 @@ function HomeContent() {
       </section>
 
       {/* Our Story and Our Services Section */}
-      <section className="py-16 md:py-32 bg-gradient-to-b from-gray-50 to-white">
-        <div className="max-w-6xl mx-auto px-4 md:px-6">
-          <div 
-            className="responsive-grid grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 mt-5 md:mt-10"
-          >
+      <section className="py-24 bg-white">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="responsive-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px', marginTop: '40px' }}>
             
             {/* Our Story Box */}
-            <div 
-              className="bg-white p-6 md:p-10 transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 grid grid-cols-1 md:grid-cols-[300px_1fr] gap-6 md:gap-10 text-center md:text-left"
-              style={{
-                boxShadow: '0 20px 60px -10px rgba(0, 0, 0, 0.15), 0 8px 30px -8px rgba(0, 0, 0, 0.1)',
-                border: '2px solid rgba(255, 255, 255, 0.8)',
-                background: 'linear-gradient(145deg, #ffffff 0%, #fefefe 50%, #ffffff 100%)',
-                borderRadius: '24px'
-              }}
+            <div style={{
+              backgroundColor: '#ffffff',
+              borderRadius: '20px',
+              padding: '32px',
+              boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1)',
+              border: '1px solid #e5e7eb',
+              transition: 'all 0.3s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-4px)';
+              e.currentTarget.style.boxShadow = '0 20px 35px -5px rgba(0, 0, 0, 0.15)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = '0 10px 25px -5px rgba(0, 0, 0, 0.1)';
+            }}
             >
-              <div>
-                <Image
-                  src="/pierre headshot.jpeg"
-                  alt="Pierre Headshot"
-                  width={300}
-                  height={300}
-                  style={{ 
-                    width: '100%',
-                    height: '300px',
-                    borderRadius: '20px', 
-                    objectFit: 'cover',
-                    objectPosition: 'center 20%',
-                    boxShadow: '0 12px 28px -6px rgba(0, 0, 0, 0.2)' 
-                  }}
-                  className="md:h-[280px]"
-                />
-              </div>
-              
-              <div style={{
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'center'
-              }}>
-                <h3 style={{
-                  fontSize: '2.5rem',
-                  fontWeight: '800',
-                  color: '#1f2937',
-                  margin: '0 0 20px 0',
-                  fontFamily: "'Fredoka', sans-serif",
-                  lineHeight: '1.1',
-                  letterSpacing: '-0.025em'
-                }}
-                className="md:text-6xl md:text-left md:mb-6"
-                >
-                  OUR STORY
-                </h3>
+              <div className="stack-on-mobile" style={{ display: 'flex', alignItems: 'flex-start', gap: '32px' }}>
+                <div style={{ flexShrink: 0 }}>
+                  <Image
+                    src="/pierre headshot.jpeg"
+                    alt="Pierre Headshot"
+                    width={180}
+                    height={240}
+                    style={{ borderRadius: '24px', objectFit: 'cover', boxShadow: '0 12px 24px -6px rgba(0, 0, 0, 0.15)' }}
+                  />
+                </div>
                 
-                <p style={{
-                  fontSize: '16px',
-                  color: '#4b5563',
-                  lineHeight: '1.7',
-                  margin: '0 0 28px 0',
-                  fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-                  fontWeight: '400'
-                }}
-                className="md:text-lg md:text-left md:mb-6"
-                >
-                  The Our Story section highlights the journey that shaped the organisation, outlining its background, guiding values, and the principles that continue to influence its work today.
-                </p>
-                
-                <div>
+                <div style={{ flex: 1 }}>
+                  <h3 style={{
+                    fontSize: '3.5rem',
+                    fontWeight: 'bold',
+                    color: '#111827',
+                    margin: '0 0 24px 0',
+                    fontFamily: "'Fredoka', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                    textAlign: 'left'
+                  }}>
+                    OUR STORY
+                  </h3>
+                  
+                  <p style={{
+                    fontSize: '18px',
+                    color: '#4b5563',
+                    lineHeight: '1.7',
+                    margin: '0 0 24px 0',
+                    fontFamily: "'Fredoka', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+                  }}>
+                    The Our Story section highlights the journey that shaped the organisation, outlining its background, guiding values, and the principles that continue to influence its work today.
+                  </p>
+                  
                   <button
                     onClick={() => router.push('/our-story')}
                     style={{
                       background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
-                      color: '#000000',
+                      color: '#000',
                       padding: '16px 32px',
-                      borderRadius: '30px',
+                      borderRadius: '25px',
                       border: 'none',
                       fontSize: '16px',
-                      fontWeight: '700',
+                      fontWeight: 'bold',
                       cursor: 'pointer',
                       transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                      fontFamily: "'Fredoka', sans-serif",
-                      boxShadow: '0 6px 20px rgba(251, 191, 36, 0.4)',
-                      transform: 'translateY(0)',
-                      minHeight: '52px',
-                      minWidth: '160px',
-                      letterSpacing: '0.5px'
+                      fontFamily: "'Fredoka', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                      boxShadow: '0 4px 15px rgba(251, 191, 36, 0.4)',
+                      transform: 'translateY(0)'
                     }}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.background = 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)';
-                      e.currentTarget.style.boxShadow = '0 8px 25px rgba(251, 191, 36, 0.6)';
                       e.currentTarget.style.transform = 'translateY(-2px)';
+                      e.currentTarget.style.boxShadow = '0 8px 25px rgba(251, 191, 36, 0.6)';
                     }}
                     onMouseLeave={(e) => {
                       e.currentTarget.style.background = 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)';
-                      e.currentTarget.style.boxShadow = '0 6px 20px rgba(251, 191, 36, 0.4)';
                       e.currentTarget.style.transform = 'translateY(0)';
+                      e.currentTarget.style.boxShadow = '0 4px 15px rgba(251, 191, 36, 0.4)';
                     }}
                   >
                     🚀 Learn More
@@ -761,93 +751,81 @@ function HomeContent() {
             </div>
 
             {/* Our Services Box */}
-            <div 
-              className="bg-white p-6 md:p-10 transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 grid grid-cols-1 md:grid-cols-[300px_1fr] gap-6 md:gap-10 text-center md:text-left"
-              style={{
-                boxShadow: '0 20px 60px -10px rgba(0, 0, 0, 0.15), 0 8px 30px -8px rgba(0, 0, 0, 0.1)',
-                border: '2px solid rgba(255, 255, 255, 0.8)',
-                background: 'linear-gradient(145deg, #ffffff 0%, #fefefe 50%, #ffffff 100%)',
-                borderRadius: '24px'
-              }}
+            <div style={{
+              backgroundColor: '#ffffff',
+              borderRadius: '20px',
+              padding: '32px',
+              boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1)',
+              border: '1px solid #e5e7eb',
+              transition: 'all 0.3s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-4px)';
+              e.currentTarget.style.boxShadow = '0 20px 35px -5px rgba(0, 0, 0, 0.15)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = '0 10px 25px -5px rgba(0, 0, 0, 0.1)';
+            }}
             >
-              <div>
-                <Image
-                  src="/talentix our services.jpeg"
-                  alt="Talentix Our Services"
-                  width={300}
-                  height={300}
-                  style={{ 
-                    width: '100%',
-                    height: '300px',
-                    borderRadius: '20px', 
-                    objectFit: 'cover', 
-                    boxShadow: '0 12px 28px -6px rgba(0, 0, 0, 0.2)' 
-                  }}
-                  className="md:h-[250px]"
-                />
-              </div>
-              
-              <div style={{
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'center'
-              }}>
-                <h3 style={{
-                  fontSize: '2.5rem',
-                  fontWeight: '800',
-                  color: '#1f2937',
-                  margin: '0 0 20px 0',
-                  fontFamily: "'Fredoka', sans-serif",
-                  lineHeight: '1.1',
-                  letterSpacing: '-0.025em'
-                }}
-                className="md:text-6xl md:text-left md:mb-6"
-                >
-                  SERVICES
-                </h3>
+              <div className="stack-on-mobile" style={{ display: 'flex', alignItems: 'flex-start', gap: '32px' }}>
+                <div style={{ flexShrink: 0 }}>
+                  <Image
+                    src="/talentix our services.jpeg"
+                    alt="Talentix Our Services"
+                    width={180}
+                    height={240}
+                    style={{ borderRadius: '24px', objectFit: 'cover', boxShadow: '0 12px 24px -6px rgba(0, 0, 0, 0.15)' }}
+                  />
+                </div>
                 
-                <p style={{
-                  fontSize: '16px',
-                  color: '#4b5563',
-                  lineHeight: '1.7',
-                  margin: '0 0 28px 0',
-                  fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-                  fontWeight: '400'
-                }}
-                className="md:text-lg md:text-left md:mb-6"
-                >
-                  Here we'll talk about how our services can help your school or you as an individual. We offer interactive workshops & assemblies within schools to help you secure your first job!
-                </p>
-                
-                <div>
+                <div style={{ flex: 1 }}>
+                  <h3 style={{
+                    fontSize: '3.5rem',
+                    fontWeight: 'bold',
+                    color: '#111827',
+                    margin: '0 0 24px 0',
+                    fontFamily: "'Fredoka', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                    textAlign: 'left'
+                  }}>
+                    SERVICES
+                  </h3>
+                  
+                  <p style={{
+                    fontSize: '18px',
+                    color: '#4b5563',
+                    lineHeight: '1.7',
+                    margin: '0 0 24px 0',
+                    fontFamily: "'Fredoka', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+                  }}>
+                    Here we'll talk about how our services can help your school or you as an individual. We offer interactive workshops & assemblies within schools to help you secure your first job!
+                  </p>
+                  
                   <button
                     onClick={() => router.push('/our-services')}
                     style={{
                       background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
-                      color: '#000000',
+                      color: '#000',
                       padding: '16px 32px',
-                      borderRadius: '30px',
+                      borderRadius: '25px',
                       border: 'none',
                       fontSize: '16px',
-                      fontWeight: '700',
+                      fontWeight: 'bold',
                       cursor: 'pointer',
                       transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                      fontFamily: "'Fredoka', sans-serif",
-                      boxShadow: '0 6px 20px rgba(251, 191, 36, 0.4)',
-                      transform: 'translateY(0)',
-                      minHeight: '52px',
-                      minWidth: '160px',
-                      letterSpacing: '0.5px'
+                      fontFamily: "'Fredoka', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                      boxShadow: '0 4px 15px rgba(251, 191, 36, 0.4)',
+                      transform: 'translateY(0)'
                     }}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.background = 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)';
-                      e.currentTarget.style.boxShadow = '0 8px 25px rgba(251, 191, 36, 0.6)';
                       e.currentTarget.style.transform = 'translateY(-2px)';
+                      e.currentTarget.style.boxShadow = '0 8px 25px rgba(251, 191, 36, 0.6)';
                     }}
                     onMouseLeave={(e) => {
                       e.currentTarget.style.background = 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)';
-                      e.currentTarget.style.boxShadow = '0 6px 20px rgba(251, 191, 36, 0.4)';
                       e.currentTarget.style.transform = 'translateY(0)';
+                      e.currentTarget.style.boxShadow = '0 4px 15px rgba(251, 191, 36, 0.4)';
                     }}
                   >
                     ⚡ Learn More
@@ -856,6 +834,7 @@ function HomeContent() {
               </div>
             </div>
           </div>
+          
 
           {/* Footer Links */}
           <div className="mt-16 pt-8 border-t border-gray-300 text-center">
