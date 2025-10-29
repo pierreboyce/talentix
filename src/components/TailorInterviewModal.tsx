@@ -18,10 +18,13 @@ export default function TailorInterviewModal({
 }: TailorInterviewModalProps) {
   const [companyName, setCompanyName] = useState('');
   const [jobRole, setJobRole] = useState('');
+  const [openedAt, setOpenedAt] = useState<number | null>(null);
 
   // Auto-scroll to bottom and lock body when modal opens
   useEffect(() => {
     if (isOpen) {
+      // Mark open time to prevent accidental immediate submit on mobile
+      setOpenedAt(Date.now());
       // Store current scroll position
       const scrollY = window.scrollY;
       const scrollX = window.scrollX;
@@ -78,6 +81,11 @@ export default function TailorInterviewModal({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    // Guard: prevent accidental immediate submit if the tap that opened the modal
+    // propagates and triggers submit on some mobile browsers
+    if (openedAt && Date.now() - openedAt < 400) {
+      return;
+    }
     onSubmit(companyName, jobRole);
     // Reset form
     setCompanyName('');

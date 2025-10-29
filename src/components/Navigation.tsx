@@ -155,12 +155,12 @@ export default function Navigation() {
   );
   const isSticky = !isExcludedPage;
   const headerPositionClass = isSticky
-    ? 'fixed top-0 left-0 right-0 z-[2147483647]'
+    ? 'fixed top-0 left-0 right-0 z-[60]'
     : 'relative';
 
   return (
     <>
-    <header className={`w-full bg-[rgb(255,255,255)] border-b border-gray-200/80 ${headerPositionClass}`} style={{ marginTop: 0, paddingTop: 0, minHeight: '80px', maxHeight: '80px', zIndex: 2147483647 }}>
+    <header className={`w-full bg-[rgb(255,255,255)] border-b border-gray-200/80 ${headerPositionClass}`} style={{ marginTop: 0, paddingTop: 0, minHeight: '80px', maxHeight: '80px', zIndex: 60 }}>
       <div className="mx-auto flex items-center justify-between px-6 py-4" style={{ marginTop: 0, paddingTop: 0, height: '80px', width: '90%', maxWidth: '90vw' }}>
         <div className="flex items-center">
           {/* App Launcher - Only show for authenticated users */}
@@ -756,6 +756,9 @@ export default function Navigation() {
         document.body
       )}
     </header>
+    {isSticky && isDesktop ? (
+      <div style={{ height: '80px' }} />
+    ) : null}
     </>
   );
 } 

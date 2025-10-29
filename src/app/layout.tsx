@@ -26,8 +26,46 @@ const fredoka = Fredoka({
 });
 
 export const metadata: Metadata = {
-  title: "Talentix",
-  description: "Helping you get your first job. For teenagers by teenagers...",
+  metadataBase: new URL('https://talentix.co.uk'),
+  title: {
+    default: 'Talentix – Get your first job',
+    template: '%s | Talentix',
+  },
+  description: 'For teenagers by teenagers. Interview prep, video interviews, job tracker, apprenticeship tracker, CV reviewer, cover letter maker and more to help you get your first job.',
+  keywords: ['Talentix', 'teen jobs', 'first job', 'CV reviewer', 'cover letter maker', 'interview prep', 'video interviews', 'apprenticeship tracker', 'job tracker', 'career guidance', 'free templates'],
+  alternates: {
+    canonical: '/',
+  },
+  openGraph: {
+    type: 'website',
+    url: 'https://talentix.co.uk/',
+    title: 'Talentix – Get your first job',
+    description: 'Tools and guidance to help you land your first job.',
+    siteName: 'Talentix',
+    images: [{ url: '/og-image.jpg', width: 1200, height: 630, alt: 'Talentix' }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Talentix – Get your first job',
+    description: 'For teenagers by teenagers. Interview prep, job search tools and more.',
+    images: ['/og-image.jpg'],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+      'max-video-preview': -1,
+    },
+  },
+  icons: {
+    icon: '/favicon.ico',
+    apple: '/apple-touch-icon.png',
+    shortcut: '/favicon.ico',
+  },
 };
 
 export const viewport = {
@@ -49,6 +87,24 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
         <meta name="theme-color" content="#fde047" />
+        {/* JSON-LD Organization Schema */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'Organization',
+              name: 'Talentix',
+              url: 'https://talentix.co.uk',
+              logo: 'https://talentix.co.uk/tixlogo.png',
+              sameAs: [
+                'https://www.instagram.com/',
+                'https://www.linkedin.com/'
+              ],
+              description: 'For teenagers by teenagers. Tools to help you get your first job.'
+            })
+          }}
+        />
       </head>
       <body className={`${inter.className} ${fredoka.className}`}>
         <ErrorBoundary>

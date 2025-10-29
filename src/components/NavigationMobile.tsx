@@ -665,26 +665,15 @@ export default function NavigationMobile() {
                     </>
                   ) : (
                     <>
-                      {/* Authenticated menu */}
+                      {/* Authenticated menu - Categorized like desktop */}
+                      
+                      {/* Job Features Category */}
+                      <div style={{ fontSize: '11px', fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.5px', marginTop: '8px', marginBottom: '8px', paddingLeft: '4px' }}>
+                        Job Features
+                      </div>
+                      
                       <button
-                        onClick={() => { toggleHeaderPanel(); router.push('/dashboard'); }}
-                        style={{
-                          background: 'linear-gradient(135deg, #bfdbfe 0%, #60a5fa 100%)',
-                          color: '#374151',
-                          padding: '12px 16px',
-                          borderRadius: '12px',
-                          border: 'none',
-                          fontSize: '14px',
-                          fontWeight: 600,
-                          cursor: 'pointer',
-                          boxShadow: '0 4px 12px rgba(96, 165, 250, 0.25)',
-                          fontFamily: 'Fredoka, sans-serif'
-                        }}
-                      >
-                        🏠 Dashboard
-                      </button>
-                      <button
-                        onClick={() => { toggleHeaderPanel(); router.push('/cv-reviewer'); }}
+                        onClick={() => { toggleHeaderPanel(); router.push('/search'); }}
                         style={{
                           background: 'linear-gradient(135deg, #dcfce7 0%, #22c55e 100%)',
                           color: '#374151',
@@ -698,10 +687,44 @@ export default function NavigationMobile() {
                           fontFamily: 'Fredoka, sans-serif'
                         }}
                       >
-                        📄 CV Reviewer
+                        💼 Job Vacancies
                       </button>
                       <button
-                        onClick={() => { toggleHeaderPanel(); router.push('/search'); }}
+                        onClick={() => { toggleHeaderPanel(); router.push('/job-tracker'); }}
+                        style={{
+                          background: 'linear-gradient(135deg, #ccfbf1 0%, #5eead4 100%)',
+                          color: '#374151',
+                          padding: '12px 16px',
+                          borderRadius: '12px',
+                          border: 'none',
+                          fontSize: '14px',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                          boxShadow: '0 4px 12px rgba(94, 234, 212, 0.25)',
+                          fontFamily: 'Fredoka, sans-serif'
+                        }}
+                      >
+                        📊 Job Tracker
+                      </button>
+                      <button
+                        onClick={() => { toggleHeaderPanel(); router.push('/apprenticeship-tracker'); }}
+                        style={{
+                          background: 'linear-gradient(135deg, #bfdbfe 0%, #60a5fa 100%)',
+                          color: '#374151',
+                          padding: '12px 16px',
+                          borderRadius: '12px',
+                          border: 'none',
+                          fontSize: '14px',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                          boxShadow: '0 4px 12px rgba(96, 165, 250, 0.25)',
+                          fontFamily: 'Fredoka, sans-serif'
+                        }}
+                      >
+                        📋 Apprenticeship Tracker
+                      </button>
+                      <button
+                        onClick={() => { toggleHeaderPanel(); router.push('/cv-reviewer'); }}
                         style={{
                           background: 'linear-gradient(135deg, #ddd6fe 0%, #a78bfa 100%)',
                           color: '#374151',
@@ -715,7 +738,24 @@ export default function NavigationMobile() {
                           fontFamily: 'Fredoka, sans-serif'
                         }}
                       >
-                        💼 Job Search
+                        📄 CV Reviewer
+                      </button>
+                      <button
+                        onClick={() => { toggleHeaderPanel(); router.push('/cover-letter'); }}
+                        style={{
+                          background: 'linear-gradient(135deg, #e0e7ff 0%, #a5b4fc 100%)',
+                          color: '#374151',
+                          padding: '12px 16px',
+                          borderRadius: '12px',
+                          border: 'none',
+                          fontSize: '14px',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                          boxShadow: '0 4px 12px rgba(165, 180, 252, 0.25)',
+                          fontFamily: 'Fredoka, sans-serif'
+                        }}
+                      >
+                        ✍️ Cover Letter
                       </button>
                       <button
                         onClick={() => { toggleHeaderPanel(); router.push('/interview-prep'); }}
@@ -752,91 +792,6 @@ export default function NavigationMobile() {
                         🎬 Video Interview
                       </button>
                       <button
-                        onClick={() => { toggleHeaderPanel(); router.push('/job-tracker'); }}
-                        style={{
-                          background: 'linear-gradient(135deg, #ccfbf1 0%, #5eead4 100%)',
-                          color: '#374151',
-                          padding: '12px 16px',
-                          borderRadius: '12px',
-                          border: 'none',
-                          fontSize: '14px',
-                          fontWeight: 600,
-                          cursor: 'pointer',
-                          boxShadow: '0 4px 12px rgba(94, 234, 212, 0.25)',
-                          fontFamily: 'Fredoka, sans-serif'
-                        }}
-                      >
-                        📊 Job Tracker
-                      </button>
-                      <button
-                        onClick={() => { toggleHeaderPanel(); router.push('/apprenticeship-tracker'); }}
-                        style={{
-                          background: 'linear-gradient(135deg, #e0e7ff 0%, #a5b4fc 100%)',
-                          color: '#374151',
-                          padding: '12px 16px',
-                          borderRadius: '12px',
-                          border: 'none',
-                          fontSize: '14px',
-                          fontWeight: 600,
-                          cursor: 'pointer',
-                          boxShadow: '0 4px 12px rgba(165, 180, 252, 0.25)',
-                          fontFamily: 'Fredoka, sans-serif'
-                        }}
-                      >
-                        📋 Apprenticeship
-                      </button>
-                      <button
-                        onClick={() => { toggleHeaderPanel(); router.push('/cover-letter'); }}
-                        style={{
-                          background: 'linear-gradient(135deg, #fed7aa 0%, #fb923c 100%)',
-                          color: '#374151',
-                          padding: '12px 16px',
-                          borderRadius: '12px',
-                          border: 'none',
-                          fontSize: '14px',
-                          fontWeight: 600,
-                          cursor: 'pointer',
-                          boxShadow: '0 4px 12px rgba(251, 146, 60, 0.25)',
-                          fontFamily: 'Fredoka, sans-serif'
-                        }}
-                      >
-                        ✍️ Cover Letter
-                      </button>
-                      <button
-                        onClick={() => { toggleHeaderPanel(); router.push('/score'); }}
-                        style={{
-                          background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
-                          color: '#000000',
-                          padding: '12px 16px',
-                          borderRadius: '12px',
-                          border: 'none',
-                          fontSize: '14px',
-                          fontWeight: 700,
-                          cursor: 'pointer',
-                          boxShadow: '0 6px 16px rgba(251, 191, 36, 0.35)',
-                          fontFamily: 'Fredoka, sans-serif'
-                        }}
-                      >
-                        🎯 Talentix Points
-                      </button>
-                      <button
-                        onClick={() => { toggleHeaderPanel(); router.push('/ai-chat'); }}
-                        style={{
-                          background: 'linear-gradient(135deg, #cffafe 0%, #06b6d4 100%)',
-                          color: '#374151',
-                          padding: '12px 16px',
-                          borderRadius: '12px',
-                          border: 'none',
-                          fontSize: '14px',
-                          fontWeight: 600,
-                          cursor: 'pointer',
-                          boxShadow: '0 4px 12px rgba(6, 182, 212, 0.25)',
-                          fontFamily: 'Fredoka, sans-serif'
-                        }}
-                      >
-                        🤖 AI Chat
-                      </button>
-                      <button
                         onClick={() => { toggleHeaderPanel(); router.push('/career-guidance'); }}
                         style={{
                           background: 'linear-gradient(135deg, #d9f99d 0%, #84cc16 100%)',
@@ -852,6 +807,46 @@ export default function NavigationMobile() {
                         }}
                       >
                         🎓 Career Guidance
+                      </button>
+                      
+                      {/* Account & Company Category */}
+                      <div style={{ fontSize: '11px', fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.5px', marginTop: '16px', marginBottom: '8px', paddingLeft: '4px' }}>
+                        Account & Company
+                      </div>
+                      
+                      <button
+                        onClick={() => { toggleHeaderPanel(); router.push('/dashboard'); }}
+                        style={{
+                          background: 'linear-gradient(135deg, #bfdbfe 0%, #60a5fa 100%)',
+                          color: '#374151',
+                          padding: '12px 16px',
+                          borderRadius: '12px',
+                          border: 'none',
+                          fontSize: '14px',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                          boxShadow: '0 4px 12px rgba(96, 165, 250, 0.25)',
+                          fontFamily: 'Fredoka, sans-serif'
+                        }}
+                      >
+                        🏡 Home
+                      </button>
+                      <button
+                        onClick={() => { toggleHeaderPanel(); router.push('/score'); }}
+                        style={{
+                          background: 'linear-gradient(135deg, #fed7aa 0%, #fb923c 100%)',
+                          color: '#374151',
+                          padding: '12px 16px',
+                          borderRadius: '12px',
+                          border: 'none',
+                          fontSize: '14px',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                          boxShadow: '0 4px 12px rgba(251, 146, 60, 0.25)',
+                          fontFamily: 'Fredoka, sans-serif'
+                        }}
+                      >
+                        🎯 Talentix Points
                       </button>
                       <button
                         onClick={() => { toggleHeaderPanel(); router.push('/dashboard/subscription'); }}
@@ -905,6 +900,25 @@ export default function NavigationMobile() {
                         📖 Our Story
                       </button>
                       <button
+                        onClick={() => { toggleHeaderPanel(); router.push('/our-services'); }}
+                        style={{
+                          background: 'linear-gradient(135deg, #ddd6fe 0%, #a78bfa 100%)',
+                          color: '#374151',
+                          padding: '12px 16px',
+                          borderRadius: '12px',
+                          border: 'none',
+                          fontSize: '14px',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                          boxShadow: '0 4px 12px rgba(167, 139, 250, 0.25)',
+                          fontFamily: 'Fredoka, sans-serif'
+                        }}
+                      >
+                        🛠️ Our Services
+                      </button>
+                      
+                      {/* Sign Out */}
+                      <button
                         onClick={() => { 
                           if (typeof window !== 'undefined') {
                             window.dispatchEvent(new CustomEvent('talentix-sign-out'));
@@ -921,7 +935,8 @@ export default function NavigationMobile() {
                           fontWeight: 700,
                           cursor: 'pointer',
                           boxShadow: '0 4px 12px rgba(239, 68, 68, 0.25)',
-                          fontFamily: 'Fredoka, sans-serif'
+                          fontFamily: 'Fredoka, sans-serif',
+                          marginTop: '8px'
                         }}
                       >
                         🚪 Sign Out

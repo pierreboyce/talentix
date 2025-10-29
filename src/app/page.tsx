@@ -409,7 +409,7 @@ function HomeContent() {
 
         <div className="z-10 relative">
           <Image
-            src="/logo.png"
+            src="/tixlogo.png"
             alt="Talentix Logo"
             width={250}
             height={115}

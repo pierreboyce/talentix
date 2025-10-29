@@ -228,7 +228,7 @@ export default function VideoInterviewPage(): React.ReactElement {
 
     // Get random question and track usage (unless we already have a tailored question)
     if (!skipQuestionGeneration) {
-      getRandomQuestionAndTrackUsage();
+    getRandomQuestionAndTrackUsage();
     }
     
     console.log('🎯 Setting stage to planning...');
