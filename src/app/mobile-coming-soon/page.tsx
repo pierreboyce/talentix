@@ -9,6 +9,7 @@ export default function MobileComingSoon() {
   const [showWord2, setShowWord2] = useState(false);
   const [showWord3, setShowWord3] = useState(false);
   const [showImageLogo, setShowImageLogo] = useState(true);
+  const [logoSrc, setLogoSrc] = useState('/tixlogo.png');
   const [adminPassword, setAdminPassword] = useState('');
   const [unlockError, setUnlockError] = useState('');
   const features: Array<{ text: string; emoji: string }> = [
@@ -80,7 +81,14 @@ export default function MobileComingSoon() {
             <div className="animate-float-delayed" style={{ position: 'absolute', bottom: '15%', right: '10%', fontSize: '4rem' }}>🚀</div>
           </div>
 
-          <Image src="/tixlogo.png" alt="Talentix" width={160} height={72} priority style={{ marginBottom: 24, objectFit: 'contain' }} />
+          <img 
+            src={logoSrc}
+            alt="Talentix"
+            width={160}
+            height={72}
+            style={{ marginBottom: 24, objectFit: 'contain', display: 'block' }}
+            onError={() => setLogoSrc('/logo.png')}
+          />
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10, textAlign: 'center' }}>
             <span
               style={{
@@ -201,14 +209,13 @@ export default function MobileComingSoon() {
               Join our community
             </a>
             {showImageLogo ? (
-              <Image 
-                src="/tixlogo.png" 
-                alt="Talentix" 
-                width={160} 
-                height={72} 
-                priority 
-                style={{ margin: '8px auto 12px auto', objectFit: 'contain', display: 'block' }} 
-                onError={() => setShowImageLogo(false)}
+              <img
+                src={logoSrc}
+                alt="Talentix"
+                width={160}
+                height={72}
+                style={{ margin: '8px auto 12px auto', objectFit: 'contain', display: 'block' }}
+                onError={() => { setShowImageLogo(false); setLogoSrc('/logo.png'); }}
               />
             ) : (
               <div style={{

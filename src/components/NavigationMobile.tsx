@@ -5,6 +5,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useAuth } from '../contexts/AuthContext';
+import { useSubscription } from '../contexts/SubscriptionContext';
 import { useRouter, usePathname } from 'next/navigation';
 import { createPortal } from 'react-dom';
 import SignUpModal from './SignUpModal';
@@ -13,6 +14,7 @@ import PricingModal from './PricingModal';
 
 export default function NavigationMobile() {
   const { user } = useAuth();
+  const { subscription } = useSubscription();
   const router = useRouter();
   const pathname = usePathname();
   const [showMobileMenu, setShowMobileMenu] = useState(false);
@@ -30,6 +32,7 @@ export default function NavigationMobile() {
     location: '',
     hearAbout: ''
   });
+  const [usage, setUsage] = useState<{ cvToday: number; videoTotal: number }>({ cvToday: 0, videoTotal: 0 });
 
   // Define pages where the header should not be sticky
   const excludedPages = [
@@ -69,6 +72,28 @@ export default function NavigationMobile() {
       return () => clearTimeout(t);
     }
   }, [pathname]);
+
+  // Load usage counts for free tier indicator
+  useEffect(() => {
+    if (typeof window === 'undefined' || !user?.email) return;
+    const today = new Date().toISOString().slice(0, 10);
+    const cvKey = `cv_reviews_${today}_${user.email}`;
+    const videoKey = `video_interview_questions_used_${user.email}`;
+    const cvToday = parseInt(localStorage.getItem(cvKey) || '0');
+    const videoTotal = parseInt(localStorage.getItem(videoKey) || '0');
+    setUsage({ cvToday, videoTotal });
+    const update = () => {
+      const cv = parseInt(localStorage.getItem(cvKey) || '0');
+      const vi = parseInt(localStorage.getItem(videoKey) || '0');
+      setUsage({ cvToday: cv, videoTotal: vi });
+    };
+    window.addEventListener('storage', update);
+    window.addEventListener('talentix-usage-update', update as any);
+    return () => {
+      window.removeEventListener('storage', update);
+      window.removeEventListener('talentix-usage-update', update as any);
+    };
+  }, [user?.email]);
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -512,6 +537,27 @@ export default function NavigationMobile() {
       
       {/* Spacer for sticky header */}
       {isSticky && <div style={{ height: '70px' }} />}
+
+      {/* Free tier usage indicator */}
+      {user && subscription.tier === 'free' && (
+        <div style={{
+          position: 'sticky',
+          top: isSticky ? '70px' : 0,
+          zIndex: 9,
+          background: '#fff7ed',
+          borderBottom: '1px solid #fed7aa',
+          padding: '6px 12px',
+          display: 'flex',
+          justifyContent: 'center',
+          gap: '12px',
+          fontSize: '12px',
+          color: '#9a3412'
+        }}>
+          <span>🎬 Video: {usage.videoTotal}/2</span>
+          <span>•</span>
+          <span>📄 CV today: {usage.cvToday}/1</span>
+        </div>
+      )}
       
       {/* Header panel, community modal, and auth modals rendered as portals to body */}
       {typeof window !== 'undefined' && createPortal(

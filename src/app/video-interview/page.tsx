@@ -270,6 +270,10 @@ export default function VideoInterviewPage(): React.ReactElement {
       // Immediately connect video element to stream
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
+        // Ensure local preview is silent to prevent echo while speaking
+        videoRef.current.muted = true;
+        // Some browsers require the volume to be set explicitly
+        try { videoRef.current.volume = 0; } catch {}
         console.log('📹 Video element connected to stream immediately');
         
         // Try to play the video to ensure it's working
@@ -326,6 +330,8 @@ export default function VideoInterviewPage(): React.ReactElement {
       // Ensure video element is connected to stream
       if (videoRef.current && streamRef.current) {
         videoRef.current.srcObject = streamRef.current;
+        videoRef.current.muted = true;
+        try { videoRef.current.volume = 0; } catch {}
         console.log('📹 Video element connected to stream');
       }
 
@@ -1298,11 +1304,16 @@ export default function VideoInterviewPage(): React.ReactElement {
                       style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                       autoPlay={stage === 'planning' || stage === 'recording'}
                       controls={stage === 'playback'}
-                      muted={stage === 'planning'}
+                      muted={stage !== 'playback'}
                       playsInline
                       onLoadedData={() => {
                         if (stage === 'playback') {
                           console.log('🎬 Video loaded for playback');
+                          // Unmute playback explicitly
+                          if (videoRef.current) {
+                            videoRef.current.muted = false;
+                            try { videoRef.current.volume = 1; } catch {}
+                          }
                         }
                       }}
                       onError={(e) => {

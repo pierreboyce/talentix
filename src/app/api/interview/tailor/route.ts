@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
     console.log('🎯 Tailoring interview questions:', { companyName, jobRole, questionCount });
 
     // Build the prompt based on what information is provided
-    let prompt = `Generate ${questionCount} professional interview questions`;
+    let prompt = `Generate exactly ${questionCount} beginner‑friendly interview questions`;
     
     if (jobRole && companyName) {
       prompt += ` specifically tailored for a ${jobRole} position at ${companyName}.`;
@@ -25,14 +25,7 @@ export async function POST(request: NextRequest) {
       prompt += ` for a general job interview.`;
     }
 
-    prompt += `\n\nFor each question, provide:
-1. The question itself
-2. A category (e.g., "Technical", "Behavioral", "Leadership", "Company Culture", "Problem Solving")
-3. A difficulty level (Easy, Medium, or Hard)
-
-Format the response as a JSON array with objects containing: question, category, and difficulty fields.
-
-Make the questions specific, insightful, and relevant${companyName ? ` to ${companyName}'s industry and values` : ''}${jobRole ? ` and the ${jobRole} role` : ''}.`;
+    prompt += `\n\nRules:\n- Questions MUST be interview‑style (introductory, motivation, competency/behavioral using STAR, teamwork, communication, company research, problem solving).\n- DO NOT ask technical trivia, quizzes, coding, algorithms, system design, language/framework specifics, or domain exams.\n- Keep wording simple and beginner‑friendly. Prefer Easy difficulty (~70%), rest Medium. Avoid trick questions.\n- Each question should stand alone and be relevant to${companyName ? ` ${companyName}` : ''}${companyName && jobRole ? ' and ' : ''}${jobRole ? `the ${jobRole} role` : ''}, without requiring prior technical knowledge.\n\nFor each question, provide:\n1. The question itself\n2. A category (e.g., "Introductory", "Motivation", "Behavioral", "Teamwork", "Communication", "Company Research", "Problem Solving")\n3. A difficulty level (Easy, Medium, or Hard)\n\nFormat the response as a JSON array with objects containing: question, category, and difficulty fields.\n\nEvery question must be tailored to${companyName ? ` ${companyName}` : ''}${companyName && jobRole ? ' and ' : ''}${jobRole ? `the ${jobRole} role` : ''}. Use simple wording and concrete scenarios.`;
 
     console.log('📝 Prompt:', prompt);
 
@@ -48,7 +41,7 @@ Make the questions specific, insightful, and relevant${companyName ? ` to ${comp
           content: prompt
         }
       ],
-      temperature: 0.8,
+      temperature: 0.4,
       response_format: { type: 'json_object' }
     });
 
@@ -71,14 +64,42 @@ Make the questions specific, insightful, and relevant${companyName ? ` to ${comp
     console.log('📋 Questions found:', questions);
 
     // Ensure each question has an ID
-    const questionsWithIds = Array.isArray(questions) 
+    let questionsWithIds = Array.isArray(questions) 
       ? questions.map((q: any, index: number) => ({
           id: Date.now() + index,
           question: q.question || q,
           category: q.category || 'General',
-          difficulty: q.difficulty || 'Medium'
+          difficulty: q.difficulty || 'Easy'
         }))
       : [];
+
+    // If fewer than requested, top up with gentle, interview‑style templates (non‑technical)
+    if (questionsWithIds.length < questionCount) {
+      const templates = [
+        `Why are you interested in ${companyName || 'our company'} and the ${jobRole || 'role'}?`,
+        `What is one strength you would bring to ${companyName || 'the team'} as a ${jobRole || 'new hire'}?`,
+        `Tell us about a time you learned something new quickly. How would that help you at ${companyName || 'this company'}?`,
+        `How would you handle a simple mistake on your first week as a ${jobRole || 'team member'}?`,
+        `What do you know about ${companyName || 'our company'} and why does it appeal to you?`
+      ];
+      while (questionsWithIds.length < questionCount) {
+        const idx = questionsWithIds.length % templates.length;
+        questionsWithIds.push({
+          id: Date.now() + questionsWithIds.length,
+          question: templates[idx],
+          category: 'Behavioral',
+          difficulty: 'Easy'
+        });
+      }
+    }
+    
+    // Guard against accidental technical/trivia questions
+    const technicalRegex = /(algorithm|big o|data structure|syntax|compile|runtime|sql|javascript|python|java\b|c\+\+|react|node|api design|system design|binary tree|linked list|complexity|hash map|docker|kubernetes|terraform|regex|time complexity)/i;
+    questionsWithIds = questionsWithIds.map(q => ({
+      ...q,
+      question: technicalRegex.test(q.question) ? `Tell me about a time you faced a new challenge and how you approached it at ${companyName || 'work/school'}.` : q.question,
+      category: technicalRegex.test(q.question) ? 'Behavioral' : q.category
+    }));
 
     console.log('✅ Generated questions:', questionsWithIds.length);
 
