@@ -23,7 +23,7 @@ function isStandalone(): boolean {
 
 const STORAGE_KEY = "talentix-add-to-home-dismissed";
 
-export default function AddToHomePrompt(): JSX.Element | null {
+export default function AddToHomePrompt(): React.ReactElement | null {
   const pathname = usePathname();
   const [show, setShow] = React.useState(false);
 
