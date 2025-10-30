@@ -99,6 +99,13 @@ const accountCompanyApps: AppItem[] = [
     color: 'bg-gradient-to-br from-blue-400 to-blue-600'
   },
   {
+    id: 'events',
+    name: 'Events',
+    emoji: '🎉',
+    href: '/events',
+    color: 'bg-gradient-to-br from-rose-400 to-rose-600'
+  },
+  {
     id: 'talentix-points',
     name: 'Talentix Points',
     emoji: '🎯',

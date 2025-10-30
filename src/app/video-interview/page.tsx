@@ -1,4 +1,12 @@
 'use client';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Video Interview Practice – Talentix',
+  description: 'Practice interview questions with a timed video and get AI-powered feedback. Tailored, beginner-friendly questions for your first job.',
+  alternates: { canonical: '/video-interview' },
+  keywords: ['video interview practice', 'AI interview feedback', 'interview prep', 'teen jobs'],
+};
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';

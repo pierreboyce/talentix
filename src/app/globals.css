@@ -37,15 +37,21 @@
     position: fixed !important;
     inset: 0 !important;
     width: 100vw !important;
-    height: 100vh !important;
+    height: 100vh !important; /* fallback */
+    height: 100dvh !important; /* modern viewport units */
+    min-height: 100svh !important; /* small viewport height for iOS */
+    max-height: 100lvh !important; /* large viewport height */
     z-index: 9999999 !important;
+    padding-bottom: env(safe-area-inset-bottom, 0) !important;
   }
   
   /* Mobile panel overlay - override with dvh for mobile devices */
   .mobile-panel-overlay {
+    height: 100vh !important; /* fallback */
     height: 100dvh !important;
-    min-height: 100dvh !important;
-    max-height: 100dvh !important;
+    min-height: 100svh !important;
+    max-height: 100lvh !important;
+    padding-bottom: env(safe-area-inset-bottom, 0) !important;
   }
 }
 

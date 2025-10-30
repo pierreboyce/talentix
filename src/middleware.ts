@@ -30,7 +30,7 @@ export function middleware(request: NextRequest) {
   if (isMobile && !hasMobileAccess) {
     // Allow the mobile coming soon route and privacy page to render normally
     if (pathname.startsWith('/mobile-coming-soon') || pathname === '/privacy') {
-      return NextResponse.next()
+    return NextResponse.next()
     }
     // Redirect all other mobile requests to the cutscene/coming-soon experience
     const url = request.nextUrl.clone()

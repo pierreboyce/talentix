@@ -16,6 +16,9 @@ import { ToastProvider } from "../components/Toast";
 import MobileRedirect from "../components/MobileRedirect";
 import NavigationWrapper from "../components/NavigationWrapper";
 import CommunityModal from "../components/CommunityModal";
+import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/next";
+import AddToHomePrompt from "../components/AddToHomePrompt";
 
 const inter = Inter({ subsets: ["latin"] });
 const fredoka = Fredoka({ 
@@ -123,6 +126,9 @@ export default function RootLayout({
                     <ChatbotClientWrapper />
                     <GlobalModalManager />
                     <CommunityModal />
+                    <AddToHomePrompt />
+                    <Analytics />
+                    <SpeedInsights />
                     </ChatbotProvider>
                   </QuestProvider>
                 </PointsProvider>

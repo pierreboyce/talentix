@@ -76,7 +76,7 @@ export default function NavigationMobile() {
   // Load usage counts for free tier indicator
   useEffect(() => {
     if (typeof window === 'undefined' || !user?.email) return;
-    const today = new Date().toISOString().slice(0, 10);
+    const today = new Date().toDateString();
     const cvKey = `cv_reviews_${today}_${user.email}`;
     const videoKey = `video_interview_questions_used_${user.email}`;
     const cvToday = parseInt(localStorage.getItem(cvKey) || '0');
@@ -252,7 +252,18 @@ export default function NavigationMobile() {
         <div className="mx-auto flex items-center justify-between px-4 py-3" style={{ height: '70px', width: '90%', maxWidth: '90vw' }}>
           {/* Logo on the left */}
           <div className="flex items-center">
-            <Link href="/" className="flex items-center">
+            <a
+              href="/"
+              className="flex items-center"
+              onClick={(e) => {
+                e.preventDefault();
+                if (pathname === '/') {
+                  if (typeof window !== 'undefined') window.location.assign('/');
+                } else {
+                  router.push('/');
+                }
+              }}
+            >
               <Image
                 src="/tixlogo.png"
                 alt="Talentix Logo"
@@ -261,7 +272,7 @@ export default function NavigationMobile() {
                 style={{ objectFit: 'contain' }}
                 priority
               />
-            </Link>
+            </a>
           </div>
 
           {/* Navigation buttons on the right - aligned horizontally with logo */}
@@ -518,7 +529,7 @@ export default function NavigationMobile() {
                   <button 
                     onClick={() => handleMenuItemClick(() => {
                       if (typeof window !== 'undefined') {
-                        window.dispatchEvent(new CustomEvent('talentix-sign-out'));
+                        window.dispatchEvent(new Event('talentix-show-signout-modal'));
                       }
                     })}
                     className="mobile-nav-item w-full text-left bg-gradient-to-r from-red-300 to-red-400 text-white hover:from-red-400 hover:to-red-500 transform hover:scale-105 active:scale-95"
@@ -567,9 +578,9 @@ export default function NavigationMobile() {
               className="modal-overlay mobile-panel-overlay"
               onClick={toggleHeaderPanel}
               style={{ 
-                display: 'flex', 
-                alignItems: 'stretch', 
-                justifyContent: 'flex-end', 
+                display: 'flex',
+                alignItems: 'stretch',
+                justifyContent: 'flex-end',
                 background: 'rgba(0,0,0,0.35)',
                 position: 'fixed',
                 top: 0,
@@ -577,7 +588,8 @@ export default function NavigationMobile() {
                 right: 0,
                 bottom: 0,
                 height: '100dvh',
-                minHeight: '100dvh'
+                minHeight: '100svh',
+                paddingBottom: 'env(safe-area-inset-bottom, 0)'
               }}
             >
               <aside
@@ -585,7 +597,7 @@ export default function NavigationMobile() {
                 aria-modal="true"
                 style={{
                   height: '100dvh',
-                  minHeight: '100dvh',
+                  minHeight: '100svh',
                   width: '280px',
                   maxWidth: '80vw',
                   background: 'linear-gradient(180deg, #fff7cc 0%, #fff3b0 6%, #ffffff 24%, #ffffff 100%)',
@@ -596,7 +608,8 @@ export default function NavigationMobile() {
                   flexDirection: 'column',
                   overflowY: 'auto',
                   WebkitOverflowScrolling: 'touch',
-                  boxSizing: 'border-box'
+                  boxSizing: 'border-box',
+                  paddingBottom: 'env(safe-area-inset-bottom, 0)'
                 }}
                 onClick={(e) => e.stopPropagation()}
               >
@@ -673,6 +686,23 @@ export default function NavigationMobile() {
                         }}
                       >
                         🛠️ Our Services
+                      </button>
+                      <button
+                        onClick={() => { toggleHeaderPanel(); router.push('/events'); }}
+                        style={{
+                          background: 'linear-gradient(135deg, #fecaca 0%, #f87171 100%)',
+                          color: '#374151',
+                          padding: '12px 16px',
+                          borderRadius: '12px',
+                          border: 'none',
+                          fontSize: '14px',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                          boxShadow: '0 4px 12px rgba(248, 113, 113, 0.25)',
+                          fontFamily: 'Fredoka, sans-serif'
+                        }}
+                      >
+                        🎉 Events
                       </button>
                       <button
                         onClick={() => { setShowSignInModal(true); toggleHeaderPanel(); }}
@@ -929,6 +959,23 @@ export default function NavigationMobile() {
                         ⚙️ Settings
                       </button>
                       <button
+                        onClick={() => { toggleHeaderPanel(); router.push('/events'); }}
+                        style={{
+                          background: 'linear-gradient(135deg, #fecaca 0%, #f87171 100%)',
+                          color: '#374151',
+                          padding: '12px 16px',
+                          borderRadius: '12px',
+                          border: 'none',
+                          fontSize: '14px',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                          boxShadow: '0 4px 12px rgba(248, 113, 113, 0.25)',
+                          fontFamily: 'Fredoka, sans-serif'
+                        }}
+                      >
+                        🎉 Events
+                      </button>
+                      <button
                         onClick={() => { toggleHeaderPanel(); router.push('/our-story'); }}
                         style={{
                           background: 'linear-gradient(135deg, #fef3c7 0%, #fde047 100%)',
@@ -967,7 +1014,7 @@ export default function NavigationMobile() {
                       <button
                         onClick={() => { 
                           if (typeof window !== 'undefined') {
-                            window.dispatchEvent(new CustomEvent('talentix-sign-out'));
+                            window.dispatchEvent(new Event('talentix-show-signout-modal'));
                           }
                           toggleHeaderPanel(); 
                         }}

@@ -167,7 +167,19 @@ export default function Navigation() {
           {user && <AppLauncher />}
           
           {/* Logo */}
-          <Link href="/" className={`flex items-center ${user ? 'ml-6' : ''}`}>
+          <a
+            onClick={(e) => {
+              e.preventDefault();
+              if (pathname === '/') {
+                // If we're already on home, refresh to prevent a blank interim state
+                if (typeof window !== 'undefined') window.location.assign('/');
+              } else {
+                router.push('/');
+              }
+            }}
+            href="/"
+            className={`flex items-center ${user ? 'ml-6' : ''}`}
+          >
             <Image
               src="/tixlogo.png"
               alt="Talentix Logo"
@@ -176,7 +188,7 @@ export default function Navigation() {
               style={{ objectFit: 'contain' }}
               priority
             />
-          </Link>
+          </a>
         </div>
 
         {/* Right side navigation */}
@@ -267,6 +279,34 @@ export default function Navigation() {
                   }}
                 >
                   🛠️ Our Services
+                </button>
+                <button 
+                  onClick={() => router.push('/events')}
+                  style={{
+                    background: 'linear-gradient(135deg, #fecaca 0%, #f87171 100%)',
+                    color: '#374151',
+                    padding: '10px 18px',
+                    borderRadius: '25px',
+                    border: 'none',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease',
+                    boxShadow: '0 4px 15px rgba(248, 113, 113, 0.3)',
+                    fontFamily: "'Fredoka', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-3px) scale(1.05)';
+                    e.currentTarget.style.boxShadow = '0 8px 25px rgba(248, 113, 113, 0.4)';
+                    e.currentTarget.style.background = 'linear-gradient(135deg, #f87171 0%, #ef4444 100%)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                    e.currentTarget.style.boxShadow = '0 4px 15px rgba(248, 113, 113, 0.3)';
+                    e.currentTarget.style.background = 'linear-gradient(135deg, #fecaca 0%, #f87171 100%)';
+                  }}
+                >
+                  🎉 Events
                 </button>
                 <button 
                   onClick={() => setShowSignInModal(true)}
