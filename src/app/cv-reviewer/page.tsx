@@ -1,12 +1,4 @@
 "use client";
-import type { Metadata } from 'next';
-
-export const metadata: Metadata = {
-  title: 'CV Reviewer – Talentix',
-  description: 'Free CV reviewer for teenagers. Get simple, actionable feedback on your CV and improve it fast with Talentix.',
-  alternates: { canonical: '/cv-reviewer' },
-  keywords: ['CV reviewer', 'free CV checker', 'CV feedback', 'teen jobs', 'first job'],
-};
 
 import { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
