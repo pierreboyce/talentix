@@ -588,7 +588,6 @@ export default function NavigationMobile() {
                 right: 0,
                 bottom: 0,
                 width: '100vw',
-                height: '100vh',
                 height: '100dvh',
                 minHeight: '100svh',
                 maxHeight: '100lvh',
