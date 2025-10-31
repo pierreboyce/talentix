@@ -26,17 +26,20 @@ export default function MobileComingSoon() {
     { text: 'Free Templates', emoji: '📑' }
   ];
   const positions: Array<Partial<CSSStyleDeclaration>> = [
-    { top: '6%', left: '6%' },
-    { top: '10%', right: '6%' },
-    { top: '20%', left: '8%' },
-    { top: '24%', right: '8%' },
-    { top: '34%', left: '4%' },
-    { top: '36%', right: '4%' },
-    { top: '46%', left: '4%' },
-    { top: '48%', right: '4%' },
-    { bottom: '18%', left: '6%' },
-    { bottom: '18%', right: '6%' },
-    { bottom: '8%', left: '8%' }
+    // Top edge – stay clear of center card
+    { top: '6%', left: '4%' },
+    { top: '10%', right: '4%' },
+    { top: '18%', left: '2%' },
+    { top: '22%', right: '2%' },
+    // Mid edges – hug sides so they don't sit behind the center card
+    { top: '32%', left: '2%' },
+    { top: '36%', right: '2%' },
+    { top: '50%', left: '2%' },
+    { top: '54%', right: '2%' },
+    // Bottom edge – keep to corners
+    { bottom: '20%', left: '4%' },
+    { bottom: '16%', right: '4%' },
+    { bottom: '8%', left: '6%' }
   ];
   const [tick, setTick] = useState(0);
   useEffect(() => {
@@ -81,12 +84,14 @@ export default function MobileComingSoon() {
             <div className="animate-float-delayed" style={{ position: 'absolute', bottom: '15%', right: '10%', fontSize: '4rem' }}>🚀</div>
           </div>
 
-          <img 
+          <Image
             src={logoSrc}
             alt="Talentix"
             width={160}
             height={72}
-            style={{ marginBottom: 24, objectFit: 'contain', display: 'block' }}
+            priority
+            sizes="(max-width: 768px) 160px, 160px"
+            style={{ marginBottom: 24, objectFit: 'contain', display: 'block', height: 'auto', width: '160px' }}
             onError={() => setLogoSrc('/logo.png')}
           />
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10, textAlign: 'center' }}>
@@ -190,6 +195,19 @@ export default function MobileComingSoon() {
           </div>
 
           <div style={{ backgroundColor: 'rgba(255,255,255,0.92)', borderRadius: 24, padding: '28px 22px', width: '100%', maxWidth: 420, boxShadow: '0 20px 50px rgba(0,0,0,0.25)', border: '2px solid rgba(255,255,255,0.6)', position: 'relative', zIndex: 2 }}>
+            {/* Launch date badge */}
+            <div style={{
+              display: 'inline-block',
+              margin: '0 auto 12px auto',
+              padding: '6px 12px',
+              borderRadius: 999,
+              background: 'linear-gradient(135deg, #fde047 0%, #f59e0b 100%)',
+              color: '#111827',
+              fontWeight: 800,
+              fontSize: '12px'
+            }}>
+              Mobile launches on 3 November
+            </div>
             <a
               href="https://chat.whatsapp.com/DkkXdc9XTFPIERHJ5VpWVu?mode=wwt"
               target="_blank"
@@ -208,13 +226,18 @@ export default function MobileComingSoon() {
             >
               Join our community
             </a>
+            <div style={{ fontSize: '12px', color: '#64748b', marginTop: -6, marginBottom: 8, fontWeight: 700 }}>
+              Get early access by joining the community
+            </div>
             {showImageLogo ? (
-              <img
+              <Image
                 src={logoSrc}
                 alt="Talentix"
                 width={160}
                 height={72}
-                style={{ margin: '8px auto 12px auto', objectFit: 'contain', display: 'block' }}
+                priority
+                sizes="(max-width: 768px) 160px, 160px"
+                style={{ margin: '8px auto 12px auto', objectFit: 'contain', display: 'block', height: 'auto', width: '160px' }}
                 onError={() => { setShowImageLogo(false); setLogoSrc('/logo.png'); }}
               />
             ) : (
@@ -283,7 +306,7 @@ export default function MobileComingSoon() {
               ) : null}
             </div>
             <h1 style={{ fontSize: '1.8rem', fontWeight: 900, margin: '0 0 8px 0', background: 'linear-gradient(135deg, #fde047 0%, #f59e0b 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Mobile coming soon</h1>
-            <p style={{ fontSize: '1rem', color: '#4b5563', margin: 0 }}>We’re building an awesome mobile experience for you. Check back soon!</p>
+            <p style={{ fontSize: '1rem', color: '#4b5563', margin: 0 }}>We’re building an awesome mobile experience for you. Launching 3 November — join the community for early access.</p>
           </div>
 
           <div style={{ marginTop: 20, fontSize: '0.9rem', color: '#fff' }}>

@@ -587,16 +587,21 @@ export default function NavigationMobile() {
                 left: 0,
                 right: 0,
                 bottom: 0,
+                width: '100vw',
+                height: '100vh',
                 height: '100dvh',
                 minHeight: '100svh',
-                paddingBottom: 'env(safe-area-inset-bottom, 0)'
+                maxHeight: '100lvh',
+                paddingBottom: 'env(safe-area-inset-bottom, 0)',
+                overflow: 'hidden'
               }}
             >
               <aside
                 role="dialog"
                 aria-modal="true"
                 style={{
-                  height: '100dvh',
+                  height: '100%',
+                  maxHeight: '100lvh',
                   minHeight: '100svh',
                   width: '280px',
                   maxWidth: '80vw',

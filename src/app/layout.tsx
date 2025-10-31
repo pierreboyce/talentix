@@ -76,6 +76,7 @@ export const viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
+  viewportFit: 'cover',
 };
 
 export default function RootLayout({
@@ -119,8 +120,8 @@ export default function RootLayout({
                     <ChatbotProvider>
                       <MobileRedirect />
                       <NavigationWrapper />
-                    <div className="min-h-screen bg-white text-black">
-                    {children}
+                    <div className="text-black" style={{ minHeight: '100dvh', backgroundColor: 'inherit' }}>
+                      {children}
                     </div>
                     <PointsNotification />
                     <ChatbotClientWrapper />

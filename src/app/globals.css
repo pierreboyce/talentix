@@ -38,11 +38,13 @@
     inset: 0 !important;
     width: 100vw !important;
     height: 100vh !important; /* fallback */
-    height: 100dvh !important; /* modern viewport units */
-    min-height: 100svh !important; /* small viewport height for iOS */
-    max-height: 100lvh !important; /* large viewport height */
+    height: 100dvh !important; /* dynamic on mobile */
+    min-height: 100svh !important; /* iOS small viewport */
+    max-height: 100lvh !important; /* iOS large viewport */
     z-index: 9999999 !important;
     padding-bottom: env(safe-area-inset-bottom, 0) !important;
+    overscroll-behavior: contain !important;
+    touch-action: none !important;
   }
   
   /* Mobile panel overlay - override with dvh for mobile devices */
@@ -52,6 +54,14 @@
     min-height: 100svh !important;
     max-height: 100lvh !important;
     padding-bottom: env(safe-area-inset-bottom, 0) !important;
+    inset: 0 !important;
+    position: fixed !important;
+    overflow: hidden !important;
+  }
+
+  body.talentix-modal-open {
+    overscroll-behavior: none !important;
+    touch-action: none !important;
   }
 }
 
