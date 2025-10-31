@@ -194,17 +194,19 @@ export default function MobileComingSoon() {
             })}
           </div>
 
-          <div style={{ backgroundColor: 'rgba(255,255,255,0.92)', borderRadius: 24, padding: '28px 22px', width: '100%', maxWidth: 420, boxShadow: '0 20px 50px rgba(0,0,0,0.25)', border: '2px solid rgba(255,255,255,0.6)', position: 'relative', zIndex: 2 }}>
+          <div style={{ backgroundColor: 'rgba(255,255,255,0.92)', borderRadius: 20, padding: '18px 16px', width: '100%', maxWidth: 380, boxShadow: '0 20px 50px rgba(0,0,0,0.25)', border: '2px solid rgba(255,255,255,0.6)', position: 'relative', zIndex: 2 }}>
             {/* Launch date badge */}
             <div style={{
-              display: 'inline-block',
-              margin: '0 auto 12px auto',
+              display: 'block',
+              textAlign: 'center',
+              margin: '0 auto 8px auto',
               padding: '6px 12px',
               borderRadius: 999,
               background: 'linear-gradient(135deg, #fde047 0%, #f59e0b 100%)',
               color: '#111827',
               fontWeight: 800,
-              fontSize: '12px'
+              fontSize: '12px',
+              width: 'max-content'
             }}>
               Mobile launches on 3 November
             </div>
@@ -213,22 +215,19 @@ export default function MobileComingSoon() {
               target="_blank"
               rel="noopener noreferrer"
               style={{
-                display: 'inline-block',
+                display: 'block',
                 background: 'linear-gradient(135deg, #25D366 0%, #128C7E 100%)',
                 color: '#ffffff',
                 padding: '12px 16px',
                 borderRadius: 14,
                 fontWeight: 800,
                 textDecoration: 'none',
-                marginBottom: 12,
+                margin: '0 auto 8px auto',
                 boxShadow: '0 10px 24px rgba(18, 140, 126, 0.35)'
               }}
             >
               Join our community
             </a>
-            <div style={{ fontSize: '12px', color: '#64748b', marginTop: -6, marginBottom: 8, fontWeight: 700 }}>
-              Get early access by joining the community
-            </div>
             {showImageLogo ? (
               <Image
                 src={logoSrc}
@@ -237,7 +236,7 @@ export default function MobileComingSoon() {
                 height={72}
                 priority
                 sizes="(max-width: 768px) 160px, 160px"
-                style={{ margin: '8px auto 12px auto', objectFit: 'contain', display: 'block', height: 'auto', width: '160px' }}
+                style={{ margin: '4px auto 6px auto', objectFit: 'contain', display: 'block', height: 'auto', width: '160px' }}
                 onError={() => { setShowImageLogo(false); setLogoSrc('/logo.png'); }}
               />
             ) : (
@@ -305,7 +304,7 @@ export default function MobileComingSoon() {
                 <div style={{ color: '#ef4444', fontSize: '11px', marginTop: 4, fontWeight: 600, textAlign: 'center' }}>{unlockError}</div>
               ) : null}
             </div>
-            <h1 style={{ fontSize: '1.8rem', fontWeight: 900, margin: '0 0 8px 0', background: 'linear-gradient(135deg, #fde047 0%, #f59e0b 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Mobile coming soon</h1>
+            <h1 style={{ fontSize: '1.35rem', fontWeight: 900, margin: '0 0 6px 0', background: 'linear-gradient(135deg, #fde047 0%, #f59e0b 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', whiteSpace: 'nowrap' }}>Mobile coming soon</h1>
             <p style={{ fontSize: '1rem', color: '#4b5563', margin: 0 }}>We’re building an awesome mobile experience for you. Launching 3 November — join the community for early access.</p>
           </div>
 
