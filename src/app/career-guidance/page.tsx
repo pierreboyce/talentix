@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useSubscription } from '../../contexts/SubscriptionContext';
 import { useAuth } from '../../contexts/AuthContext';
 import PaywallGuard from '../../components/PaywallGuard';
+import AuthGuard from '../../components/AuthGuard';
 
 interface BlogPost {
   id: number;
@@ -2159,6 +2160,7 @@ Remember: Even experienced professionals get nervous before important interviews
   }
 
   return (
+    <AuthGuard>
     <div style={{
       minHeight: '100vh',
       background: 'linear-gradient(135deg, #fef3c7 0%, #fde047 50%, #facc15 100%)',
@@ -2508,5 +2510,6 @@ Remember: Even experienced professionals get nervous before important interviews
         }
       `}</style>
     </div>
+    </AuthGuard>
   );
 }

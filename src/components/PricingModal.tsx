@@ -44,7 +44,7 @@ const pricingTiers: PricingTier[] = [
     price: 3.99,
     yearlyPrice: 30.99,
     priceId: 'price_1S6FAPENQFYWRFKWL9LCfneV',
-    yearlyPriceId: 'price_1S6FAmENQFYWRFKWZkFqm4Bx',
+    yearlyPriceId: 'price_1SFsbSENQFYWRFKWVsG3qfL7',
     description: 'Ideal for active job seekers and career changers',
     icon: '🚀',
     popular: true,
@@ -118,6 +118,13 @@ export default function PricingModal({ isOpen, onClose }: PricingModalProps) {
     try {
       const priceId = isYearly ? tier.yearlyPriceId : tier.priceId;
       
+      console.log('🛒 Subscription request:', {
+        tier: tier.name,
+        isYearly,
+        priceId,
+        userEmail: user.email
+      });
+      
       if (!priceId) {
         throw new Error('Price ID not configured for this tier');
       }
@@ -133,7 +140,12 @@ export default function PricingModal({ isOpen, onClose }: PricingModalProps) {
       
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to create checkout session');
+        console.error('❌ Subscription checkout failed:', {
+          status: response.status,
+          error: errorData.error,
+          details: errorData.details
+        });
+        throw new Error(errorData.error || `Failed to create checkout session (Status: ${response.status})`);
       }
 
       const data = await response.json();
@@ -299,16 +311,25 @@ export default function PricingModal({ isOpen, onClose }: PricingModalProps) {
         style={{
           position: 'fixed',
           inset: 0,
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
           width: '100vw',
-          height: '100vh',
+          height: '100dvh',
+          minHeight: '100svh',
+          maxHeight: '100lvh',
+          margin: 0,
+          padding: window.innerWidth < 640 ? '8px' : '20px',
+          paddingBottom: window.innerWidth < 640 ? 'calc(8px + env(safe-area-inset-bottom, 0px))' : 'calc(20px + env(safe-area-inset-bottom, 0px))',
+          overflow: 'hidden',
           background: 'rgba(0, 0, 0, 0.3)',
           backdropFilter: 'blur(12px) saturate(0.8)',
           WebkitBackdropFilter: 'blur(12px) saturate(0.8)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          zIndex: 99999999,
-          padding: window.innerWidth < 640 ? '8px' : '20px'
+          zIndex: 99999999
         }}
         onClick={onClose}
       >

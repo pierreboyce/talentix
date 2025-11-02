@@ -6,6 +6,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { usePoints } from '../../contexts/PointsContext';
 import { useDeviceDetection } from '../../hooks/useDeviceDetection';
 import { Upload, FileText, Briefcase, Wand2, Edit3, Download, Copy, RefreshCw, ArrowLeft } from 'lucide-react';
+import AuthGuard from '../../components/AuthGuard';
 
 interface CoverLetterData {
   cv: string;
@@ -32,13 +33,6 @@ export default function CoverLetterGenerator(): React.ReactElement {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const typewriterRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    console.log('🔐 Auth check:', { loading, user: !!user });
-    if (!loading && !user) {
-      console.log('🔄 Redirecting to home - user not authenticated');
-      router.push('/');
-    }
-  }, [user, loading, router]);
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -234,6 +228,7 @@ export default function CoverLetterGenerator(): React.ReactElement {
   }
 
   return (
+    <AuthGuard>
     <div style={{
       minHeight: '100vh',
       background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
@@ -918,5 +913,6 @@ export default function CoverLetterGenerator(): React.ReactElement {
         }
       `}</style>
     </div>
+    </AuthGuard>
   );
 }

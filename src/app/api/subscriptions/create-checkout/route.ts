@@ -85,6 +85,47 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    // Validate the price exists and is active
+    try {
+      const price = await stripe.prices.retrieve(priceId);
+      console.log('✅ Price validated:', {
+        priceId,
+        active: price.active,
+        type: price.type,
+        recurring: price.recurring ? {
+          interval: price.recurring.interval,
+          intervalCount: price.recurring.interval_count
+        } : null
+      });
+      
+      if (!price.active) {
+        return NextResponse.json(
+          { error: 'This price is no longer available. Please contact support or try a different subscription plan.' },
+          { status: 400 }
+        );
+      }
+      
+      // Ensure it's a recurring price for subscriptions
+      if (price.type !== 'recurring') {
+        return NextResponse.json(
+          { error: 'Invalid price type. Only recurring subscriptions are supported.' },
+          { status: 400 }
+        );
+      }
+    } catch (priceError: any) {
+      console.error('❌ Price validation failed:', priceError.message);
+      if (priceError.code === 'resource_missing') {
+        return NextResponse.json(
+          { error: 'The subscription price is not found. Please update the price ID or contact support.' },
+          { status: 400 }
+        );
+      }
+      return NextResponse.json(
+        { error: `Price validation failed: ${priceError.message}` },
+        { status: 400 }
+      );
+    }
+
     // Create Stripe checkout session
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
@@ -105,12 +146,33 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    console.log('✅ Checkout session created:', {
+      sessionId: session.id,
+      url: session.url,
+      priceId
+    });
+
     return NextResponse.json({ url: session.url });
 
-  } catch (error) {
+  } catch (error: any) {
+    console.error('❌ Stripe checkout creation error:', {
+      message: error.message,
+      type: error.type,
+      code: error.code,
+      priceId: error.request?.body?.line_items?.[0]?.price
+    });
+    
+    let errorMessage = 'Failed to create checkout session';
+    if (error.type === 'StripeInvalidRequestError') {
+      if (error.code === 'resource_missing') {
+        errorMessage = 'The subscription price is not found. Please update the price ID in your Stripe dashboard or contact support.';
+      } else {
+        errorMessage = `Stripe error: ${error.message}`;
+      }
+    }
     
     return NextResponse.json(
-      { error: 'Failed to create checkout session' },
+      { error: errorMessage, details: error.message },
       { status: 500 }
     );
   }

@@ -210,10 +210,10 @@ export default function MobileComingSoon() {
             }}>
               Mobile launches on 3 November
             </div>
-            <a
-              href="https://chat.whatsapp.com/DkkXdc9XTFPIERHJ5VpWVu?mode=wwt"
-              target="_blank"
-              rel="noopener noreferrer"
+            <button
+              onClick={() => {
+                window.location.href = 'https://chat.whatsapp.com/DkkXdc9XTFPIERHJ5VpWVu?mode=wwt';
+              }}
               style={{
                 display: 'block',
                 background: 'linear-gradient(135deg, #25D366 0%, #128C7E 100%)',
@@ -221,13 +221,18 @@ export default function MobileComingSoon() {
                 padding: '12px 16px',
                 borderRadius: 14,
                 fontWeight: 800,
-                textDecoration: 'none',
+                border: 'none',
+                cursor: 'pointer',
                 margin: '0 auto 8px auto',
-                boxShadow: '0 10px 24px rgba(18, 140, 126, 0.35)'
+                boxShadow: '0 10px 24px rgba(18, 140, 126, 0.35)',
+                width: '100%',
+                maxWidth: '280px',
+                fontFamily: 'inherit',
+                fontSize: '14px'
               }}
             >
               Join our community
-            </a>
+            </button>
             {showImageLogo ? (
               <Image
                 src={logoSrc}
@@ -277,7 +282,7 @@ export default function MobileComingSoon() {
                   if (adminPassword === 'yourfirstjob129') {
                     document.cookie = 'talentix_mobile_access=authenticated; path=/; max-age=86400';
                     setUnlockError('');
-                    window.location.href = '/';
+                    window.location.href = '/home';
                   } else {
                     setUnlockError('Incorrect password');
                   }

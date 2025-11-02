@@ -6,6 +6,7 @@ import { usePoints } from '../../contexts/PointsContext';
 import { useQuests } from '../../contexts/QuestContext';
 import { useDeviceDetection } from '../../hooks/useDeviceDetection';
 import { ArrowLeft, Search, MapPin, Clock, Star, ExternalLink, Filter, Briefcase, DollarSign, X, Menu } from 'lucide-react';
+import AuthGuard from '../../components/AuthGuard';
 
 interface JobResult {
   id: string;
@@ -309,6 +310,7 @@ function SearchPageContent() {
   };
 
   return (
+    <AuthGuard>
     <div style={{ 
       minHeight: '100vh', 
       background: 'linear-gradient(135deg, #fef3c7 0%, #fbbf24 50%, #f59e0b 100%)',
@@ -1135,6 +1137,7 @@ function SearchPageContent() {
         )}
       </div>
     </div>
+    </AuthGuard>
   );
 }
 

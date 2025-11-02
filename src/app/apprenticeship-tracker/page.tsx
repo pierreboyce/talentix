@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '../../contexts/AuthContext';
 import { useDeviceDetection } from '../../hooks/useDeviceDetection';
 import { Search, Briefcase, Calendar, Link as LinkIcon, ChevronDown, Check, X, Sparkles, Download, Trash2 } from 'lucide-react';
+import AuthGuard from '../../components/AuthGuard';
 
 interface Apprenticeship {
   id: string;
@@ -59,7 +60,7 @@ export default function ApprenticeshipTrackerPage() {
   // Redirect if not logged in
   useEffect(() => {
     if (!loading && !user) {
-      router.push('/');
+      router.push('/home');
     }
   }, [user, loading, router]);
 
@@ -296,15 +297,28 @@ export default function ApprenticeshipTrackerPage() {
 
   if (loading) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
-        <div>Loading...</div>
+      <div style={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: 'linear-gradient(135deg, #fde047 0%, #facc15 50%, #eab308 100%)'
+      }}>
+        <div style={{ textAlign: 'center', color: '#374151' }}>
+          <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>⏳</div>
+          <div style={{ fontSize: '1.2rem' }}>Loading...</div>
+        </div>
       </div>
     );
   }
 
-  if (!user) return null;
+  if (!user) {
+    router.replace('/home');
+    return null;
+  }
 
   return (
+    <AuthGuard>
     <div style={{
       minHeight: '100vh',
       backgroundColor: '#f9fafb',
@@ -929,5 +943,6 @@ export default function ApprenticeshipTrackerPage() {
         }
       `}</style>
     </div>
+    </AuthGuard>
   );
 }

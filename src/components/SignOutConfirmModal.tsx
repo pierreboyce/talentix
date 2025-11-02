@@ -64,21 +64,40 @@ export default function SignOutConfirmModal({ isOpen, onClose }: SignOutConfirmM
 
   const node = (
     <div 
-      className={`transition-all duration-300 ${isVisible ? 'opacity-100' : 'opacity-0'}`}
+      className={`modal-overlay transition-all duration-300 ${isVisible ? 'opacity-100' : 'opacity-0'}`}
       style={{ 
         position: 'fixed',
         inset: 0,
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        width: '100vw',
+        height: '100dvh',
+        minHeight: '100svh',
+        maxHeight: '100lvh',
         zIndex: 2147483647,
         display: 'flex', 
         alignItems: 'center', 
         justifyContent: 'center',
-        pointerEvents: 'auto'
+        pointerEvents: 'auto',
+        margin: 0,
+        padding: 0,
+        paddingBottom: 'env(safe-area-inset-bottom, 0)',
+        overflow: 'hidden'
       }}
       onClick={handleClose}
     >
       {/* playful radial gradient backdrop */}
       <div style={{
-        position: 'absolute', inset: 0,
+        position: 'absolute',
+        inset: 0,
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        width: '100%',
+        height: '100%',
         background: 'radial-gradient(1200px 600px at 10% 10%, rgba(253, 224, 71, 0.35), transparent), radial-gradient(1000px 500px at 90% 90%, rgba(250, 204, 21, 0.28), transparent), rgba(0,0,0,0.45)'
       }} />
       <div 

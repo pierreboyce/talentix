@@ -45,18 +45,18 @@ export default function OurStoryPage() {
   ];
 
   return (
-    <div style={{
+    <div className="our-story-page" style={{
       minHeight: '100vh',
       background: 'linear-gradient(135deg, #fde047 0%, #facc15 50%, #eab308 100%)',
       padding: '40px 20px',
       fontFamily: 'Fredoka, sans-serif'
     }}>
       {/* Header */}
-      <div style={{
+      <div className="our-story-header" style={{
         textAlign: 'center',
         marginBottom: '60px'
       }}>
-        <h1 style={{
+        <h1 className="our-story-title" style={{
           fontSize: '4rem',
           fontWeight: 'bold',
           color: '#374151',
@@ -65,7 +65,7 @@ export default function OurStoryPage() {
         }}>
           📖 Our Story
         </h1>
-        <p style={{
+        <p className="our-story-subtitle" style={{
           fontSize: '1.5rem',
           color: '#6b7280',
           maxWidth: '800px',
@@ -77,7 +77,7 @@ export default function OurStoryPage() {
       </div>
 
       {/* Team Members Grid */}
-      <div style={{
+      <div className="team-members-grid" style={{
         maxWidth: '1200px',
         margin: '0 auto',
         display: 'grid',
@@ -88,6 +88,7 @@ export default function OurStoryPage() {
         {teamMembers.map((member, index) => (
           <div
             key={index}
+            className="team-member-card"
             style={{
               background: 'white',
               borderRadius: '24px',
@@ -133,11 +134,11 @@ export default function OurStoryPage() {
             }} />
 
             {/* Profile Image */}
-            <div style={{
+            <div className="profile-image-wrapper" style={{
               position: 'relative',
               zIndex: 1
             }}>
-              <div style={{
+              <div className="profile-image-container" style={{
                 width: '180px',
                 height: '180px',
                 borderRadius: '50%',
@@ -183,7 +184,7 @@ export default function OurStoryPage() {
             </div>
 
             {/* Content */}
-            <div style={{
+            <div className="member-content" style={{
               flex: 1,
               position: 'relative',
               zIndex: 1
@@ -191,7 +192,7 @@ export default function OurStoryPage() {
               <div style={{
                 marginBottom: '20px'
               }}>
-                <h2 style={{
+                <h2 className="member-name" style={{
                   fontSize: '2.5rem',
                   fontWeight: 'bold',
                   color: '#1f2937',
@@ -201,9 +202,9 @@ export default function OurStoryPage() {
                   gap: '12px'
                 }}>
                   {member.name}
-                  <span style={{ fontSize: '2rem' }}>{member.emoji}</span>
+                  <span className="member-emoji" style={{ fontSize: '2rem' }}>{member.emoji}</span>
                 </h2>
-                <p style={{
+                <p className="member-title" style={{
                   fontSize: '1.3rem',
                   color: '#6b7280',
                   fontWeight: '600',
@@ -213,7 +214,7 @@ export default function OurStoryPage() {
                 </p>
               </div>
 
-              <div style={{
+              <div className="member-story" style={{
                 fontSize: '0.95rem',
                 color: '#4b5563',
                 lineHeight: '1.6',
@@ -248,6 +249,7 @@ export default function OurStoryPage() {
       }}>
         <button
           onClick={() => router.push('/dashboard')}
+          className="back-button"
           style={{
             background: 'linear-gradient(135deg, #374151 0%, #1f2937 100%)',
             color: 'white',
@@ -275,6 +277,108 @@ export default function OurStoryPage() {
           🏠 Back to Dashboard
         </button>
       </div>
+
+      <style jsx global>{`
+        @media (max-width: 768px) {
+          .our-story-page {
+            padding: 24px 12px !important;
+            box-sizing: border-box !important;
+            overflow-x: hidden !important;
+            width: 100% !important;
+            max-width: 100vw !important;
+          }
+          
+          .our-story-title {
+            font-size: 2.25rem !important;
+            margin-bottom: 12px !important;
+          }
+          
+          .our-story-header {
+            margin-bottom: 32px !important;
+          }
+          
+          .our-story-subtitle {
+            font-size: 1rem !important;
+            line-height: 1.5 !important;
+            padding: 0 12px;
+          }
+          
+          .team-members-grid {
+            grid-template-columns: 1fr !important;
+            gap: 24px !important;
+            padding: 0 !important;
+          }
+          
+          .team-member-card {
+            flex-direction: column !important;
+            align-items: center !important;
+            padding: 24px 20px !important;
+            gap: 20px !important;
+            width: 100% !important;
+            max-width: 100% !important;
+          }
+          
+          .profile-image-wrapper {
+            width: 100% !important;
+            display: flex !important;
+            justify-content: center !important;
+            align-items: center !important;
+            margin-bottom: 4px !important;
+          }
+          
+          .profile-image-container {
+            width: 140px !important;
+            height: 140px !important;
+            flex-shrink: 0 !important;
+          }
+          
+          .member-content {
+            width: 100% !important;
+            flex: none !important;
+            text-align: center !important;
+          }
+          
+          .member-name {
+            font-size: 1.5rem !important;
+            flex-direction: column;
+            align-items: center !important;
+            justify-content: center !important;
+            gap: 8px !important;
+            text-align: center !important;
+            margin-bottom: 8px !important;
+          }
+          
+          .member-emoji {
+            font-size: 1.5rem !important;
+          }
+          
+          .member-title {
+            font-size: 1rem !important;
+            margin-bottom: 16px !important;
+            text-align: center !important;
+          }
+          
+          .member-story {
+            font-size: 0.875rem !important;
+            line-height: 1.7 !important;
+            padding: 16px !important;
+            text-align: left !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
+          }
+          
+          .member-story p {
+            margin: 0 !important;
+            word-wrap: break-word !important;
+            overflow-wrap: break-word !important;
+          }
+          
+          .back-button {
+            font-size: 1rem !important;
+            padding: 14px 28px !important;
+          }
+        }
+      `}</style>
     </div>
   );
 }

@@ -90,6 +90,34 @@ export default function Navigation() {
     };
   }, []);
 
+  // Listen for sign-up modal events
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
+    const handleShowSignUp = () => {
+      setShowSignInModal(false);
+      setShowPricingModal(false);
+      setShowSignUpModal(true);
+    };
+    
+    const handleShowSignIn = () => {
+      setShowSignUpModal(false);
+      setShowPricingModal(false);
+      setShowSignInModal(true);
+    };
+    
+    // Listen for both event names
+    window.addEventListener('openSignUpModal', handleShowSignUp);
+    window.addEventListener('talentix-show-signup-modal', handleShowSignUp);
+    window.addEventListener('talentix-show-signin-modal', handleShowSignIn);
+    
+    return () => {
+      window.removeEventListener('openSignUpModal', handleShowSignUp);
+      window.removeEventListener('talentix-show-signup-modal', handleShowSignUp);
+      window.removeEventListener('talentix-show-signin-modal', handleShowSignIn);
+    };
+  }, []);
+
   // Community form handling
   const handleCommunitySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -170,14 +198,14 @@ export default function Navigation() {
           <a
             onClick={(e) => {
               e.preventDefault();
-              if (pathname === '/') {
+              if (pathname === '/home') {
                 // If we're already on home, refresh to prevent a blank interim state
-                if (typeof window !== 'undefined') window.location.assign('/');
+                if (typeof window !== 'undefined') window.location.assign('/home');
               } else {
-                router.push('/');
+                router.push('/home');
               }
             }}
-            href="/"
+            href="/home"
             className={`flex items-center ${user ? 'ml-6' : ''}`}
           >
             <Image

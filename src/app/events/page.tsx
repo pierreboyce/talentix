@@ -2,8 +2,52 @@ import Image from 'next/image';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Events',
-  description: 'Talentix events are coming soon. Stay tuned for workshops, webinars and more!',
+  title: 'Events - Career Workshops & Webinars for UK Students | Talentix',
+  description: 'Upcoming Talentix events including career workshops, webinars, and sessions for UK teenagers. Learn about job searching, interview prep, and getting your first job.',
+  keywords: [
+    'Talentix events',
+    'career workshops UK',
+    'teen career webinars',
+    'student career events',
+    'youth employment workshops',
+    'career sessions UK',
+    'teen job workshops',
+    'career prep events UK'
+  ],
+  alternates: {
+    canonical: '/events',
+  },
+  openGraph: {
+    title: 'Events - Career Workshops for UK Students | Talentix',
+    description: 'Upcoming Talentix events including career workshops and webinars for UK teenagers preparing for their first job.',
+    url: 'https://talentix.co.uk/events',
+    siteName: 'Talentix',
+    images: [{ 
+      url: '/og-image.jpg', 
+      width: 1200, 
+      height: 630, 
+      alt: 'Talentix Events - Career workshops for UK students' 
+    }],
+    locale: 'en_GB',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Career Events for UK Students | Talentix',
+    description: 'Upcoming Talentix events including career workshops and webinars for UK teenagers.',
+    images: ['/og-image.jpg'],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+      'max-video-preview': -1,
+    },
+  },
 };
 
 export default function EventsPage() {

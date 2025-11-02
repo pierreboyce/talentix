@@ -253,14 +253,14 @@ export default function NavigationMobile() {
           {/* Logo on the left */}
           <div className="flex items-center">
             <a
-              href="/"
+              href="/home"
               className="flex items-center"
               onClick={(e) => {
                 e.preventDefault();
-                if (pathname === '/') {
-                  if (typeof window !== 'undefined') window.location.assign('/');
+                if (pathname === '/home') {
+                  if (typeof window !== 'undefined') window.location.assign('/home');
                 } else {
-                  router.push('/');
+                  router.push('/home');
                 }
               }}
             >
@@ -583,6 +583,7 @@ export default function NavigationMobile() {
                 justifyContent: 'flex-end',
                 background: 'rgba(0,0,0,0.35)',
                 position: 'fixed',
+                inset: 0,
                 top: 0,
                 left: 0,
                 right: 0,
@@ -592,16 +593,18 @@ export default function NavigationMobile() {
                 minHeight: '100svh',
                 maxHeight: '100lvh',
                 paddingBottom: 'env(safe-area-inset-bottom, 0)',
-                overflow: 'hidden'
+                margin: 0,
+                overflow: 'hidden',
+                zIndex: 9999999
               }}
             >
               <aside
                 role="dialog"
                 aria-modal="true"
                 style={{
-                  height: '100%',
-                  maxHeight: '100lvh',
+                  height: '100dvh',
                   minHeight: '100svh',
+                  maxHeight: '100lvh',
                   width: '280px',
                   maxWidth: '80vw',
                   background: 'linear-gradient(180deg, #fff7cc 0%, #fff3b0 6%, #ffffff 24%, #ffffff 100%)',
@@ -613,7 +616,7 @@ export default function NavigationMobile() {
                   overflowY: 'auto',
                   WebkitOverflowScrolling: 'touch',
                   boxSizing: 'border-box',
-                  paddingBottom: 'env(safe-area-inset-bottom, 0)'
+                  paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 0px)'
                 }}
                 onClick={(e) => e.stopPropagation()}
               >

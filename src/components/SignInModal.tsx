@@ -102,19 +102,21 @@ export default function SignInModal({ isOpen, onClose, onForgotPassword }: SignI
     setError('');
     
     try {
+      // Don't close the modal - let signInWithProvider handle the redirect
+      // This prevents any race conditions or intermediate redirects
       const result = await signInWithProvider(provider);
       
       if (result.success) {
-        handleClose();
-        // Force a full page redirect instead of router.push
-        setTimeout(() => {
-          window.location.href = '/dashboard';
-        }, 500);
+        // signInWithProvider already does window.location.href redirect to OAuth
+        // So we don't need to do anything here - the page will redirect immediately
+        // Don't close modal - let OAuth flow complete
       } else {
+        setIsLoading(false);
         setError(result.error || 'OAuth sign in failed');
       }
     } catch (error) {
       console.error('OAuth sign in error:', error);
+      setIsLoading(false);
       setError('Network error occurred');
     } finally {
       setIsLoading(false);
@@ -135,16 +137,22 @@ export default function SignInModal({ isOpen, onClose, onForgotPassword }: SignI
       className="modal-overlay"
       style={{
         position: 'fixed',
+        inset: 0,
         top: 0,
         right: 0,
         bottom: 0,
         left: 0,
         width: '100vw',
-        height: '100vh',
+        height: '100dvh',
+        minHeight: '100svh',
+        maxHeight: '100lvh',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
+        margin: 0,
         padding: '20px',
+        paddingBottom: 'calc(20px + env(safe-area-inset-bottom, 0px))',
+        overflow: 'hidden',
         backgroundColor: 'rgba(0, 0, 0, 0.3)',
         backdropFilter: 'blur(12px) saturate(0.8)',
         WebkitBackdropFilter: 'blur(12px) saturate(0.8)',

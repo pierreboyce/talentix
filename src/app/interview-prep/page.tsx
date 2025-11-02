@@ -7,6 +7,7 @@ import { useQuests } from '../../contexts/QuestContext';
 import { useDeviceDetection } from '../../hooks/useDeviceDetection';
 import TailorInterviewModal from '../../components/TailorInterviewModal';
 import TailoringLoadingModal from '../../components/TailoringLoadingModal';
+import AuthGuard from '../../components/AuthGuard';
 
 // Question database
 const questionDatabase = {
@@ -409,7 +410,7 @@ export default function InterviewPrepPage() {
     if (isMobile) return null;
     
     return (
-    <div style={{
+      <div style={{
       width: '240px',
       backgroundColor: '#1f2937',
       color: '#ffffff',
@@ -520,6 +521,7 @@ export default function InterviewPrepPage() {
 
   if ((currentView as string) === 'categories') {
     return (
+      <AuthGuard>
       <div style={{ 
         minHeight: '100vh', 
         background: 'linear-gradient(135deg, #fef3c7 0%, #fbbf24 50%, #f59e0b 100%)', 
@@ -765,11 +767,13 @@ export default function InterviewPrepPage() {
           isMobile={isMobile}
         />
       </div>
+      </AuthGuard>
     );
   }
 
   if (currentView === 'progress') {
     return (
+      <AuthGuard>
       <div style={{ 
         minHeight: '100vh', 
         background: 'linear-gradient(135deg, #fef3c7 0%, #fbbf24 50%, #f59e0b 100%)', 
@@ -943,11 +947,13 @@ export default function InterviewPrepPage() {
           isMobile={isMobile}
         />
       </div>
+      </AuthGuard>
     );
   }
 
   if ((currentView as string) === 'feedback') {
     return (
+      <AuthGuard>
       <div style={{ 
         minHeight: '100vh', 
         background: 'linear-gradient(135deg, #fef3c7 0%, #fbbf24 50%, #f59e0b 100%)', 
@@ -1140,6 +1146,7 @@ export default function InterviewPrepPage() {
           isMobile={isMobile}
         />
       </div>
+      </AuthGuard>
     );
   }
 
@@ -1149,6 +1156,7 @@ export default function InterviewPrepPage() {
       : categories.find(c => c.id === selectedCategory);
     
     return (
+      <AuthGuard>
       <div style={{ 
         minHeight: '100vh', 
         backgroundColor: '#e5e7eb', 
@@ -1667,8 +1675,19 @@ export default function InterviewPrepPage() {
           isMobile={isMobile}
         />
       </div>
+      </AuthGuard>
     );
   }
 
-  return null;
+  return (
+    <AuthGuard>
+      <div style={{ 
+        minHeight: '100vh', 
+        padding: isMobile ? '16px' : '24px',
+        background: 'linear-gradient(135deg, #fef3c7 0%, #fde047 50%, #facc15 100%)'
+      }}>
+        <p>Loading interview prep...</p>
+      </div>
+    </AuthGuard>
+  );
 }

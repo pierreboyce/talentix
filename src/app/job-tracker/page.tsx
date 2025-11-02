@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useDeviceDetection } from '../../hooks/useDeviceDetection';
 import { Plus, Calendar, Building2, ExternalLink, Edit3, Trash2, Filter, Search } from 'lucide-react';
+import AuthGuard from '../../components/AuthGuard';
 
 interface JobApplication {
   id: string;
@@ -144,7 +145,8 @@ export default function JobTrackerPage() {
   }
 
   return (
-    <React.Fragment>
+    <AuthGuard>
+      <React.Fragment>
       {/* Add/Edit Modal - Moved to top level */}
       {showModal && (
         <div 
@@ -1103,6 +1105,7 @@ export default function JobTrackerPage() {
         )}
       </div>
       </div>
-    </React.Fragment>
+      </React.Fragment>
+    </AuthGuard>
   );
 }

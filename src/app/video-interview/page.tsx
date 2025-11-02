@@ -9,6 +9,7 @@ import { Play, Square, RotateCcw, Send, Clock, Mic, Video, ArrowLeft, CheckCircl
 import { useDeviceDetection } from '../../hooks/useDeviceDetection';
 import TailorInterviewModal from '../../components/TailorInterviewModal';
 import TailoringLoadingModal from '../../components/TailoringLoadingModal';
+import AuthGuard from '../../components/AuthGuard';
 
 // Hardcoded interview questions
 const interviewQuestions = [
@@ -123,7 +124,7 @@ export default function VideoInterviewPage(): React.ReactElement {
   // Redirect if not authenticated
   useEffect(() => {
     if (!loading && !user) {
-      router.push('/');
+      router.push('/home');
     }
   }, [user, loading, router]);
 
@@ -568,7 +569,8 @@ export default function VideoInterviewPage(): React.ReactElement {
 
   if (loading) {
     return (
-      <div style={{ minHeight: '100vh', backgroundColor: '#f9fafb', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <AuthGuard>
+        <div style={{ minHeight: '100vh', backgroundColor: '#f9fafb', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <div style={{ textAlign: 'center' }}>
           <div style={{
             animation: 'spin 1s linear infinite',
@@ -581,11 +583,13 @@ export default function VideoInterviewPage(): React.ReactElement {
           <p style={{ color: '#4b5563' }}>Loading...</p>
         </div>
       </div>
+      </AuthGuard>
     );
   }
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#f9fafb' }}>
+    <AuthGuard>
+      <div style={{ minHeight: '100vh', backgroundColor: '#f9fafb' }}>
 
       {/* Desktop Header */}
       {!isMobile && (
@@ -2243,5 +2247,6 @@ export default function VideoInterviewPage(): React.ReactElement {
         isMobile={isMobile}
       />
     </div>
+    </AuthGuard>
   );
 }
