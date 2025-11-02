@@ -235,6 +235,12 @@ export default function InterviewPrepPage() {
 
       if (response.ok) {
         const result = await response.json();
+        
+        // Validate result structure
+        if (!result || typeof result.score !== 'number') {
+          throw new Error('Invalid response format from server');
+        }
+        
         setEvaluation(result);
         
         // Award points based on evaluation
@@ -254,10 +260,11 @@ export default function InterviewPrepPage() {
         }
         
         // Save to feedback history
+        const currentQuestion = questions[currentQuestionIndex] || 'Unknown question';
         const newFeedback: FeedbackHistory = {
           id: Date.now().toString(),
-          category: selectedCategory,
-          question: questions[currentQuestionIndex],
+          category: selectedCategory || 'unknown',
+          question: currentQuestion,
           answer: userAnswer,
           evaluation: result,
           timestamp: new Date()
@@ -268,7 +275,9 @@ export default function InterviewPrepPage() {
         setProgressData(prev => {
           const categoryData = prev[selectedCategory] || {
             questionsAnswered: 0,
-            totalQuestions: questionDatabase[selectedCategory as keyof typeof questionDatabase].length,
+            totalQuestions: selectedCategory === 'tailored' 
+              ? questions.length 
+              : (questionDatabase[selectedCategory as keyof typeof questionDatabase]?.length || questions.length),
             averageScore: 0,
             lastPracticed: null
           };
@@ -287,6 +296,17 @@ export default function InterviewPrepPage() {
           };
         });
       } else {
+        // Try to parse error response
+        let errorMessage = 'Failed to evaluate answer';
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorMessage;
+        } catch {
+          errorMessage = `Server error: ${response.status} ${response.statusText}`;
+        }
+        
+        console.error('Evaluation API error:', errorMessage);
+        
         const fallbackResult = {
           score: 3,
           feedback: "Your answer shows good understanding. Consider adding more specific examples and structuring your response for maximum impact.",
@@ -296,24 +316,46 @@ export default function InterviewPrepPage() {
         setEvaluation(fallbackResult);
         
         // Save fallback to feedback history too
+        const currentQuestion = questions[currentQuestionIndex] || 'Unknown question';
         const newFeedback: FeedbackHistory = {
           id: Date.now().toString(),
-          category: selectedCategory,
-          question: questions[currentQuestionIndex],
+          category: selectedCategory || 'unknown',
+          question: currentQuestion,
           answer: userAnswer,
           evaluation: fallbackResult,
           timestamp: new Date()
         };
         setFeedbackHistory(prev => [newFeedback, ...prev]);
       }
-    } catch (error) {
+    } catch (error: any) {
+      console.error('Error evaluating answer:', error);
       
-      setEvaluation({
+      // Ensure we have a valid question
+      const currentQuestion = questions[currentQuestionIndex] || 'Unknown question';
+      
+      const fallbackEvaluation = {
         score: 3,
         feedback: "Your answer demonstrates good understanding. Consider adding more specific examples and structuring your response for maximum impact.",
         strengths: ["Good communication", "Relevant content"],
         improvements: ["Add specific examples", "Improve structure"]
-      });
+      };
+      
+      setEvaluation(fallbackEvaluation);
+      
+      // Also save to feedback history
+      try {
+        const newFeedback: FeedbackHistory = {
+          id: Date.now().toString(),
+          category: selectedCategory || 'unknown',
+          question: currentQuestion,
+          answer: userAnswer,
+          evaluation: fallbackEvaluation,
+          timestamp: new Date()
+        };
+        setFeedbackHistory(prev => [newFeedback, ...prev]);
+      } catch (historyError) {
+        console.error('Error saving to feedback history:', historyError);
+      }
     }
     
     setIsEvaluating(false);
