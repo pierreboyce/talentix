@@ -2,7 +2,7 @@
 
 import { useState, useEffect, Suspense } from "react";
 import Image from "next/image";
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '../../contexts/AuthContext';
 import { useDeviceDetection } from '../../hooks/useDeviceDetection';
 import FeaturesMarquee from '../../components/FeaturesMarquee';
@@ -131,7 +131,7 @@ function HomeContent() {
       const timer = setTimeout(() => {
         const hasMainContent = document.querySelector('section') !== null || 
                                document.querySelector('h1') !== null ||
-                               document.body.textContent?.trim().length > 100;
+                               (document.body.textContent?.trim().length ?? 0) > 100;
         
         // If we're on /home but see blank gradient (only navigation visible), refresh
         if (window.location.pathname === '/home' && !hasMainContent) {
@@ -160,7 +160,6 @@ function HomeContent() {
   const { user, loading } = useAuth();
   const { isMobile } = useDeviceDetection();
   const router = useRouter();
-  const searchParams = useSearchParams();
   
   // Clear any corrupted auth state on mount
   useEffect(() => {
@@ -251,7 +250,10 @@ function HomeContent() {
 
   // Handle OAuth errors
   useEffect(() => {
-    const error = searchParams.get('error');
+    if (typeof window === "undefined") return;
+    
+    const params = new URLSearchParams(window.location.search);
+    const error = params.get('error');
     if (error) {
       const errorMessages: Record<string, string> = {
         'oauth_cancelled': 'OAuth authentication was cancelled',
@@ -272,7 +274,7 @@ function HomeContent() {
       // Clear error after 8 seconds for config error (more time to read)
       setTimeout(() => setOauthError(null), error === 'oauth_config_error' ? 8000 : 5000);
     }
-  }, [searchParams, router]);
+  }, [router]);
 
   if (showLoader) {
   return (

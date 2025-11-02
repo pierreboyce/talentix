@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { Inter, Fredoka } from "next/font/google";
 import "./globals.css";
+
+// Mark root layout as dynamic to prevent prerendering errors on client pages
+export const dynamic = 'force-dynamic';
 import Navigation from "../components/Navigation";
 import NavigationMobile from "../components/NavigationMobile";
 import ChatbotClientWrapper from "../components/ChatbotClientWrapper";

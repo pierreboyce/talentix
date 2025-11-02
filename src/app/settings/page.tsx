@@ -41,18 +41,21 @@ export default function Settings() {
   const [activeSection, setActiveSection] = useState('profile');
 
   useEffect(() => {
-    if (!user) {
-      router.push('/');
+    // Only redirect if we're mounted and have finished loading
+    if (typeof window !== 'undefined' && !loading && !user) {
+      router.push('/home');
       return;
     }
     
-    setProfileData({
-      name: user.name || '',
-      email: user.email || '',
-      location: user.location || '',
-      emoji: user.emoji || '😊'
-    });
-  }, [user, router]);
+    if (user) {
+      setProfileData({
+        name: user.name || '',
+        email: user.email || '',
+        location: user.location || '',
+        emoji: user.emoji || '😊'
+      });
+    }
+  }, [user, loading, router]);
 
   const showMessage = (type: 'success' | 'error', text: string) => {
     setMessage({ type, text });
@@ -108,7 +111,7 @@ export default function Settings() {
           showMessage('success', 'Account deletion initiated. You will be signed out shortly.');
           setTimeout(() => {
             signOut();
-            router.push('/');
+            router.push('/home');
           }, 3000);
         } catch (error) {
           showMessage('error', 'Failed to delete account. Please contact support.');
@@ -118,6 +121,28 @@ export default function Settings() {
   };
 
   const emojiOptions = ['😊', '😎', '🤔', '😄', '🥳', '🤗', '😇', '🙂', '😌', '🥰', '😍', '🤩', '😋', '🤓', '🧐', '🤠'];
+
+  // Show loading or nothing if user not authenticated
+  if (loading) {
+    return (
+      <div style={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: 'linear-gradient(135deg, #fef3c7 0%, #fde047 50%, #facc15 100%)'
+      }}>
+        <div style={{ textAlign: 'center', color: '#374151' }}>
+          <div style={{
+            fontSize: '3rem',
+            marginBottom: '16px',
+            animation: 'spin 1s linear infinite'
+          }}>⏳</div>
+          <p style={{ fontSize: '1.2rem', fontWeight: 600 }}>Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!user) return null;
 
@@ -831,15 +856,15 @@ export default function Settings() {
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px' }}>
                   <div>
                     <p style={{ margin: '4px 0', color: '#92400e' }}>
-                      <strong>Member since:</strong> {new Date(user.createdAt).toLocaleDateString()}
+                      <strong>Member since:</strong> {user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}
                     </p>
                     <p style={{ margin: '4px 0', color: '#92400e' }}>
-                      <strong>Total points:</strong> {user.score || 0}
+                      <strong>Total points:</strong> {user?.score || 0}
                     </p>
                   </div>
                   <div>
                     <p style={{ margin: '4px 0', color: '#92400e' }}>
-                      <strong>Last updated:</strong> {new Date(user.updatedAt).toLocaleDateString()}
+                      <strong>Last updated:</strong> {user?.updatedAt ? new Date(user.updatedAt).toLocaleDateString() : 'N/A'}
                     </p>
                     <p style={{ margin: '4px 0', color: '#92400e' }}>
                       <strong>Profile completion:</strong> 85%
