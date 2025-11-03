@@ -27,7 +27,13 @@ export function middleware(request: NextRequest) {
   const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent)
   const hasMobileAccess = request.cookies.get('talentix_mobile_access')?.value === 'authenticated'
   
-  if (isMobile && !hasMobileAccess) {
+  // Temporary launch cutoff: disable mobile coming soon after 3 Nov 2025, 18:00 UK time (UTC)
+  // UK time on 3 Nov 2025 is GMT (UTC), so 18:00 UK == 18:00Z
+  const launchCutoffTs = new Date('2025-11-03T18:00:00Z').getTime()
+  const nowTs = Date.now()
+  const afterLaunchCutoff = nowTs >= launchCutoffTs
+  
+  if (isMobile && !hasMobileAccess && !afterLaunchCutoff) {
     // Allow the mobile coming soon route and privacy page to render normally
     if (pathname.startsWith('/mobile-coming-soon') || pathname === '/privacy') {
     return NextResponse.next()
