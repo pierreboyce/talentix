@@ -78,7 +78,7 @@ export default function NavigationMobile() {
     if (typeof window === 'undefined' || !user?.email) return;
     const today = new Date().toDateString();
     const cvKey = `cv_reviews_${today}_${user.email}`;
-    const videoKey = `video_interview_questions_used_${user.email}`;
+    const videoKey = `video_interview_questions_used_${today}_${user.email}`;
     const cvToday = parseInt(localStorage.getItem(cvKey) || '0');
     const videoTotal = parseInt(localStorage.getItem(videoKey) || '0');
     setUsage({ cvToday, videoTotal });

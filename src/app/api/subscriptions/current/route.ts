@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
 import { database } from '../../../../lib/database-vercel-kv';
+import Stripe from 'stripe';
 
 export async function GET(request: NextRequest) {
   try {
@@ -81,14 +82,42 @@ export async function GET(request: NextRequest) {
         stripeSubscriptionId: user.stripeSubscriptionId
       });
 
-      // Return subscription data (including free tier)
-      const subscriptionData = {
+      // If Stripe is configured and the user has a Stripe subscription, fetch fresh data from Stripe
+      let subscriptionData = {
         id: user.stripeSubscriptionId || (user.subscriptionTier === 'free' ? 'free' : 'unknown'),
         tier: user.subscriptionTier || 'free',
         status: user.subscriptionStatus || 'active',
         currentPeriodEnd: user.subscriptionCurrentPeriodEnd ? new Date(user.subscriptionCurrentPeriodEnd) : new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
         cancelAtPeriodEnd: user.subscriptionCancelAtPeriodEnd || false
-      };
+      } as any;
+
+      try {
+        if (process.env.STRIPE_SECRET_KEY && user.stripeSubscriptionId) {
+          const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2025-08-27.basil' });
+          const stripeSub = await stripe.subscriptions.retrieve(user.stripeSubscriptionId, { expand: ['latest_invoice', 'items.data.price'] });
+
+          subscriptionData = {
+            id: stripeSub.id,
+            tier: user.subscriptionTier || 'pro',
+            status: (stripeSub.status as any) || 'active',
+            currentPeriodEnd: new Date((stripeSub.current_period_end || 0) * 1000),
+            cancelAtPeriodEnd: Boolean(stripeSub.cancel_at_period_end)
+          };
+
+          // Persist fresh details back to DB
+          await database.updateUserSubscription(user.email, {
+            stripeCustomerId: stripeSub.customer as string,
+            stripeSubscriptionId: stripeSub.id,
+            tier: subscriptionData.tier,
+            status: subscriptionData.status,
+            currentPeriodEnd: subscriptionData.currentPeriodEnd,
+            cancelAtPeriodEnd: subscriptionData.cancelAtPeriodEnd,
+            priceId: stripeSub.items?.data?.[0]?.price?.id || null
+          });
+        }
+      } catch (stripeErr) {
+        console.log('⚠️ Stripe lookup failed, falling back to stored subscription:', (stripeErr as any)?.message);
+      }
 
       console.log('📤 Returning subscription data:', subscriptionData);
 

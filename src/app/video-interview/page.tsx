@@ -110,7 +110,8 @@ export default function VideoInterviewPage(): React.ReactElement {
   // Initialize questions used from localStorage (user-specific)
   useEffect(() => {
     if (typeof window !== 'undefined' && user?.email) {
-      const currentUsage = parseInt(localStorage.getItem(`video_interview_questions_used_${user.email}`) || '0');
+      const today = new Date().toDateString();
+      const currentUsage = parseInt(localStorage.getItem(`video_interview_questions_used_${today}_${user.email}`) || '0');
       setQuestionsUsed(currentUsage);
     }
   }, [user?.email]);
@@ -185,7 +186,8 @@ export default function VideoInterviewPage(): React.ReactElement {
       return false;
     }
     
-    const currentUsage = parseInt(localStorage.getItem(`video_interview_questions_used_${user.email}`) || '0');
+    const today = new Date().toDateString();
+    const currentUsage = parseInt(localStorage.getItem(`video_interview_questions_used_${today}_${user.email}`) || '0');
     console.log('🔍 Video interview usage check:');
     console.log('  - User email:', user.email);
     
@@ -205,9 +207,10 @@ export default function VideoInterviewPage(): React.ReactElement {
       return;
     }
     
-    const currentUsage = parseInt(localStorage.getItem(`video_interview_questions_used_${user.email}`) || '0');
+    const today = new Date().toDateString();
+    const currentUsage = parseInt(localStorage.getItem(`video_interview_questions_used_${today}_${user.email}`) || '0');
     const newUsage = currentUsage + 1;
-    localStorage.setItem(`video_interview_questions_used_${user.email}`, newUsage.toString());
+    localStorage.setItem(`video_interview_questions_used_${today}_${user.email}`, newUsage.toString());
     setQuestionsUsed(newUsage);
     
     // Notify other components of usage update
@@ -539,9 +542,10 @@ export default function VideoInterviewPage(): React.ReactElement {
         
         // Track usage for tailored questions too
         if (user?.email) {
-          const currentUsage = parseInt(localStorage.getItem(`video_interview_questions_used_${user.email}`) || '0');
+          const today = new Date().toDateString();
+          const currentUsage = parseInt(localStorage.getItem(`video_interview_questions_used_${today}_${user.email}`) || '0');
           const newUsage = currentUsage + 1;
-          localStorage.setItem(`video_interview_questions_used_${user.email}`, newUsage.toString());
+          localStorage.setItem(`video_interview_questions_used_${today}_${user.email}`, newUsage.toString());
           setQuestionsUsed(newUsage);
           window.dispatchEvent(new CustomEvent('talentix-usage-update'));
         }

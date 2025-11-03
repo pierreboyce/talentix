@@ -156,7 +156,7 @@ export default function SubscriptionDashboard() {
       const cvUsageKey = `cv_reviews_${today}_${user.email}`;
       const cvUsageToday = parseInt(localStorage.getItem(cvUsageKey) || '0');
       
-      const videoUsageKey = `video_interview_questions_used_${user.email}`;
+      const videoUsageKey = `video_interview_questions_used_${today}_${user.email}`;
       const videoUsageTotal = parseInt(localStorage.getItem(videoUsageKey) || '0');
       
       const blogUsageKey = `career_articles_viewed_${user.email}`;
