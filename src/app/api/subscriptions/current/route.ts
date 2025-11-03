@@ -94,14 +94,14 @@ export async function GET(request: NextRequest) {
       try {
         if (process.env.STRIPE_SECRET_KEY && user.stripeSubscriptionId) {
           const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2025-08-27.basil' });
-          const stripeSub = await stripe.subscriptions.retrieve(user.stripeSubscriptionId, { expand: ['latest_invoice', 'items.data.price'] });
+          const stripeSub = await stripe.subscriptions.retrieve(user.stripeSubscriptionId as string, { expand: ['latest_invoice', 'items.data.price'] });
 
           subscriptionData = {
             id: stripeSub.id,
             tier: user.subscriptionTier || 'pro',
             status: (stripeSub.status as any) || 'active',
-            currentPeriodEnd: new Date((stripeSub.current_period_end || 0) * 1000),
-            cancelAtPeriodEnd: Boolean(stripeSub.cancel_at_period_end)
+            currentPeriodEnd: new Date((((stripeSub as any).current_period_end) || 0) * 1000),
+            cancelAtPeriodEnd: Boolean((stripeSub as any).cancel_at_period_end)
           };
 
           // Persist fresh details back to DB
@@ -112,7 +112,7 @@ export async function GET(request: NextRequest) {
             status: subscriptionData.status,
             currentPeriodEnd: subscriptionData.currentPeriodEnd,
             cancelAtPeriodEnd: subscriptionData.cancelAtPeriodEnd,
-            priceId: stripeSub.items?.data?.[0]?.price?.id || null
+            priceId: ((stripeSub as any).items?.data?.[0]?.price?.id) || null
           });
         }
       } catch (stripeErr) {
