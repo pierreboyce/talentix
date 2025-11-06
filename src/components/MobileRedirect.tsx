@@ -11,7 +11,7 @@ interface MobileRedirectProps {
 
 export default function MobileRedirect({ 
   enabled = false, // DISABLED FOR MOBILE DEVELOPMENT
-  excludePaths = ['/mobile-coming-soon', '/terms', '/privacy'] 
+  excludePaths = ['/terms', '/privacy'] 
 }: MobileRedirectProps) {
   const { isMobile } = useMobileDetection();
   const router = useRouter();
@@ -39,7 +39,7 @@ export default function MobileRedirect({
     if (isMobile && !isDesktopOS) {
       // Add a small delay to prevent flash
       const timer = setTimeout(() => {
-        router.replace('/mobile-coming-soon');
+        router.replace('/home');
       }, 100);
 
       return () => clearTimeout(timer);

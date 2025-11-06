@@ -7,10 +7,7 @@ import NavigationMobile from './NavigationMobile';
 export default function NavigationWrapper() {
   const pathname = usePathname();
   
-  // Hide navigation on mobile coming soon page
-  if (pathname === '/mobile-coming-soon') {
-    return null;
-  }
+  // No special cases
 
   return (
     <>

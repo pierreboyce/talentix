@@ -12,8 +12,7 @@ export default function robots(): MetadataRoute.Robots {
           '/account/',
           '/settings/',
           '/auth/',
-          '/mobile-coming-soon',
-          '/mobile-coming-soon-disabled',
+          // mobile coming soon removed
           '/admin/',
           '/oauth-setup/',
           '/clear-storage/',
@@ -34,7 +33,7 @@ export default function robots(): MetadataRoute.Robots {
           '/account/',
           '/settings/',
           '/auth/',
-          '/mobile-coming-soon',
+          // mobile coming soon removed
           '/admin/',
         ],
       },

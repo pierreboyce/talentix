@@ -22,27 +22,7 @@ export function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
-  // 📱 Mobile device handling - redirect mobile users to mobile coming soon cutscene unless they have access cookie
-  const userAgent = request.headers.get('user-agent') || ''
-  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent)
-  const hasMobileAccess = request.cookies.get('talentix_mobile_access')?.value === 'authenticated'
-  
-  // Temporary launch cutoff: disable mobile coming soon after 3 Nov 2025, 18:00 UK time (UTC)
-  // UK time on 3 Nov 2025 is GMT (UTC), so 18:00 UK == 18:00Z
-  const launchCutoffTs = new Date('2025-11-03T18:00:00Z').getTime()
-  const nowTs = Date.now()
-  const afterLaunchCutoff = nowTs >= launchCutoffTs
-  
-  if (isMobile && !hasMobileAccess && !afterLaunchCutoff) {
-    // Allow the mobile coming soon route and privacy page to render normally
-    if (pathname.startsWith('/mobile-coming-soon') || pathname === '/privacy') {
-    return NextResponse.next()
-    }
-    // Redirect all other mobile requests to the cutscene/coming-soon experience
-    const url = request.nextUrl.clone()
-    url.pathname = '/mobile-coming-soon'
-    return NextResponse.redirect(url)
-  }
+  // Mobile coming soon redirect removed; allow all devices
 
   return NextResponse.next()
 }
