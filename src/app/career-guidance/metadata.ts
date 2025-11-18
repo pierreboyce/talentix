@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Career Guidance & Advice for UK Students | Talentix',
+  title: 'Career Guidance & Advice for UK Students',
   description: 'Get free career guidance and advice for UK teenagers and students. Career planning tools, interview tips, CV advice, and job search help for your first job.',
   keywords: [
     'career guidance UK',

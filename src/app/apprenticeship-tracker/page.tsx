@@ -57,12 +57,7 @@ export default function ApprenticeshipTrackerPage() {
     }
   }, [apprenticeships, user?.id]);
 
-  // Redirect if not logged in
-  useEffect(() => {
-    if (!loading && !user) {
-      router.push('/home');
-    }
-  }, [user, loading, router]);
+  // Do not redirect; AuthGuard will show a marketing/gated view for unauthenticated users
 
   const handleSearch = async () => {
     if (!searchField.trim()) {
@@ -312,10 +307,7 @@ export default function ApprenticeshipTrackerPage() {
     );
   }
 
-  if (!user) {
-    router.replace('/home');
-    return null;
-  }
+  // Let AuthGuard handle unauthenticated users (no redirect)
 
   return (
     <AuthGuard>

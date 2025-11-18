@@ -294,7 +294,7 @@ export default function ForgotPasswordModal({ isOpen, onClose }: ForgotPasswordM
                   <input
                     type="email"
                     name="email"
-                    placeholder="your.email@awesome.com"
+                    placeholder="your.email@example.com"
                     value={email}
                     onChange={(e) => {
                       setEmail(e.target.value);

@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Job Application Tracker for Students UK | Talentix',
+  title: 'Job Application Tracker for Students UK',
   description: 'Track all your job applications in one place. Free job tracker tool for UK students and teenagers. Organize applications, follow-ups, and interviews for your first job search.',
   keywords: [
     'job tracker UK',

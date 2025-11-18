@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '../contexts/AuthContext';
 import SignUpPromptModal from './SignUpPromptModal';
@@ -25,6 +26,86 @@ const getFeatureNameFromPath = (path: string): string => {
   return featureMap[path] || 'This Feature';
 };
 
+// Bullets and preview image per feature
+const getFeatureInfoFromPath = (path: string): { bullets: string[]; imageSrc?: string; imageAlt: string } => {
+  const map: Record<string, { bullets: string[]; imageSrc?: string; imageAlt: string }> = {
+    '/cv-reviewer': {
+      bullets: [
+        'Instant AI feedback on structure, clarity and impact',
+        'Specific rewrite suggestions you can copy‑paste',
+        'Export or update your CV in minutes'
+      ],
+      imageSrc: '/cv reviewer.png',
+      imageAlt: 'CV Reviewer preview'
+    },
+    '/interview-prep': {
+      bullets: [
+        'Topic‑based drills and tailored questions',
+        'Timed practice with tips and model points',
+        'Track progress and improve fast'
+      ],
+      imageSrc: '/interviewprep.png',
+      imageAlt: 'Interview Prep preview'
+    },
+    '/video-interview': {
+      bullets: [
+        'Practice answers on camera with a 1‑minute timer',
+        'AI feedback on clarity, confidence and relevance',
+        'Level up with tailored improvement tips'
+      ],
+      imageSrc: '/videointerviewscreenshot.png',
+      imageAlt: 'Video Interview preview'
+    },
+    '/search': {
+      bullets: [
+        'Simple job search made for UK teens',
+        'Find part‑time and starter roles near you',
+        'Save roles and apply with confidence'
+      ],
+      imageSrc: '/jobsearch.png',
+      imageAlt: 'Job Search preview'
+    },
+    '/job-tracker': {
+      bullets: [
+        'Track every application in one place',
+        'Never miss deadlines, interviews or tasks',
+        'See your progress at a glance'
+      ],
+      imageSrc: '/jobtracker (2).png',
+      imageAlt: 'Job Tracker preview'
+    },
+    '/apprenticeship-tracker': {
+      bullets: [
+        'Discover UK apprenticeship opportunities',
+        'Organise choices and compare easily',
+        'Stay on top of key dates'
+      ],
+      imageSrc: '/apprenticeshiptracker.png',
+      imageAlt: 'Apprenticeship Tracker preview'
+    },
+    '/cover-letter': {
+      bullets: [
+        'Auto‑draft tailored cover letters',
+        'Edit tone and details in seconds',
+        'Export ready‑to‑send versions'
+      ],
+      imageSrc: '/coverlettermaker.png',
+      imageAlt: 'Cover Letter Builder preview'
+    },
+    '/career-guidance': {
+      bullets: [
+        'Clear advice for CVs, interviews and first jobs',
+        'Short guides written for teenagers',
+        'Practical steps you can take today'
+      ],
+      imageSrc: '/og-image.png',
+      imageAlt: 'Career Guidance preview'
+    }
+  };
+
+  return map[path] || { bullets: ['Built for UK teens — simple and effective', 'Guided steps to keep you moving', 'Upgrade anytime for unlimited usage'], imageSrc: '/og-image.png', imageAlt: 'Talentix preview' };
+};
+
 export default function AuthGuard({ children }: AuthGuardProps) {
   const { user, loading } = useAuth();
   const router = useRouter();
@@ -44,9 +125,12 @@ export default function AuthGuard({ children }: AuthGuardProps) {
     }
   }, [user, loading]);
 
+  const handleDismissModal = () => {
+    setShowSignUpPrompt(false);
+  };
+
   const handleCloseModal = () => {
     setShowSignUpPrompt(false);
-    // Redirect to homepage with full page reload to prevent blank gradient
     window.location.href = '/home';
   };
 
@@ -82,13 +166,14 @@ export default function AuthGuard({ children }: AuthGuardProps) {
     );
   }
 
-  // If no user, show message page with sign-up prompt modal
+  // If no user, show SEO-friendly marketing content plus a gated CTA (returns 200 OK)
   if (!user) {
     const featureName = getFeatureNameFromPath(pathname);
+    const featureInfo = getFeatureInfoFromPath(pathname);
     
     return (
       <>
-        {/* Main message page */}
+        {/* Public marketing content + CTA (indexable) */}
         <div style={{
           minHeight: '100vh',
           display: 'flex',
@@ -100,41 +185,97 @@ export default function AuthGuard({ children }: AuthGuardProps) {
           <div style={{
             background: 'white',
             borderRadius: '24px',
-            padding: '48px 32px',
-            maxWidth: '500px',
+            padding: '40px 32px',
+            maxWidth: '860px',
             width: '100%',
             boxShadow: '0 25px 50px rgba(0, 0, 0, 0.25)',
-            textAlign: 'center'
+            textAlign: 'left'
           }}>
-            <div style={{
-              fontSize: '4rem',
-              marginBottom: '24px'
-            }}>
-              🔒
-            </div>
-            <h2 style={{
-              fontSize: '2rem',
-              fontWeight: 'bold',
-              color: '#1f2937',
-              marginBottom: '16px',
+            {/* Header */}
+            <h1 style={{
+              fontSize: '2.2rem',
+              fontWeight: 900,
+              color: '#111827',
+              margin: '0 0 6px 0',
               fontFamily: "'Fredoka', sans-serif"
-            }}>
-              Sign In Required
-            </h2>
+            }}>{featureName}</h1>
             <p style={{
-              fontSize: '1.1rem',
-              color: '#4b5563',
-              marginBottom: '32px',
-              lineHeight: '1.6',
-              fontFamily: "'Fredoka', sans-serif"
+              fontSize: '1rem',
+              color: '#6b7280',
+              margin: '0 0 20px 0'
             }}>
-              You must sign in to use <strong>{featureName}</strong>. Sign up for free to access all features!
+              A fast, friendly tool to help you level up your career. Below is what you can do — sign in to start.
             </p>
-            <div style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '12px'
-            }}>
+
+            {/* Simple two-column: benefits + preview */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1.1fr 1fr', gap: '20px', alignItems: 'start' }}>
+              <div>
+                <ul style={{ paddingLeft: '18px', margin: 0, color: '#374151', lineHeight: 1.7 }}>
+                  {featureInfo.bullets.map((b, i) => (
+                    <li key={i}>{b}</li>
+                  ))}
+                </ul>
+
+                {/* CTAs */}
+                <div style={{ display: 'flex', gap: '12px', marginTop: '18px', flexWrap: 'wrap' }}>
+                  <button
+                    onClick={handleSignUpClick}
+                    style={{
+                      background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
+                      color: '#111827',
+                      padding: '14px 22px',
+                      borderRadius: '12px',
+                      border: 'none',
+                      fontSize: '1rem',
+                      fontWeight: 800,
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                      boxShadow: '0 4px 12px rgba(251, 191, 36, 0.35)',
+                      fontFamily: "'Fredoka', sans-serif"
+                    }}
+                  >
+                    Use {featureName} — Free
+                  </button>
+                  <button
+                    onClick={handleCloseModal}
+                    style={{
+                      background: 'white',
+                      color: '#374151',
+                      padding: '12px 20px',
+                      borderRadius: '12px',
+                      border: '2px solid #e5e7eb',
+                      fontSize: '0.95rem',
+                      fontWeight: 700,
+                      cursor: 'pointer'
+                    }}
+                  >
+                    ← Return to Homepage
+                  </button>
+                </div>
+              </div>
+              <div style={{ background: '#f9fafb', border: '2px solid #e5e7eb', borderRadius: '16px', padding: '10px', textAlign: 'center' }}>
+                {featureInfo.imageSrc ? (
+                  <Image
+                    src={featureInfo.imageSrc}
+                    alt={featureInfo.imageAlt}
+                    width={640}
+                    height={360}
+                    style={{ width: '100%', height: 'auto', borderRadius: '12px' }}
+                  />
+                ) : (
+                  <div style={{ fontSize: '48px', padding: '24px 0' }}>✨</div>
+                )}
+                <p style={{ color: '#6b7280', margin: '8px 0 0' }}>Preview — sign in to try this tool.</p>
+              </div>
+            </div>
+
+            {/* Fine print */}
+            <p style={{ fontSize: '12px', color: '#6b7280', marginTop: '16px' }}>
+              Free plan: 1 CV review/day, 2 video questions/day. Upgrade for unlimited access.
+            </p>
+          
+            {/* (Legacy) alternate CTA column for smaller screens */}
+            <div style={{ display: 'none' }}>
               <button
                 onClick={handleSignUpClick}
                 style={{
@@ -193,7 +334,7 @@ export default function AuthGuard({ children }: AuthGuardProps) {
         {/* Sign Up Prompt Modal */}
         <SignUpPromptModal
           isOpen={showSignUpPrompt}
-          onClose={handleCloseModal}
+          onClose={handleDismissModal}
           featureName={featureName}
           onSignUpClick={handleSignUpClick}
         />

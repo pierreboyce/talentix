@@ -30,6 +30,12 @@ const features: FeatureShowcase[] = [
     emoji: '🎭'
   },
   {
+    name: 'Video Interview',
+    image: '/videointerviewscreenshot.png',
+    description: 'Record timed answers on camera and get instant AI feedback on clarity, confidence and relevance.',
+    emoji: '🎥'
+  },
+  {
     name: 'Job Tracker',
     image: '/jobtracker (2).png',
     description: 'Keep track of all your job applications and follow up on opportunities systematically with our smart tracker.',

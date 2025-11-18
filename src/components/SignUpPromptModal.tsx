@@ -12,15 +12,10 @@ interface SignUpPromptModalProps {
 }
 
 export default function SignUpPromptModal({ isOpen, onClose, featureName, onSignUpClick }: SignUpPromptModalProps) {
-  // Auto-close after 8 seconds
+  // Removed auto-close to prevent unwanted redirects/flows
   useEffect(() => {
-    if (isOpen) {
-      const timer = setTimeout(() => {
-        onClose();
-      }, 8000);
-      return () => clearTimeout(timer);
-    }
-  }, [isOpen, onClose]);
+    return () => {};
+  }, []);
 
   if (!isOpen) return null;
 

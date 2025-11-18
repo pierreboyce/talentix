@@ -515,7 +515,7 @@ export default function SignUpModal({ isOpen, onClose }: SignUpModalProps) {
               <input
                 type="text"
                 name="name"
-                placeholder="Your awesome name"
+                placeholder="Your name"
                 value={formData.name}
                 onChange={handleInputChange}
                 onFocus={() => setFocusedInput('name')}
@@ -560,7 +560,7 @@ export default function SignUpModal({ isOpen, onClose }: SignUpModalProps) {
                 <input
                   type="email"
                   name="email"
-                placeholder="your.email@awesome.com"
+                placeholder="your.email@example.com"
                   value={formData.email}
                   onChange={handleInputChange}
                 onFocus={() => setFocusedInput('email')}
@@ -650,7 +650,7 @@ export default function SignUpModal({ isOpen, onClose }: SignUpModalProps) {
                 <input
                 type="password"
                 name="confirmPassword"
-                placeholder="Confirm that awesome password"
+                placeholder="Confirm your password"
                 value={formData.confirmPassword}
                   onChange={handleInputChange}
                 onFocus={() => setFocusedInput('confirmPassword')}

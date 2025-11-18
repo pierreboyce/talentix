@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Teen Jobs UK - Find Your First Job | Talentix Job Search',
+  title: 'Teen Job Search UK - Find Your First Job',
   description: 'Search for jobs for 16, 17, and 18 year olds in the UK. Find part-time jobs, apprenticeships, and first job opportunities near you. Job search tool designed for UK teenagers.',
   keywords: [
     'teen jobs UK',

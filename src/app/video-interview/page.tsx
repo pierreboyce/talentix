@@ -122,12 +122,7 @@ export default function VideoInterviewPage(): React.ReactElement {
   const streamRef = useRef<MediaStream | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Redirect if not authenticated
-  useEffect(() => {
-    if (!loading && !user) {
-      router.push('/home');
-    }
-  }, [user, loading, router]);
+  // Do not redirect; AuthGuard will present a marketing/gated view for unauthenticated users
 
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
