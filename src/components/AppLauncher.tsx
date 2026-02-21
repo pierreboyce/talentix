@@ -127,17 +127,10 @@ const accountCompanyApps: AppItem[] = [
     color: 'bg-gradient-to-br from-gray-400 to-gray-600'
   },
   {
-    id: 'our-story',
-    name: 'Our Story',
-    emoji: '📖',
-    href: '/our-story',
-    color: 'bg-gradient-to-br from-yellow-400 to-yellow-600'
-  },
-  {
     id: 'our-services',
-    name: 'Our Services',
+    name: 'Talentix Workshops',
     emoji: '🛠️',
-    href: '/our-services',
+    href: '/our-services/workshops',
     color: 'bg-gradient-to-br from-purple-400 to-purple-600'
   }
 ];
@@ -160,13 +153,6 @@ const authApps: AppItem[] = [
 ];
 
 const loggedInApps: AppItem[] = [
-  {
-    id: 'our-story',
-    name: 'Our Story',
-    emoji: '📖',
-    href: '/our-story',
-    color: 'bg-yellow-600'
-  },
   {
     id: 'logout',
     name: 'Sign Out',

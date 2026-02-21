@@ -9,22 +9,39 @@ import { useState, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { createPortal } from 'react-dom';
 
-import SignUpModal from './SignUpModal';
 import SignInModal from './SignInModal';
 import PricingModal from './PricingModal';
 import ForgotPasswordModal from './ForgotPasswordModal';
 import AppLauncher from './AppLauncher';
 
+interface JobResourceApp {
+  id: string;
+  name: string;
+  emoji: string;
+  href: string;
+}
+
+const jobResourcesApps: JobResourceApp[] = [
+  { id: 'job-vacancies', name: 'Job Vacancies', emoji: '💼', href: '/search?q=jobs' },
+  { id: 'job-tracker', name: 'Job Tracker', emoji: '📊', href: '/job-tracker' },
+  { id: 'apprenticeship-tracker', name: 'Apprenticeship Tracker', emoji: '📋', href: '/apprenticeship-tracker' },
+  { id: 'cv-reviewer', name: 'CV Reviewer', emoji: '📄', href: '/cv-reviewer' },
+  { id: 'cover-letter', name: 'Cover Letter', emoji: '✍️', href: '/cover-letter' },
+  { id: 'interview-prep', name: 'Interview Prep', emoji: '🎭', href: '/interview-prep' },
+  { id: 'video-interview', name: 'Video Interview', emoji: '🎬', href: '/video-interview' },
+  { id: 'career-guidance', name: 'Career Guidance', emoji: '🎓', href: '/career-guidance' },
+];
+
 export default function Navigation() {
   const { user } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
-  const [showSignUpModal, setShowSignUpModal] = useState(false);
   const [showSignInModal, setShowSignInModal] = useState(false);
   const [showPricingModal, setShowPricingModal] = useState(false);
   const [showForgotPasswordModal, setShowForgotPasswordModal] = useState(false);
   const [showCommunityModal, setShowCommunityModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showJobResourcesMenu, setShowJobResourcesMenu] = useState(false);
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -90,18 +107,16 @@ export default function Navigation() {
     };
   }, []);
 
-  // Listen for sign-up modal events
+  // Listen for auth modal events (single merged entrypoint)
   useEffect(() => {
     if (typeof window === 'undefined') return;
     
     const handleShowSignUp = () => {
-      setShowSignInModal(false);
       setShowPricingModal(false);
-      setShowSignUpModal(true);
+      setShowSignInModal(true);
     };
     
     const handleShowSignIn = () => {
-      setShowSignUpModal(false);
       setShowPricingModal(false);
       setShowSignInModal(true);
     };
@@ -164,7 +179,7 @@ export default function Navigation() {
   useEffect(() => {
     if (typeof window === 'undefined') return;
     
-    if (showCommunityModal || showSuccessModal) {
+    if (showCommunityModal || showSuccessModal || showJobResourcesMenu) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = 'unset';
@@ -173,12 +188,11 @@ export default function Navigation() {
     return () => {
       document.body.style.overflow = 'unset';
     };
-  }, [showCommunityModal, showSuccessModal]);
+  }, [showCommunityModal, showSuccessModal, showJobResourcesMenu]);
 
   const isExcludedPage = (
     pathname === '/' || // Landing page header should NOT be sticky
     pathname === '/dashboard' ||
-    pathname === '/our-story' ||
     pathname.startsWith('/our-services')
   );
   const isSticky = !isExcludedPage;
@@ -253,35 +267,7 @@ export default function Navigation() {
                   🌟 Join Our Community
                 </button>
                 <button 
-                  onClick={() => router.push('/our-story')}
-                  style={{
-                    background: 'linear-gradient(135deg, #fef3c7 0%, #fde047 100%)',
-                    color: '#374151',
-                    padding: '10px 18px',
-                    borderRadius: '25px',
-                    border: 'none',
-                    fontSize: '14px',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                    transition: 'all 0.3s ease',
-                    boxShadow: '0 4px 15px rgba(253, 224, 71, 0.3)',
-                    fontFamily: "'Fredoka', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = 'translateY(-3px) scale(1.05)';
-                    e.currentTarget.style.boxShadow = '0 8px 25px rgba(253, 224, 71, 0.4)';
-                    e.currentTarget.style.background = 'linear-gradient(135deg, #fde047 0%, #facc15 100%)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = 'translateY(0) scale(1)';
-                    e.currentTarget.style.boxShadow = '0 4px 15px rgba(253, 224, 71, 0.3)';
-                    e.currentTarget.style.background = 'linear-gradient(135deg, #fef3c7 0%, #fde047 100%)';
-                  }}
-                >
-                  📖 Our Story
-                </button>
-                <button 
-                  onClick={() => router.push('/our-services')}
+                  onClick={() => router.push('/our-services/workshops')}
                   style={{
                     background: 'linear-gradient(135deg, #ddd6fe 0%, #a78bfa 100%)',
                     color: '#374151',
@@ -306,7 +292,35 @@ export default function Navigation() {
                     e.currentTarget.style.background = 'linear-gradient(135deg, #ddd6fe 0%, #a78bfa 100%)';
                   }}
                 >
-                  🛠️ Our Services
+                  🛠️ Talentix Workshops
+                </button>
+                <button 
+                  onClick={() => setShowJobResourcesMenu(true)}
+                  style={{
+                    background: 'linear-gradient(135deg, #dbeafe 0%, #93c5fd 100%)',
+                    color: '#374151',
+                    padding: '10px 18px',
+                    borderRadius: '25px',
+                    border: 'none',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease',
+                    boxShadow: '0 4px 15px rgba(147, 197, 253, 0.3)',
+                    fontFamily: "'Fredoka', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-3px) scale(1.05)';
+                    e.currentTarget.style.boxShadow = '0 8px 25px rgba(147, 197, 253, 0.4)';
+                    e.currentTarget.style.background = 'linear-gradient(135deg, #93c5fd 0%, #60a5fa 100%)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                    e.currentTarget.style.boxShadow = '0 4px 15px rgba(147, 197, 253, 0.3)';
+                    e.currentTarget.style.background = 'linear-gradient(135deg, #dbeafe 0%, #93c5fd 100%)';
+                  }}
+                >
+                  📚 Job Resources
                 </button>
                 <button 
                   onClick={() => router.push('/events')}
@@ -339,36 +353,8 @@ export default function Navigation() {
                 <button 
                   onClick={() => setShowSignInModal(true)}
                   style={{
-                    background: 'linear-gradient(135deg, #bfdbfe 0%, #60a5fa 100%)',
-                    color: '#374151',
-                    padding: '10px 18px',
-                    borderRadius: '25px',
-                    border: 'none',
-                    fontSize: '14px',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                    transition: 'all 0.3s ease',
-                    boxShadow: '0 4px 15px rgba(96, 165, 250, 0.3)',
-                    fontFamily: "'Fredoka', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = 'translateY(-3px) scale(1.05)';
-                    e.currentTarget.style.boxShadow = '0 8px 25px rgba(96, 165, 250, 0.4)';
-                    e.currentTarget.style.background = 'linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = 'translateY(0) scale(1)';
-                    e.currentTarget.style.boxShadow = '0 4px 15px rgba(96, 165, 250, 0.3)';
-                    e.currentTarget.style.background = 'linear-gradient(135deg, #bfdbfe 0%, #60a5fa 100%)';
-                  }}
-                >
-                  🔐 Sign In
-                </button>
-                <button 
-                  onClick={() => setShowSignUpModal(true)}
-                  style={{
                     background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
-                    color: '#000000',
+                    color: '#374151',
                     padding: '12px 24px',
                     borderRadius: '25px',
                     border: 'none',
@@ -390,7 +376,7 @@ export default function Navigation() {
                     e.currentTarget.style.background = 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)';
                   }}
                 >
-                  🚀 Sign Up
+                  🔐 Sign In / Sign Up
                 </button>
               </div>
             )}
@@ -401,10 +387,6 @@ export default function Navigation() {
       {/* Modals rendered as portals to body */}
       {typeof window !== 'undefined' && createPortal(
         <>
-          <SignUpModal 
-            isOpen={showSignUpModal} 
-            onClose={() => setShowSignUpModal(false)} 
-          />
           <SignInModal 
             isOpen={showSignInModal} 
             onClose={() => setShowSignInModal(false)}
@@ -421,6 +403,120 @@ export default function Navigation() {
             isOpen={showForgotPasswordModal} 
             onClose={() => setShowForgotPasswordModal(false)} 
           />
+
+          {showJobResourcesMenu && (
+            <>
+              <div
+                style={{
+                  position: 'fixed',
+                  inset: 0,
+                  zIndex: 2147483646,
+                  background: 'rgba(0, 0, 0, 0.7)',
+                  backdropFilter: 'blur(12px) brightness(0.8) saturate(120%)',
+                  WebkitBackdropFilter: 'blur(12px) brightness(0.8) saturate(120%)',
+                  animation: 'jobResourcesBackdropFade 0.22s ease-out'
+                }}
+                onClick={() => setShowJobResourcesMenu(false)}
+              />
+
+              <div
+                style={{
+                  position: 'fixed',
+                  top: '10px',
+                  left: '2vw',
+                  width: '96vw',
+                  height: '95vh',
+                  zIndex: 2147483647,
+                  borderRadius: '2.5rem',
+                  overflow: 'hidden',
+                  background: 'linear-gradient(135deg, #fef3c7 0%, #fde047 25%, #facc15 50%, #f59e0b 75%, #d97706 100%)',
+                  boxShadow: '0 30px 60px -12px rgba(245, 158, 11, 0.4), 0 15px 50px -10px rgba(217, 119, 6, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
+                  border: '3px solid rgba(255, 255, 255, 0.3)',
+                  animation: 'jobResourcesMenuFadeIn 0.28s cubic-bezier(0.22, 1, 0.36, 1)'
+                }}
+              >
+                <button
+                  onClick={() => setShowJobResourcesMenu(false)}
+                  aria-label="Close job resources menu"
+                  style={{
+                    position: 'absolute',
+                    top: '20px',
+                    right: '20px',
+                    width: '40px',
+                    height: '40px',
+                    borderRadius: '999px',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontSize: '22px',
+                    fontWeight: 'bold',
+                    color: '#fff',
+                    backgroundColor: '#e63946',
+                    boxShadow: '0 4px 12px rgba(230, 57, 70, 0.4)'
+                  }}
+                >
+                  ×
+                </button>
+
+                <div className="flex justify-center items-center pt-6 pb-2">
+                  <Image
+                    src="/talentixborder.png"
+                    alt="Talentix"
+                    width={150}
+                    height={50}
+                    className="object-contain"
+                  />
+                </div>
+
+                <div className="px-8 pt-8 pb-4 flex items-center justify-center" style={{ minHeight: 'calc(100% - 120px)' }}>
+                  <div className="grid grid-cols-4 gap-6 w-full max-w-[1200px]">
+                    {jobResourcesApps.map((app) => (
+                      <Link
+                        key={app.id}
+                        href={app.href}
+                        onClick={() => setShowJobResourcesMenu(false)}
+                        className="group flex flex-col items-center p-4 rounded-2xl hover:bg-white/30 transition-all duration-300 hover:scale-105 hover:shadow-xl"
+                        style={{ backdropFilter: 'blur(5px)' }}
+                      >
+                        <div className="w-24 h-24 bg-white/80 rounded-2xl flex items-center justify-center mb-3 group-hover:scale-110 group-hover:rotate-12 transition-all duration-300 shadow-lg group-hover:shadow-xl">
+                          <span className="text-[2.8rem] group-hover:animate-bounce">{app.emoji}</span>
+                        </div>
+                        <span
+                          className="text-[0.75rem] text-gray-800 text-center font-medium leading-tight max-w-[100px] group-hover:text-gray-900"
+                          style={{ fontWeight: '500', textShadow: '0 1px 2px rgba(0, 0, 0, 0.1)' }}
+                        >
+                          {app.name}
+                        </span>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="px-12 py-5 bg-white/20 border-t border-white/30" style={{ backdropFilter: 'blur(5px)' }}>
+                  <p className="text-[0.8rem] text-gray-800 text-center font-bold flex items-center justify-center gap-2">
+                    <span>⚡</span> Powered by Talentix <span>🚀</span>
+                  </p>
+                </div>
+              </div>
+
+              <style jsx global>{`
+                @keyframes jobResourcesBackdropFade {
+                  from { opacity: 0; }
+                  to { opacity: 1; }
+                }
+
+                @keyframes jobResourcesMenuFadeIn {
+                  from {
+                    opacity: 0;
+                    transform: translateY(-10px) scale(0.96);
+                  }
+                  to {
+                    opacity: 1;
+                    transform: translateY(0) scale(1);
+                  }
+                }
+              `}</style>
+            </>
+          )}
           
           {/* Community Form Modal */}
           {showCommunityModal && (

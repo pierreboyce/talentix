@@ -24,6 +24,7 @@ export default function NavigationMobile() {
   const [showPricingModal, setShowPricingModal] = useState(false);
   const [showHeaderPanel, setShowHeaderPanel] = useState(false);
   const [isPanelAnimating, setIsPanelAnimating] = useState(false);
+  const [showJobResourcesSubmenu, setShowJobResourcesSubmenu] = useState(false);
   const [showCommunityModal, setShowCommunityModal] = useState(false);
   const [formData, setFormData] = useState({
     fullName: '',
@@ -37,7 +38,6 @@ export default function NavigationMobile() {
   // Define pages where the header should not be sticky
   const excludedPages = [
     '/', // Landing page should NOT be sticky
-    '/our-story',
     '/our-services',
     '/video-interview',
   ];
@@ -63,6 +63,7 @@ export default function NavigationMobile() {
   // Close menus/panels when route changes
   useEffect(() => {
     setShowMobileMenu(false);
+    setShowJobResourcesSubmenu(false);
     if (showHeaderPanel) {
       setIsPanelAnimating(true);
       const t = setTimeout(() => {
@@ -213,9 +214,11 @@ export default function NavigationMobile() {
       setIsPanelAnimating(true);
       setTimeout(() => {
         setShowHeaderPanel(false);
+        setShowJobResourcesSubmenu(false);
         setIsPanelAnimating(false);
       }, 200);
     } else {
+      setShowJobResourcesSubmenu(false);
       setShowHeaderPanel(true);
     }
   };
@@ -265,10 +268,10 @@ export default function NavigationMobile() {
               }}
             >
               <Image
-                src="/tixlogo.png"
+                src="/talentixborder.png"
                 alt="Talentix Logo"
-                width={120}
-                height={35}
+                width={140}
+                height={52}
                 style={{ objectFit: 'contain' }}
                 priority
               />
@@ -516,17 +519,6 @@ export default function NavigationMobile() {
                 {/* Additional menu items */}
                 <div className="border-t border-gray-200 pt-3 space-y-2">
                   <button 
-                    onClick={() => handleMenuItemClick(() => router.push('/our-story'))}
-                    className="mobile-nav-item w-full text-left bg-gradient-to-r from-yellow-200 to-yellow-300 text-gray-800 hover:from-yellow-300 hover:to-yellow-400 transform hover:scale-105 active:scale-95"
-                    style={{ fontFamily: 'Fredoka, sans-serif', padding: '12px 16px', borderRadius: '8px' }}
-                  >
-                    <span className="flex items-center gap-3">
-                      <span className="text-lg">📖</span>
-                      <span className="font-medium text-sm">Our Story</span>
-                    </span>
-                  </button>
-                  
-                  <button 
                     onClick={() => handleMenuItemClick(() => {
                       if (typeof window !== 'undefined') {
                         window.dispatchEvent(new Event('talentix-show-signout-modal'));
@@ -643,108 +635,129 @@ export default function NavigationMobile() {
                   {!user ? (
                     <>
                       {/* Non-authenticated menu */}
-                      <button
-                        onClick={() => { setShowCommunityModal(true); toggleHeaderPanel(); }}
-                        style={{
-                          background: 'linear-gradient(135deg, #dcfce7 0%, #22c55e 100%)',
-                          color: '#374151',
-                          padding: '12px 16px',
-                          borderRadius: '12px',
-                          border: 'none',
-                          fontSize: '14px',
-                          fontWeight: 600,
-                          cursor: 'pointer',
-                          boxShadow: '0 4px 12px rgba(34, 197, 94, 0.25)',
-                          fontFamily: 'Fredoka, sans-serif'
-                        }}
-                      >
-                        🌟 Join Our Community
-                      </button>
-                      <button
-                        onClick={() => { toggleHeaderPanel(); router.push('/our-story'); }}
-                        style={{
-                          background: 'linear-gradient(135deg, #fef3c7 0%, #fde047 100%)',
-                          color: '#374151',
-                          padding: '12px 16px',
-                          borderRadius: '12px',
-                          border: 'none',
-                          fontSize: '14px',
-                          fontWeight: 600,
-                          cursor: 'pointer',
-                          boxShadow: '0 4px 12px rgba(253, 224, 71, 0.25)',
-                          fontFamily: 'Fredoka, sans-serif'
-                        }}
-                      >
-                        📖 Our Story
-                      </button>
-                      <button
-                        onClick={() => { toggleHeaderPanel(); router.push('/our-services'); }}
-                        style={{
-                          background: 'linear-gradient(135deg, #ddd6fe 0%, #a78bfa 100%)',
-                          color: '#374151',
-                          padding: '12px 16px',
-                          borderRadius: '12px',
-                          border: 'none',
-                          fontSize: '14px',
-                          fontWeight: 600,
-                          cursor: 'pointer',
-                          boxShadow: '0 4px 12px rgba(167, 139, 250, 0.25)',
-                          fontFamily: 'Fredoka, sans-serif'
-                        }}
-                      >
-                        🛠️ Our Services
-                      </button>
-                      <button
-                        onClick={() => { toggleHeaderPanel(); router.push('/events'); }}
-                        style={{
-                          background: 'linear-gradient(135deg, #fecaca 0%, #f87171 100%)',
-                          color: '#374151',
-                          padding: '12px 16px',
-                          borderRadius: '12px',
-                          border: 'none',
-                          fontSize: '14px',
-                          fontWeight: 600,
-                          cursor: 'pointer',
-                          boxShadow: '0 4px 12px rgba(248, 113, 113, 0.25)',
-                          fontFamily: 'Fredoka, sans-serif'
-                        }}
-                      >
-                        🎉 Events
-                      </button>
-                      <button
-                        onClick={() => { setShowSignInModal(true); toggleHeaderPanel(); }}
-                        style={{
-                          background: 'linear-gradient(135deg, #bfdbfe 0%, #60a5fa 100%)',
-                          color: '#374151',
-                          padding: '12px 16px',
-                          borderRadius: '12px',
-                          border: 'none',
-                          fontSize: '14px',
-                          fontWeight: 600,
-                          cursor: 'pointer',
-                          boxShadow: '0 4px 12px rgba(96, 165, 250, 0.25)',
-                          fontFamily: 'Fredoka, sans-serif'
-                        }}
-                      >
-                        🔐 Sign In
-                      </button>
-                      <button
-                        onClick={() => { setShowSignUpModal(true); toggleHeaderPanel(); }}
-                        style={{
-                          background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
-                          color: '#000000',
-                          padding: '12px 16px',
-                          borderRadius: '12px',
-                          border: 'none',
-                          fontSize: '14px',
-                          fontWeight: 700,
-                          cursor: 'pointer',
-                          boxShadow: '0 6px 16px rgba(251, 191, 36, 0.35)',
-                          fontFamily: 'Fredoka, sans-serif'
-                        }}
-                      >
-                        🚀 Sign Up
-                      </button>
+                      {!showJobResourcesSubmenu ? (
+                        <>
+                          <button
+                            onClick={() => { setShowCommunityModal(true); toggleHeaderPanel(); }}
+                            style={{
+                              background: 'linear-gradient(135deg, #dcfce7 0%, #22c55e 100%)',
+                              color: '#374151',
+                              padding: '12px 16px',
+                              borderRadius: '12px',
+                              border: 'none',
+                              fontSize: '14px',
+                              fontWeight: 600,
+                              cursor: 'pointer',
+                              boxShadow: '0 4px 12px rgba(34, 197, 94, 0.25)',
+                              fontFamily: 'Fredoka, sans-serif'
+                            }}
+                          >
+                            🌟 Join Our Community
+                          </button>
+                          <button
+                            onClick={() => { toggleHeaderPanel(); router.push('/our-services/workshops'); }}
+                            style={{
+                              background: 'linear-gradient(135deg, #ddd6fe 0%, #a78bfa 100%)',
+                              color: '#374151',
+                              padding: '12px 16px',
+                              borderRadius: '12px',
+                              border: 'none',
+                              fontSize: '14px',
+                              fontWeight: 600,
+                              cursor: 'pointer',
+                              boxShadow: '0 4px 12px rgba(167, 139, 250, 0.25)',
+                              fontFamily: 'Fredoka, sans-serif'
+                            }}
+                          >
+                            🛠️ Talentix Workshops
+                          </button>
+                          <button
+                            onClick={() => setShowJobResourcesSubmenu(true)}
+                            style={{
+                              background: 'linear-gradient(135deg, #dbeafe 0%, #93c5fd 100%)',
+                              color: '#374151',
+                              padding: '12px 16px',
+                              borderRadius: '12px',
+                              border: 'none',
+                              fontSize: '14px',
+                              fontWeight: 600,
+                              cursor: 'pointer',
+                              boxShadow: '0 4px 12px rgba(147, 197, 253, 0.25)',
+                              fontFamily: 'Fredoka, sans-serif'
+                            }}
+                          >
+                            📚 Job Resources
+                          </button>
+                          <button
+                            onClick={() => { toggleHeaderPanel(); router.push('/events'); }}
+                            style={{
+                              background: 'linear-gradient(135deg, #fecaca 0%, #f87171 100%)',
+                              color: '#374151',
+                              padding: '12px 16px',
+                              borderRadius: '12px',
+                              border: 'none',
+                              fontSize: '14px',
+                              fontWeight: 600,
+                              cursor: 'pointer',
+                              boxShadow: '0 4px 12px rgba(248, 113, 113, 0.25)',
+                              fontFamily: 'Fredoka, sans-serif'
+                            }}
+                          >
+                            🎉 Events
+                          </button>
+                          <button
+                            onClick={() => { setShowSignInModal(true); toggleHeaderPanel(); }}
+                            style={{
+                              background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
+                              color: '#374151',
+                              padding: '12px 16px',
+                              borderRadius: '12px',
+                              border: 'none',
+                              fontSize: '14px',
+                              fontWeight: 700,
+                              cursor: 'pointer',
+                              boxShadow: '0 6px 16px rgba(251, 191, 36, 0.35)',
+                              fontFamily: 'Fredoka, sans-serif'
+                            }}
+                          >
+                            🔐 Sign In / Sign Up
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          <button
+                            onClick={() => setShowJobResourcesSubmenu(false)}
+                            style={{
+                              background: 'rgba(255, 255, 255, 0.7)',
+                              color: '#374151',
+                              padding: '10px 14px',
+                              borderRadius: '10px',
+                              border: '1px solid rgba(209, 213, 219, 0.9)',
+                              fontSize: '13px',
+                              fontWeight: 700,
+                              cursor: 'pointer',
+                              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+                              fontFamily: 'Fredoka, sans-serif',
+                              textAlign: 'left'
+                            }}
+                          >
+                            ← Back to menu
+                          </button>
+
+                          <div style={{ fontSize: '11px', fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.5px', marginTop: '2px', marginBottom: '2px', paddingLeft: '4px' }}>
+                            Job Features
+                          </div>
+
+                          <button onClick={() => { toggleHeaderPanel(); router.push('/search?q=jobs'); }} style={{ background: 'linear-gradient(135deg, #dcfce7 0%, #22c55e 100%)', color: '#374151', padding: '12px 16px', borderRadius: '12px', border: 'none', fontSize: '14px', fontWeight: 600, cursor: 'pointer', boxShadow: '0 4px 12px rgba(34, 197, 94, 0.25)', fontFamily: 'Fredoka, sans-serif' }}>💼 Job Vacancies</button>
+                          <button onClick={() => { toggleHeaderPanel(); router.push('/job-tracker'); }} style={{ background: 'linear-gradient(135deg, #ccfbf1 0%, #5eead4 100%)', color: '#374151', padding: '12px 16px', borderRadius: '12px', border: 'none', fontSize: '14px', fontWeight: 600, cursor: 'pointer', boxShadow: '0 4px 12px rgba(94, 234, 212, 0.25)', fontFamily: 'Fredoka, sans-serif' }}>📊 Job Tracker</button>
+                          <button onClick={() => { toggleHeaderPanel(); router.push('/apprenticeship-tracker'); }} style={{ background: 'linear-gradient(135deg, #bfdbfe 0%, #60a5fa 100%)', color: '#374151', padding: '12px 16px', borderRadius: '12px', border: 'none', fontSize: '14px', fontWeight: 600, cursor: 'pointer', boxShadow: '0 4px 12px rgba(96, 165, 250, 0.25)', fontFamily: 'Fredoka, sans-serif' }}>📋 Apprenticeship Tracker</button>
+                          <button onClick={() => { toggleHeaderPanel(); router.push('/cv-reviewer'); }} style={{ background: 'linear-gradient(135deg, #ddd6fe 0%, #a78bfa 100%)', color: '#374151', padding: '12px 16px', borderRadius: '12px', border: 'none', fontSize: '14px', fontWeight: 600, cursor: 'pointer', boxShadow: '0 4px 12px rgba(167, 139, 250, 0.25)', fontFamily: 'Fredoka, sans-serif' }}>📄 CV Reviewer</button>
+                          <button onClick={() => { toggleHeaderPanel(); router.push('/cover-letter'); }} style={{ background: 'linear-gradient(135deg, #e0e7ff 0%, #a5b4fc 100%)', color: '#374151', padding: '12px 16px', borderRadius: '12px', border: 'none', fontSize: '14px', fontWeight: 600, cursor: 'pointer', boxShadow: '0 4px 12px rgba(165, 180, 252, 0.25)', fontFamily: 'Fredoka, sans-serif' }}>✍️ Cover Letter</button>
+                          <button onClick={() => { toggleHeaderPanel(); router.push('/interview-prep'); }} style={{ background: 'linear-gradient(135deg, #fef3c7 0%, #fbbf24 100%)', color: '#374151', padding: '12px 16px', borderRadius: '12px', border: 'none', fontSize: '14px', fontWeight: 600, cursor: 'pointer', boxShadow: '0 4px 12px rgba(251, 191, 36, 0.25)', fontFamily: 'Fredoka, sans-serif' }}>🎭 Interview Prep</button>
+                          <button onClick={() => { toggleHeaderPanel(); router.push('/video-interview'); }} style={{ background: 'linear-gradient(135deg, #fbcfe8 0%, #f472b6 100%)', color: '#374151', padding: '12px 16px', borderRadius: '12px', border: 'none', fontSize: '14px', fontWeight: 600, cursor: 'pointer', boxShadow: '0 4px 12px rgba(244, 114, 182, 0.25)', fontFamily: 'Fredoka, sans-serif' }}>🎬 Video Interview</button>
+                          <button onClick={() => { toggleHeaderPanel(); router.push('/career-guidance'); }} style={{ background: 'linear-gradient(135deg, #bbf7d0 0%, #34d399 100%)', color: '#374151', padding: '12px 16px', borderRadius: '12px', border: 'none', fontSize: '14px', fontWeight: 600, cursor: 'pointer', boxShadow: '0 4px 12px rgba(52, 211, 153, 0.25)', fontFamily: 'Fredoka, sans-serif' }}>🎓 Career Guidance</button>
+                        </>
+                      )}
                     </>
                   ) : (
                     <>
@@ -983,24 +996,7 @@ export default function NavigationMobile() {
                         🎉 Events
                       </button>
                       <button
-                        onClick={() => { toggleHeaderPanel(); router.push('/our-story'); }}
-                        style={{
-                          background: 'linear-gradient(135deg, #fef3c7 0%, #fde047 100%)',
-                          color: '#374151',
-                          padding: '12px 16px',
-                          borderRadius: '12px',
-                          border: 'none',
-                          fontSize: '14px',
-                          fontWeight: 600,
-                          cursor: 'pointer',
-                          boxShadow: '0 4px 12px rgba(253, 224, 71, 0.25)',
-                          fontFamily: 'Fredoka, sans-serif'
-                        }}
-                      >
-                        📖 Our Story
-                      </button>
-                      <button
-                        onClick={() => { toggleHeaderPanel(); router.push('/our-services'); }}
+                        onClick={() => { toggleHeaderPanel(); router.push('/our-services/workshops'); }}
                         style={{
                           background: 'linear-gradient(135deg, #ddd6fe 0%, #a78bfa 100%)',
                           color: '#374151',
@@ -1014,7 +1010,7 @@ export default function NavigationMobile() {
                           fontFamily: 'Fredoka, sans-serif'
                         }}
                       >
-                        🛠️ Our Services
+                        🛠️ Talentix Workshops
                       </button>
                       
                       {/* Sign Out */}

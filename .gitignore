@@ -101,3 +101,4 @@ tmp/
 # Cache files
 .cache/
 .parcel-cache/
+.env*.local

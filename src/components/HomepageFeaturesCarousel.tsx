@@ -2,14 +2,31 @@
 
 import { useState } from 'react';
 import { Search, FileText, Users, Trophy, Camera, Settings, BarChart3, Edit3, MessageCircle, BookOpen } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '../contexts/AuthContext';
 import SignUpPromptModal from './SignUpPromptModal';
 
 export default function HomepageFeaturesCarousel() {
   const { user } = useAuth();
+  const router = useRouter();
   const [signUpPrompt, setSignUpPrompt] = useState({ isOpen: false, featureName: '' });
 
+  const directGuestRoutes: Record<string, string> = {
+    'Job Search': '/search?q=jobs',
+    'CV Reviewer': '/cv-reviewer',
+    'Interview Prep': '/interview-prep',
+    'Video Interview': '/video-interview',
+    'Cover Letter Generator': '/cover-letter',
+    'Career Guidance': '/career-guidance',
+  };
+
   const handleFeatureClick = (featureName: string) => {
+    const directRoute = directGuestRoutes[featureName];
+    if (directRoute) {
+      router.push(directRoute);
+      return;
+    }
+
     if (!user) {
       setSignUpPrompt({ isOpen: true, featureName });
     }
@@ -43,6 +60,21 @@ export default function HomepageFeaturesCarousel() {
       padding: '40px 0' 
     }}>
       <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 48px' }}>
+        <div style={{ textAlign: 'center', marginBottom: '28px' }}>
+          <h2
+            style={{
+              fontSize: 'clamp(2rem, 4.2vw, 3.2rem)',
+              fontWeight: 900,
+              color: '#111827',
+              fontFamily: "'Fredoka', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+              margin: 0,
+              textShadow: '2px 2px 0 rgba(255,255,255,0.35)',
+            }}
+          >
+            Our Features
+          </h2>
+        </div>
+
         <div style={{ position: 'relative' }}>
           {/* Navigation Arrows */}
           <button 
@@ -819,6 +851,7 @@ export default function HomepageFeaturesCarousel() {
         featureName={signUpPrompt.featureName}
         onSignUpClick={handleSignUpClick}
       />
+
     </div>
   );
 }

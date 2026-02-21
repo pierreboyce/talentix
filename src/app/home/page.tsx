@@ -10,10 +10,8 @@ import HomepageFeaturesCarousel from '../../components/HomepageFeaturesCarousel'
 import FeatureShowcaseCarousel from '../../components/FeatureShowcaseCarousel';
 import HomepageMobile from '../../components/HomepageMobile';
 import ClientOnly from '../../components/ClientOnly';
-import { JobPostCardProps } from '../../components/JobPostCard';
 import SignUpModal from '../../components/SignUpModal';
 import SignInModal from '../../components/SignInModal';
-import { ExternalLink, Building2, ShoppingBag, Store, Coffee } from "lucide-react";
 
 const floatingEmojis = [
   { emoji: '💰', top: '10%', left: '5%', size: 'text-[10rem]', rotate: '-15deg' },
@@ -90,35 +88,43 @@ const demoBlogs = [
   },
 ];
 
-const featuredJobs: JobPostCardProps[] = [
+
+const heroWorkshopImages = [
+  "/Talentix%20Workshops%20Images/IMG_2206.jpeg",
+  "/Talentix%20Workshops%20Images/IMG_2209.jpeg",
+  "/Talentix%20Workshops%20Images/IMG_2212.jpeg",
+  "/Talentix%20Workshops%20Images/IMG_2218.jpeg",
+  "/Talentix%20Workshops%20Images/IMG_2228.jpeg",
+  "/Talentix%20Workshops%20Images/IMG_2286.jpeg",
+];
+
+const workedWithLogos = [
+  { src: "/Jp-Morgan-Logo-PNG-Photo.png", alt: "J.P. Morgan", mobileScale: 1.55 },
+  { src: "/EY-Logo-PNG-Images-HD.png", alt: "EY", mobileScale: 1.3 },
+  { src: "/AOShearman_Logo.png", alt: "A&O Shearman", mobileScale: 0.9 },
+  { src: "/Morgan-Stanley-Logo-PNG-HD.png", alt: "Morgan Stanley", mobileScale: 1.35 },
+  { src: "/R.png", alt: "Rolls-Royce", mobileScale: 0.95 },
+  { src: "/Barclays-Logo-PNG-1024x173.webp", alt: "Barclays", mobileScale: 1.0 },
+  { src: "/l.avif", alt: "Endeavour Academy Bexley", mobileScale: 1.45 },
+  { src: "/st-albans-academy.png", alt: "Ark St Albans Academy", mobileScale: 1.25 },
+];
+
+const workshopTestimonialPlaceholders = [
   {
-    companyName: "McDonald's",
-    companyLogo: 'Building2',
-    jobTitle: 'Crew Member (Part-time)',
-    description: "Join our amazing team to create great customer experiences. Flexible hours and opportunities to progress.",
-    applyLink: 'https://people.mcdonalds.co.uk/opportunities/restaurant/part-time-crew-member',
+    quote: "I would definitely recommend Talentix to other schools, you're really inclusive, you really tailored it to our students [...] I haven't seen them more engaged!",
+    name: "Emma Seffens",
+    role: "Careers Officer at Endeavour Academy Bexley"
   },
   {
-    companyName: 'Boots',
-    companyLogo: 'ShoppingBag',
-    jobTitle: 'Customer Advisor',
-    description: 'Help customers find the right products, introduce them to new things, and make their shopping experience better.',
-    applyLink: 'https://www.boots.jobs/search-jobs',
+    quote: "The Talentix workshop was exactly what our Year 11s needed. They connected with the students in a way that felt real and relatable.",
+    name: "Charlene Steele",
+    role: "Careers Lead at Ark St Albans Academy"
   },
   {
-    companyName: 'Tesco',
-    companyLogo: 'Store',
-    jobTitle: 'Customer Assistant',
-    description: 'Become the friendly face of our store, helping customers with a smile and ensuring shelves are stocked.',
-    applyLink: 'https://www.tesco-careers.com/search-and-apply/',
-  },
-  {
-    companyName: 'Costa Coffee',
-    companyLogo: 'Coffee',
-    jobTitle: 'Barista (Part-time)',
-    description: 'Create amazing coffee experiences for our customers. Perfect for students with flexible scheduling available.',
-    applyLink: 'https://www.costacareers.co.uk',
-  },
+    quote: "Probably the best workshop I've ever had!",
+    name: "Teddy",
+    role: "Year 10"
+  }
 ];
 
 function HomeContent() {
@@ -195,6 +201,8 @@ function HomeContent() {
   const [showSignInModal, setShowSignInModal] = useState(false);
   const [showWhatWeDoModal, setShowWhatWeDoModal] = useState(false);
   const [oauthError, setOauthError] = useState<string | null>(null);
+  const [activeHeroWorkshopImage, setActiveHeroWorkshopImage] = useState(0);
+  const [activeWorkshopTestimonial, setActiveWorkshopTestimonial] = useState(0);
 
   // Listen for custom events from feature carousel
   useEffect(() => {
@@ -274,7 +282,23 @@ function HomeContent() {
       // Clear error after 8 seconds for config error (more time to read)
       setTimeout(() => setOauthError(null), error === 'oauth_config_error' ? 8000 : 5000);
     }
-  }, [router]);
+    }, [router]);
+
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      setActiveHeroWorkshopImage((current) => (current + 1) % heroWorkshopImages.length);
+    }, 3500);
+
+    return () => window.clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    const testimonialTimer = window.setInterval(() => {
+      setActiveWorkshopTestimonial((current) => (current + 1) % workshopTestimonialPlaceholders.length);
+    }, 4200);
+
+    return () => window.clearInterval(testimonialTimer);
+  }, []);
 
   if (showLoader) {
   return (
@@ -422,7 +446,7 @@ function HomeContent() {
       data-is-mobile={isMobile ? 'true' : 'false'}
     >
       {/* New Hero Section */}
-      <section className="relative min-h-screen flex flex-col items-center justify-center text-center px-6 overflow-hidden">
+      <section className="relative min-h-screen lg:min-h-[calc(100vh-80px)] flex items-center justify-center px-8 md:px-12 lg:px-16 xl:px-20 py-20 md:py-28 lg:py-8 xl:py-10 overflow-hidden">
         {/* Floating Emojis */}
         {floatingEmojis.map((item, index) => (
           <div
@@ -439,55 +463,244 @@ function HomeContent() {
           </div>
         ))}
 
-        <div className="z-10 relative">
-          <Image
-            src="/talentixborder.png"
-            alt="Talentix Logo"
-            width={250}
-            height={115}
-            style={{ objectFit: 'contain', backgroundColor: 'transparent' }}
-            className="mx-auto mb-0"
-            priority
-          />
-          <h2 
-            className="text-sm md:text-base lg:text-lg text-white leading-tight mb-4"
-            style={{ 
-              fontFamily: "'Fredoka', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-              marginTop: '-8px'
-            }}
-          >
-            to get you your first job
-          </h2>
-          <h1 
-            className="font-bold text-[5rem] md:text-[8rem] lg:text-[12rem] text-gray-900 leading-tight"
-            style={{ 
-              fontFamily: "'Fredoka', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-              position: 'relative',
-              zIndex: 1
-            }}
-          >
-            for <span className="yellow-gradient-text">teenagers</span> by a <span className="yellow-gradient-text">teenager</span>
-          </h1>
-          <div className="flex flex-col items-center gap-4 mt-32">
-            <button 
-              onClick={() => setShowSignUpModal(true)}
-              className="btn-primary-yellow border-4 border-yellow-400/80 rounded-xl text-lg font-semibold relative z-10"
-              style={{ fontFamily: "'Fredoka', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}
-            >
-              Sign up now
-            </button>
+        <div className="hero-layout-wrap z-10 relative w-full max-w-[1600px] mx-auto flex flex-col items-center gap-16 lg:flex-row lg:items-center lg:justify-between lg:gap-10 xl:gap-12">
+          {/* Left Side - Logo and Text Group */}
+          <div className="hero-left-content w-full lg:w-auto lg:flex-1 flex flex-col items-start gap-6 lg:translate-y-0 xl:translate-y-0">
+            {/* Logo - Centered slightly left */}
+            <div className="hero-logo-container hero-logo-mobile-hidden w-full lg:w-auto px-8 md:px-12 lg:px-0 lg:mt-0 xl:mt-0">
+              <Image
+                src="/talentixborder.png"
+                alt="Talentix Logo"
+                width={280}
+                height={130}
+                className="lg:w-[320px] lg:h-[150px] xl:w-[360px] xl:h-[170px]"
+                style={{ objectFit: 'contain' }}
+                priority
+              />
+            </div>
             
-            <button 
-              onClick={() => {
-                console.log('Button clicked! Setting modal to true');
-                setShowWhatWeDoModal(true);
-                console.log('showWhatWeDoModal state should now be:', true);
+            {/* Text Container - Centered but slightly left */}
+            <div className="hero-text-container w-full lg:w-auto px-8 md:px-12 lg:px-0">
+              <h1
+                className="hero-main-heading text-[3.2rem] md:text-[5rem] lg:text-[10rem] xl:text-[12rem] font-black leading-[0.9] tracking-[-0.02em] mb-0"
+                style={{
+                  fontFamily: "'Fredoka', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                  textShadow: "0 6px 18px rgba(17, 24, 39, 0.12)",
+                  letterSpacing: "-0.02em",
+                }}
+              >
+                <span className="hero-word-black">FOR </span>
+                <br className="hero-split-break" />
+                <span className="hero-word-gold">TEENAGERS</span>
+                <br />
+                <span className="hero-word-black">BY </span>
+                <br className="hero-split-break" />
+                <span className="hero-word-gold">TEENAGERS</span>
+              </h1>
+              <div className="hero-what-we-do-wrap mt-8 md:mt-10 lg:mt-16 xl:mt-20">
+                <button
+                  onClick={() => setShowWhatWeDoModal(true)}
+                  className="hero-what-we-do-btn btn-primary-purple-small border-3 border-purple-400/80 rounded-lg text-base font-semibold relative z-10"
+                  style={{ fontFamily: "'Fredoka', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}
+                >
+                  What do we do? 🤔
+                </button>
+              </div>
+          </div>
+          </div>
+
+          {/* Image Container - Right Side */}
+          <div className="hero-workshop-circle-wrap flex-shrink-0" aria-hidden="true">
+            <div className="hero-workshop-circle">
+              <Image
+                key={heroWorkshopImages[activeHeroWorkshopImage]}
+                src={heroWorkshopImages[activeHeroWorkshopImage]}
+                alt="Talentix workshop highlight"
+                fill
+                sizes="(max-width: 1024px) 320px, 520px"
+                style={{ objectFit: "cover" }}
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Talentix Workshops Section */}
+      <section className="workshops-section relative py-14 md:py-16 px-6 overflow-hidden">
+        <div className="absolute inset-0 opacity-40 pointer-events-none">
+          <div className="absolute -top-20 left-1/4 h-48 w-48 rounded-full bg-yellow-200 blur-3xl"></div>
+          <div className="absolute bottom-0 right-10 h-56 w-56 rounded-full bg-purple-200 blur-3xl"></div>
+        </div>
+
+        <div className="max-w-6xl mx-auto relative z-10">
+          <div className="workshops-layout">
+            <Image
+              src="/talentixworkshopslogo.png"
+              alt="Talentix Workshops logo"
+              width={260}
+              height={120}
+              className="workshops-mobile-top-logo"
+              style={{ objectFit: "contain" }}
+            />
+
+            <div className="workshops-image-shell" aria-hidden="true">
+              <Image
+                key={isMobile ? heroWorkshopImages[activeHeroWorkshopImage] : '/Talentix%20Workshops%20Images/IMG_2234.jpeg'}
+                src={isMobile ? heroWorkshopImages[activeHeroWorkshopImage] : '/Talentix%20Workshops%20Images/IMG_2234.jpeg'}
+                alt="Talentix workshop session"
+                width={900}
+                height={720}
+                className="workshops-main-image"
+                style={{ objectFit: "cover" }}
+              />
+              <div className="workshops-image-fade" />
+            </div>
+            {isMobile ? (
+              <div className="workshops-mobile-image-dots" aria-label="workshop image slide indicators">
+                {heroWorkshopImages.map((_, index) => (
+                  <button
+                    key={index}
+                    type="button"
+                    onClick={() => setActiveHeroWorkshopImage(index)}
+                    className={`workshops-mobile-image-dot ${index === activeHeroWorkshopImage ? 'is-active' : ''}`}
+                    aria-label={`Show workshop image ${index + 1}`}
+                  />
+                ))}
+              </div>
+            ) : null}
+
+            <div className="workshops-right">
+              <Image
+                src="/talentixworkshopslogo.png"
+                alt="Talentix Workshops logo"
+                width={220}
+                height={102}
+                className="workshops-testimonial-logo"
+                style={{ objectFit: "contain" }}
+              />
+              <div className="workshops-testimonial-card" key={activeWorkshopTestimonial}>
+                <p className="workshops-testimonial-label">Testimonials</p>
+                <blockquote className="workshops-testimonial-quote">
+                  "{workshopTestimonialPlaceholders[activeWorkshopTestimonial].quote}"
+                </blockquote>
+                <p className="workshops-testimonial-person">
+                  {workshopTestimonialPlaceholders[activeWorkshopTestimonial].name}
+                </p>
+                <p className="workshops-testimonial-role">
+                  {workshopTestimonialPlaceholders[activeWorkshopTestimonial].role}
+                </p>
+
+                <div className="workshops-dots" aria-label="testimonial slide indicators">
+                  {workshopTestimonialPlaceholders.map((_, index) => (
+                    <button
+                      key={index}
+                      type="button"
+                      onClick={() => setActiveWorkshopTestimonial(index)}
+                      className={`workshops-dot ${index === activeWorkshopTestimonial ? "is-active" : ""}`}
+                      aria-label={`Show testimonial placeholder ${index + 1}`}
+                    />
+                  ))}
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => router.push('/our-services/workshops')}
+                  className="workshops-learn-more-btn btn-primary-purple-small"
+                  style={{ fontFamily: "'Fredoka', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}
+                >
+                  Learn more
+                </button>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => router.push('/our-services/workshops')}
+                className="workshops-playful-btn"
+                style={{ fontFamily: "'Fredoka', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}
+              >
+                What are Talentix Workshops? ✨
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Worked With Section */}
+      <section
+        className="pt-28 pb-28 md:pt-32 md:pb-32 relative overflow-hidden"
+        style={{ background: '#FFD700' }}
+      >
+        <div className="absolute inset-0 opacity-10 pointer-events-none">
+          <div className="absolute top-8 left-8 text-6xl animate-bounce">🏢</div>
+          <div className="absolute top-12 right-12 text-5xl animate-pulse">🤝</div>
+          <div className="absolute bottom-10 left-1/4 text-4xl animate-spin" style={{ animationDuration: '8s' }}>✨</div>
+          <div className="absolute bottom-8 right-1/4 text-5xl animate-bounce">🚀</div>
+        </div>
+
+        <div className="max-w-7xl mx-auto px-6 md:px-8 relative z-10">
+          <div className="text-center mb-14">
+            <h2
+              className="font-black text-gray-900 mb-3"
+              style={{
+                fontSize: 'clamp(2.2rem, 5vw, 4rem)',
+                fontFamily: "'Fredoka', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                textShadow: '2px 2px 0 rgba(255,255,255,0.35)',
               }}
-              className="btn-primary-purple-small border-3 border-purple-400/80 rounded-lg text-base font-semibold relative z-10"
-              style={{ fontFamily: "'Fredoka', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}
             >
-              What do we do? 🤔
-            </button>
+              Worked With
+            </h2>
+            <p className="text-gray-800 text-lg md:text-xl font-medium" style={{ fontFamily: 'Fredoka, sans-serif' }}>
+              Trusted by leading organisations and schools
+            </p>
+          </div>
+
+          <div
+            className="mx-auto rounded-[28px] p-5 md:p-8"
+            style={{
+              background: 'rgba(255, 255, 255, 0.22)',
+              border: '2px solid rgba(255,255,255,0.5)',
+              boxShadow: '0 18px 40px rgba(0,0,0,0.12)',
+              backdropFilter: 'blur(3px)',
+            }}
+          >
+            <div className="worked-with-logos md:grid md:grid-cols-4 md:gap-8">
+              {workedWithLogos.map((logo) => (
+                <div
+                  key={logo.alt}
+                  className="group worked-with-logo-card p-2 md:p-[20px_18px] min-h-[78px] md:min-h-[130px]"
+                  style={{
+                    background: 'rgba(255,255,255,0.94)',
+                    borderRadius: '20px',
+                    border: '2px solid rgba(255,255,255,0.9)',
+                    boxShadow: '0 10px 24px rgba(0,0,0,0.12)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'transform 0.25s ease, box-shadow 0.25s ease',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-4px) scale(1.02)';
+                    e.currentTarget.style.boxShadow = '0 16px 28px rgba(0,0,0,0.18)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                    e.currentTarget.style.boxShadow = '0 10px 24px rgba(0,0,0,0.12)';
+                  }}
+                >
+                  <Image
+                    src={logo.src}
+                    alt={logo.alt}
+                    width={200}
+                    height={90}
+                    className="mx-auto object-contain worked-with-logo-image w-full h-[34px] md:h-[78px] max-w-[78px] md:max-w-[190px]"
+                    style={{
+                      transform: `scale(${logo.mobileScale})`,
+                      transformOrigin: 'center'
+                    }}
+                  />
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
@@ -495,419 +708,6 @@ function HomeContent() {
       <FeatureShowcaseCarousel />
 
       <HomepageFeaturesCarousel />
-
-      {/* Featured Jobs Section - Fun & Engaging Design */}
-      <section className="py-24 bg-gradient-to-br from-yellow-50 via-orange-50 to-pink-50 pt-40 pb-24 relative overflow-hidden">
-        {/* Fun Background Elements */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-10 left-10 text-6xl animate-bounce">💼</div>
-          <div className="absolute top-20 right-20 text-5xl animate-pulse">🎯</div>
-          <div className="absolute bottom-20 left-20 text-4xl animate-spin">⭐</div>
-          <div className="absolute bottom-10 right-10 text-6xl animate-bounce">🚀</div>
-        </div>
-        
-        <div className="max-w-6xl mx-auto px-6 relative z-10">
-          <div className="text-center mb-16">
-            <h2 
-              className="font-bold text-gray-900 mb-4 featured-jobs-heading" 
-              style={{ 
-                fontSize: '4.5rem',
-                fontFamily: "'Fredoka', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-                background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                textShadow: '2px 2px 4px rgba(0,0,0,0.1)'
-              }}
-            >
-              Featured Jobs
-            </h2>
-            {/* Subtitle removed per request */}
-          </div>
-          <div className="responsive-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', maxWidth: '1000px', margin: '0 auto' }}>
-            {featuredJobs.map((job) => {
-              // Function to render the appropriate icon with fun colors
-              const renderIcon = (iconName: string) => {
-                const iconData = {
-                  'Building2': { icon: Building2, color: '#ef4444', bgColor: '#fef2f2' }, // Red theme for McDonald's
-                  'ShoppingBag': { icon: ShoppingBag, color: '#8b5cf6', bgColor: '#f5f3ff' }, // Purple theme for Boots
-                  'Store': { icon: Store, color: '#06b6d4', bgColor: '#f0fdff' }, // Cyan theme for Tesco
-                  'Coffee': { icon: Coffee, color: '#f59e0b', bgColor: '#fffbeb' } // Amber theme for Costa
-                };
-                
-                const data = iconData[iconName as keyof typeof iconData] || iconData['Building2'];
-                const IconComponent = data.icon;
-                
-                return {
-                  icon: <IconComponent size={28} color={data.color} />,
-                  color: data.color,
-                  bgColor: data.bgColor
-                };
-              };
-
-              const iconInfo = renderIcon(job.companyLogo);
-              
-              return (
-                <div key={job.companyName} style={{
-                  position: 'relative',
-                  borderRadius: '24px',
-                  padding: '28px',
-                  boxShadow: '0 20px 40px rgba(0, 0, 0, 0.1)',
-                  border: '3px solid transparent',
-                  transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-                  cursor: 'pointer',
-                  background: `linear-gradient(135deg, ${iconInfo.bgColor} 0%, #ffffff 30%, ${iconInfo.bgColor} 100%)`,
-                  backgroundSize: '200% 200%',
-                  animation: 'gradientShift 6s ease infinite',
-                  overflow: 'hidden'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.border = `3px solid ${iconInfo.color}`;
-                  e.currentTarget.style.boxShadow = `0 30px 60px rgba(0, 0, 0, 0.2), 0 0 30px ${iconInfo.color}40`;
-                  e.currentTarget.style.transform = 'translateY(-8px) scale(1.02) rotate(1deg)';
-                  e.currentTarget.style.backgroundPosition = '100% 100%';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.border = '3px solid transparent';
-                  e.currentTarget.style.boxShadow = '0 20px 40px rgba(0, 0, 0, 0.1)';
-                  e.currentTarget.style.transform = 'translateY(0px) scale(1) rotate(0deg)';
-                  e.currentTarget.style.backgroundPosition = '0% 0%';
-                }}
-                >
-                  {/* Floating decorative elements */}
-                  <div style={{
-                    position: 'absolute',
-                    top: '10px',
-                    right: '15px',
-                    fontSize: '24px',
-                    opacity: '0.25',
-                    animation: 'float 3s ease-in-out infinite'
-                  }}>
-                    ✨
-                  </div>
-                  <div style={{
-                    position: 'absolute',
-                    bottom: '15px',
-                    left: '15px',
-                    fontSize: '18px',
-                    opacity: '0.15',
-                    animation: 'float 4s ease-in-out infinite reverse'
-                  }}>
-                    💼
-                  </div>
-                  
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px', position: 'relative', zIndex: 2 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-                      <div style={{
-                        width: '72px',
-                        height: '72px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        background: `linear-gradient(135deg, ${iconInfo.color}20 0%, ${iconInfo.color}10 100%)`,
-                        borderRadius: '20px',
-                        border: `3px solid ${iconInfo.color}30`,
-                        boxShadow: `0 8px 20px ${iconInfo.color}20`,
-                        transition: 'all 0.3s ease',
-                        animation: 'iconPulse 2s ease-in-out infinite'
-                      }}>
-                        <div style={{ color: iconInfo.color, transform: 'scale(1.2)' }}>
-                          {iconInfo.icon}
-                        </div>
-                      </div>
-                      <div>
-                        <h3 style={{
-                          fontSize: '24px',
-                          fontWeight: 'bold',
-                          background: `linear-gradient(135deg, ${iconInfo.color} 0%, #1f2937 100%)`,
-                          WebkitBackgroundClip: 'text',
-                          WebkitTextFillColor: 'transparent',
-                          margin: '0 0 6px 0',
-                          fontFamily: "'Fredoka', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-                          textShadow: '2px 2px 4px rgba(0,0,0,0.1)'
-                        }}>
-                          {job.jobTitle}
-                        </h3>
-                        <p style={{
-                          fontSize: '18px',
-                          color: iconInfo.color,
-                          margin: '0',
-                          fontFamily: "'Fredoka', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-                          fontWeight: '600',
-                          opacity: '0.8'
-                        }}>
-                          🏢 {job.companyName}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <p style={{
-                    fontSize: '14px',
-                    color: '#4b5563',
-                    lineHeight: '1.5',
-                    margin: '0 0 20px 0'
-                  }}>
-                    {job.description}
-                  </p>
-
-                  <div style={{ display: 'flex', justifyContent: 'center', marginTop: '24px' }}>
-                    <a
-                      href={job.applyLink}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '12px',
-                        background: `linear-gradient(135deg, ${iconInfo.color} 0%, #fbbf24 50%, ${iconInfo.color} 100%)`,
-                        color: '#ffffff',
-                        padding: '16px 32px',
-                        borderRadius: '25px',
-                        textDecoration: 'none',
-                        fontSize: '16px',
-                        fontWeight: 'bold',
-                        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                        fontFamily: "'Fredoka', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-                        boxShadow: `0 8px 20px ${iconInfo.color}40`,
-                        position: 'relative',
-                        overflow: 'hidden',
-                        textShadow: '1px 1px 2px rgba(0,0,0,0.3)'
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.transform = 'translateY(-3px) scale(1.05)';
-                        e.currentTarget.style.boxShadow = `0 15px 35px ${iconInfo.color}60`;
-                        e.currentTarget.style.background = `linear-gradient(135deg, #fbbf24 0%, ${iconInfo.color} 50%, #fbbf24 100%)`;
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.transform = 'translateY(0px) scale(1)';
-                        e.currentTarget.style.boxShadow = `0 8px 20px ${iconInfo.color}40`;
-                        e.currentTarget.style.background = `linear-gradient(135deg, ${iconInfo.color} 0%, #fbbf24 50%, ${iconInfo.color} 100%)`;
-                      }}
-                    >
-                      🚀 Apply Now!
-                      <ExternalLink size={18} />
-                    </a>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* Our Story and Our Services Section */}
-      <section className="py-24 bg-white">
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="responsive-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px', marginTop: '40px' }}>
-            
-            {/* Our Story Box */}
-            <div style={{
-              backgroundColor: '#ffffff',
-              borderRadius: '20px',
-              padding: '32px',
-              boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1)',
-              border: '1px solid #e5e7eb',
-              transition: 'all 0.3s ease'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-4px)';
-              e.currentTarget.style.boxShadow = '0 20px 35px -5px rgba(0, 0, 0, 0.15)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = '0 10px 25px -5px rgba(0, 0, 0, 0.1)';
-            }}
-            >
-              <div className="stack-on-mobile" style={{ display: 'flex', alignItems: 'flex-start', gap: '32px' }}>
-                <div style={{ flexShrink: 0 }}>
-                  <Image
-                    src="/pierre headshot.jpeg"
-                    alt="Pierre Headshot"
-                    width={180}
-                    height={240}
-                    style={{ borderRadius: '24px', objectFit: 'cover', boxShadow: '0 12px 24px -6px rgba(0, 0, 0, 0.15)' }}
-                  />
-                </div>
-                
-                <div style={{ flex: 1 }}>
-                  <h3 className="homepage-our-story-title" style={{
-                    fontSize: '3.5rem',
-                    fontWeight: 'bold',
-                    color: '#111827',
-                    margin: '0 0 24px 0',
-                    fontFamily: "'Fredoka', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-                    textAlign: 'left'
-                  }}>
-                    OUR STORY
-                  </h3>
-                  
-                  <p className="homepage-our-story-text" style={{
-                    fontSize: '18px',
-                    color: '#4b5563',
-                    lineHeight: '1.7',
-                    margin: '0 0 24px 0',
-                    fontFamily: "'Fredoka', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
-                  }}>
-                    The Our Story section highlights the journey that shaped the organisation, outlining its background, guiding values, and the principles that continue to influence its work today.
-                  </p>
-                  
-                  <button
-                    onClick={() => router.push('/our-story')}
-                    style={{
-                      background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
-                      color: '#000',
-                      padding: '16px 32px',
-                      borderRadius: '25px',
-                      border: 'none',
-                      fontSize: '16px',
-                      fontWeight: 'bold',
-                      cursor: 'pointer',
-                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                      fontFamily: "'Fredoka', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-                      boxShadow: '0 4px 15px rgba(251, 191, 36, 0.4)',
-                      transform: 'translateY(0)'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.background = 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)';
-                      e.currentTarget.style.transform = 'translateY(-2px)';
-                      e.currentTarget.style.boxShadow = '0 8px 25px rgba(251, 191, 36, 0.6)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.background = 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)';
-                      e.currentTarget.style.transform = 'translateY(0)';
-                      e.currentTarget.style.boxShadow = '0 4px 15px rgba(251, 191, 36, 0.4)';
-                    }}
-                  >
-                    🚀 Learn More
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Our Services Box */}
-            <div style={{
-              backgroundColor: '#ffffff',
-              borderRadius: '20px',
-              padding: '32px',
-              boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1)',
-              border: '1px solid #e5e7eb',
-              transition: 'all 0.3s ease'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-4px)';
-              e.currentTarget.style.boxShadow = '0 20px 35px -5px rgba(0, 0, 0, 0.15)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = '0 10px 25px -5px rgba(0, 0, 0, 0.1)';
-            }}
-            >
-              <div className="stack-on-mobile" style={{ display: 'flex', alignItems: 'flex-start', gap: '32px' }}>
-                <div style={{ flexShrink: 0 }}>
-                  <Image
-                    src="/talentix our services.jpeg"
-                    alt="Talentix Our Services"
-                    width={180}
-                    height={240}
-                    style={{ borderRadius: '24px', objectFit: 'cover', boxShadow: '0 12px 24px -6px rgba(0, 0, 0, 0.15)' }}
-                  />
-                </div>
-                
-                <div style={{ flex: 1 }}>
-                  <h3 style={{
-                    fontSize: '3.5rem',
-                    fontWeight: 'bold',
-                    color: '#111827',
-                    margin: '0 0 24px 0',
-                    fontFamily: "'Fredoka', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-                    textAlign: 'left'
-                  }}>
-                    SERVICES
-                  </h3>
-                  
-                  <p style={{
-                    fontSize: '18px',
-                    color: '#4b5563',
-                    lineHeight: '1.7',
-                    margin: '0 0 24px 0',
-                    fontFamily: "'Fredoka', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
-                  }}>
-                    Here we'll talk about how our services can help your school or you as an individual. We offer interactive workshops & assemblies within schools to help you secure your first job!
-                  </p>
-                  
-                  <button
-                    onClick={() => router.push('/our-services')}
-                    style={{
-                      background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
-                      color: '#000',
-                      padding: '16px 32px',
-                      borderRadius: '25px',
-                      border: 'none',
-                      fontSize: '16px',
-                      fontWeight: 'bold',
-                      cursor: 'pointer',
-                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                      fontFamily: "'Fredoka', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-                      boxShadow: '0 4px 15px rgba(251, 191, 36, 0.4)',
-                      transform: 'translateY(0)'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.background = 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)';
-                      e.currentTarget.style.transform = 'translateY(-2px)';
-                      e.currentTarget.style.boxShadow = '0 8px 25px rgba(251, 191, 36, 0.6)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.background = 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)';
-                      e.currentTarget.style.transform = 'translateY(0)';
-                      e.currentTarget.style.boxShadow = '0 4px 15px rgba(251, 191, 36, 0.4)';
-                    }}
-                  >
-                    ⚡ Learn More
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-
-          {/* Footer Links */}
-          <div className="mt-16 pt-8 border-t border-gray-300 text-center">
-            <div className="flex flex-wrap justify-center gap-6 mb-4">
-              <button
-                onClick={() => router.push('/privacy')}
-                className="text-gray-600 hover:text-gray-900 font-medium transition-colors duration-200"
-                style={{ fontFamily: 'Fredoka, sans-serif' }}
-              >
-                🔒 Privacy Policy
-              </button>
-              <button
-                onClick={() => router.push('/terms')}
-                className="text-gray-600 hover:text-gray-900 font-medium transition-colors duration-200"
-                style={{ fontFamily: 'Fredoka, sans-serif' }}
-              >
-                📋 Terms of Service
-              </button>
-              <button
-                onClick={() => router.push('/contact')}
-                className="text-gray-600 hover:text-gray-900 font-medium transition-colors duration-200"
-                style={{ fontFamily: 'Fredoka, sans-serif' }}
-              >
-                💌 Contact Us
-              </button>
-              <button
-                onClick={() => router.push('/admin-access')}
-                className="text-gray-600 hover:text-gray-900 font-medium transition-colors duration-200"
-                style={{ fontFamily: 'Fredoka, sans-serif' }}
-              >
-                🔐 Admin
-              </button>
-            </div>
-            <p className="text-gray-500 text-sm" style={{ fontFamily: 'Fredoka, sans-serif' }}>
-              © {new Date().getFullYear()} Talentix. All rights reserved. Made with ❤️ for your career success.
-            </p>
-          </div>
-        </div>
-      </section>
 
       {/* Contact Us Section - Modern Playful Design */}
       <section className="py-24 bg-gradient-to-br from-yellow-100 via-pink-100 to-purple-100 relative overflow-hidden">
@@ -1658,9 +1458,485 @@ function HomeContent() {
             transform: scale(1); 
           }
         }
+
+        @keyframes heroCircleFloat {
+          0% {
+            transform: translateY(0px) translateX(0px);
+          }
+          50% {
+            transform: translateY(-16px) translateX(-6px);
+          }
+          100% {
+            transform: translateY(0px) translateX(0px);
+          }
+        }
+
+        @keyframes heroBlobMorph {
+          0%, 100% {
+            border-radius: 39% 61% 52% 48% / 45% 42% 58% 55%;
+          }
+          50% {
+            border-radius: 58% 42% 38% 62% / 53% 64% 36% 47%;
+          }
+        }
+
+        .hero-workshop-circle-wrap {
+          display: flex;
+          align-items: center;
+          justify-content: flex-end;
+          width: 100%;
+          max-width: 640px;
+          margin-left: auto;
+        }
+
+        .hero-workshop-circle {
+          position: relative;
+          width: 520px;
+          height: 520px;
+          border-radius: 39% 61% 52% 48% / 45% 42% 58% 55%;
+          border: 4px solid rgba(255, 255, 255, 0.6);
+          background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.6), rgba(251, 191, 36, 0.3));
+          box-shadow: 0 20px 50px rgba(17, 24, 39, 0.22);
+          animation: heroCircleFloat 5s ease-in-out infinite, heroBlobMorph 8s ease-in-out infinite;
+          overflow: hidden;
+          transform: translateX(40px);
+        }
+
+        .hero-word-black {
+          color: #0f172a;
+          -webkit-text-fill-color: #0f172a;
+        }
+
+        .hero-word-gold {
+          background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 55%, #eab308 100%);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+        }
+
+        .hero-split-break {
+          display: none;
+        }
+
+        .workshops-section {
+          background: linear-gradient(135deg, #fffbeb 0%, #ffffff 45%, #f8fafc 100%);
+        }
+
+        .workshops-layout {
+          margin-top: 0;
+          display: grid;
+          grid-template-columns: 1fr;
+          gap: 1rem;
+          align-items: center;
+          min-height: clamp(300px, 34vw, 390px);
+        }
+
+        .workshops-image-shell {
+          position: relative;
+          display: flex;
+          justify-content: flex-start;
+          width: 100%;
+          height: 100%;
+          overflow: hidden;
+        }
+
+        .workshops-mobile-top-logo {
+          display: none;
+        }
+
+        .workshops-right {
+          position: relative;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          height: 100%;
+          padding-top: 0.65rem;
+        }
+
+        .workshops-testimonial-logo {
+          position: absolute;
+          top: -2.6rem;
+          left: 0;
+          margin: 0;
+          width: clamp(290px, 42vw, 520px);
+          height: auto;
+          z-index: 0;
+        }
+
+        .workshops-main-image {
+          width: 100%;
+          height: 100%;
+          display: block;
+          border: none;
+        }
+
+        .workshops-image-fade {
+          position: absolute;
+          top: 0;
+          right: 0;
+          width: 34%;
+          height: 100%;
+          background: linear-gradient(to right, rgba(255, 255, 255, 0), #ffffff 85%);
+          pointer-events: none;
+        }
+
+        .workshops-mobile-image-dots {
+          display: none;
+        }
+
+        .workshops-mobile-image-dot {
+          width: 8px;
+          height: 8px;
+          border-radius: 999px;
+          border: none;
+          background: #d1d5db;
+          cursor: pointer;
+          transition: all 0.2s ease;
+        }
+
+        .workshops-mobile-image-dot.is-active {
+          width: 20px;
+          background: #8b5cf6;
+        }
+
+        .workshops-testimonial-card {
+          margin-top: 0;
+          background: rgba(255, 255, 255, 0.95);
+          border: 1px solid #ede9fe;
+          border-radius: 20px;
+          padding: 1.05rem 1.05rem 0.95rem;
+          box-shadow: 0 12px 26px rgba(124, 58, 237, 0.12);
+          animation: workshopFadeIn 0.35s ease-in-out;
+          position: relative;
+          z-index: 1;
+        }
+
+        .workshops-testimonial-label {
+          margin: 0 0 0.6rem;
+          font-size: 0.8rem;
+          text-transform: uppercase;
+          letter-spacing: 0.06em;
+          color: #6b7280;
+          font-weight: 700;
+        }
+
+        .workshops-testimonial-quote {
+          margin: 0;
+          font-size: 1rem;
+          line-height: 1.55;
+          color: #1f2937;
+          font-weight: 600;
+        }
+
+        .workshops-testimonial-person {
+          margin: 1rem 0 0.15rem;
+          color: #111827;
+          font-weight: 700;
+        }
+
+        .workshops-testimonial-role {
+          margin: 0;
+          color: #6b7280;
+          font-size: 0.9rem;
+        }
+
+        .workshops-dots {
+          margin-top: 0.9rem;
+          display: flex;
+          gap: 0.5rem;
+          align-items: center;
+        }
+
+        .workshops-dot {
+          width: 10px;
+          height: 10px;
+          border-radius: 999px;
+          border: none;
+          background: #d1d5db;
+          cursor: pointer;
+          transition: all 0.2s ease;
+        }
+
+        .workshops-dot.is-active {
+          width: 22px;
+          background: #8b5cf6;
+        }
+
+        .workshops-learn-more-btn {
+          margin-top: 0.9rem;
+          align-self: flex-start;
+        }
+
+        .workshops-playful-btn {
+          display: block;
+          margin-top: 0.6rem;
+          align-self: flex-start;
+          border: none;
+          border-radius: 999px;
+          padding: 0.7rem 1.05rem;
+          font-size: 0.95rem;
+          font-weight: 700;
+          color: #ffffff;
+          background: linear-gradient(135deg, #8b5cf6 0%, #f59e0b 100%);
+          box-shadow: 0 8px 18px rgba(139, 92, 246, 0.28);
+          cursor: pointer;
+          transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .workshops-playful-btn:hover {
+          transform: translateY(-1px);
+          box-shadow: 0 10px 22px rgba(139, 92, 246, 0.32);
+        }
+
+        .worked-with-logos {
+          display: flex !important;
+          flex-wrap: wrap !important;
+          gap: 10px !important;
+        }
+
+        .worked-with-logo-card {
+          width: calc((100% - 20px) / 3) !important;
+          min-width: 0 !important;
+          padding: 8px !important;
+          min-height: 78px !important;
+        }
+
+        .worked-with-logo-image {
+          width: 100% !important;
+          max-width: 78px !important;
+          height: 34px !important;
+          object-fit: contain !important;
+          transform-origin: center;
+        }
+
+        @keyframes workshopFadeIn {
+          0% {
+            opacity: 0.35;
+            transform: translateY(8px);
+          }
+          100% {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        @media (min-width: 768px) {
+          .worked-with-logos {
+            display: grid !important;
+            grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+            gap: 2rem !important;
+          }
+
+          .worked-with-logo-card {
+            width: auto !important;
+            padding: 20px 18px !important;
+            min-height: 130px !important;
+          }
+
+          .worked-with-logo-image {
+            max-width: 190px !important;
+            height: 78px !important;
+            transform: scale(1) !important;
+          }
+        }
+
+        @media (min-width: 1024px) {
+          .workshops-layout {
+            grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+            gap: 1.2rem;
+          }
+
+          .workshops-testimonial-logo {
+            top: 5.25rem;
+          }
+        }
+
+        @media (min-width: 1024px) {
+          .hero-main-heading {
+            transform: scale(2);
+            transform-origin: left top;
+            display: inline-block;
+            margin-bottom: 7rem;
+          }
+
+          .hero-what-we-do-btn {
+            font-size: 1.25rem;
+            padding: 0.9rem 1.8rem;
+            border-radius: 0.8rem;
+          }
+
+          .hero-workshop-circle-wrap {
+            margin-top: -5.25rem;
+          }
+
+          .hero-workshop-circle {
+            transform: translateX(40px) translateY(-90px);
+          }
+
+          /* Desktop logo container positioning - centered slightly left */
+          .hero-logo-container {
+            padding-left: 6rem !important;
+            padding-right: 3rem !important;
+            margin-right: 2rem;
+          }
+          
+          /* Desktop text container positioning */
+          .hero-text-container {
+            padding-left: 6rem !important;
+            padding-right: 2rem !important;
+          }
+          
+          @media (min-width: 1280px) {
+            .hero-main-heading {
+              margin-bottom: 8.5rem;
+            }
+
+            .hero-what-we-do-btn {
+              font-size: 1.35rem;
+              padding: 1rem 2rem;
+            }
+
+            .hero-workshop-circle-wrap {
+              margin-top: -6rem;
+            }
+
+            .hero-workshop-circle {
+              transform: translateX(40px) translateY(-90px);
+            }
+
+            .hero-logo-container {
+              padding-left: 8rem !important;
+            }
+            
+            .hero-text-container {
+              padding-left: 8rem !important;
+            }
+          }
+        }
+
+        @media (max-width: 768px) {
+          .hero-split-break {
+            display: block;
+          }
+
+          .hero-word-gold {
+            -webkit-text-stroke: 0;
+            text-shadow: 0 1px 2px rgba(255, 255, 255, 0.25);
+          }
+
+          .hero-word-black {
+            font-size: 1.22em;
+            line-height: 0.9;
+          }
+
+          .hero-layout-wrap {
+            gap: 2rem;
+          }
+
+          .hero-left-content {
+            order: 2;
+            align-items: center;
+            gap: 0.9rem;
+          }
+
+          .hero-text-container {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+          }
+
+          .hero-logo-mobile-hidden {
+            display: none;
+          }
+
+          .hero-main-heading {
+            font-size: clamp(3rem, 10.8vw, 4.15rem) !important;
+            line-height: 0.84 !important;
+            letter-spacing: -0.03em !important;
+            text-shadow: 0 6px 18px rgba(17, 24, 39, 0.1);
+            margin-bottom: 0.5rem;
+            text-align: center;
+          }
+
+          .hero-what-we-do-wrap {
+            display: flex;
+            justify-content: center;
+            width: 100%;
+          }
+
+          .hero-workshop-circle-wrap {
+            order: 1;
+            width: 100%;
+            max-width: none;
+            justify-content: center;
+            margin: 0 auto 1.4rem;
+          }
+
+          .workshops-layout {
+            gap: 0.95rem;
+            min-height: auto;
+          }
+
+          .workshops-right {
+            padding-top: 0.35rem;
+          }
+
+          .workshops-playful-btn {
+            order: 1;
+            align-self: center;
+            margin: 0 0 0.75rem;
+          }
+
+          .workshops-testimonial-logo {
+            display: none;
+          }
+
+          .workshops-mobile-top-logo {
+            display: block;
+            width: clamp(200px, 66vw, 330px);
+            height: auto;
+            margin: 0 auto 0.6rem;
+          }
+
+          .workshops-image-shell {
+            height: 240px;
+          }
+
+          .workshops-image-fade {
+            width: 38%;
+          }
+
+          .workshops-mobile-image-dots {
+            display: flex;
+            justify-content: center;
+            gap: 0.45rem;
+            margin-top: 0.55rem;
+          }
+
+          .workshops-testimonial-card {
+            order: 2;
+            padding: 0.9rem;
+          }
+
+          .workshops-testimonial-quote {
+            font-size: 0.96rem;
+          }
+
+          .hero-workshop-circle {
+            width: 340px;
+            height: 340px;
+            transform: none;
+          }
+        }
         
         /* Mobile-specific modal fixes */
         @media (max-width: 768px) {
+          .hero-workshop-circle {
+            width: 340px;
+            height: 340px;
+            transform: none;
+          }
+
           .modal-title {
             font-size: 28px !important;
             margin-bottom: 15px !important;
@@ -1718,6 +1994,12 @@ function HomeContent() {
             font-size: 24px !important;
             margin-bottom: 12px !important;
           }
+
+          .hero-workshop-circle {
+            width: 240px;
+            height: 240px;
+            transform: none;
+          }
           
           .modal-description {
             font-size: 14px !important;
@@ -1768,3 +2050,8 @@ export default function Home() {
     </Suspense>
   );
 }
+
+
+
+
+

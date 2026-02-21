@@ -90,7 +90,6 @@ export default function Dashboard() {
   const handleVideoInterviewNavigation = () => router.push('/video-interview');
   const handleSettingsNavigation = () => router.push('/settings');
   const handleCareerGuidanceNavigation = () => router.push('/career-guidance');
-  const handleOurStoryNavigation = () => router.push('/our-story');
   
   const handleScrollLeft = () => {
     const container = document.getElementById('feature-cards-container');
@@ -1653,69 +1652,6 @@ export default function Dashboard() {
                     Learn More →
                   </span>
                 </div>
-                </div>
-              </div>
-
-              {/* Our Story Feature Card */}
-              <div 
-                onClick={handleOurStoryNavigation}
-                style={{
-                  flexShrink: 0,
-                  width: '350px',
-                  background: 'linear-gradient(135deg, #fef3c7 0%, #f59e0b 100%)',
-                  borderRadius: '20px',
-                  padding: '32px',
-                  boxShadow: '0 8px 25px rgba(245, 158, 11, 0.3)',
-                  border: '3px solid #f59e0b',
-                  cursor: 'pointer',
-                  transition: 'all 0.3s ease',
-                  scrollSnapAlign: 'start',
-                  position: 'relative',
-                  overflow: 'hidden'
-                }}
-                className="dashboard-feature-card career"
-              >
-                <div style={{ position: 'absolute', top: '10px', right: '10px', fontSize: '2rem', opacity: '0.3' }}>👥</div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '24px' }}>
-                  <div style={{
-                    width: '64px',
-                    height: '64px',
-                    borderRadius: '16px',
-                    backgroundColor: '#ffffff',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)'
-                  }}>
-                    <span style={{ fontSize: '32px' }}>🏢</span>
-                  </div>
-                  <div>
-                    <h3 style={{ fontSize: '24px', fontWeight: 'bold', color: '#1f2937', margin: '0 0 4px 0' }}>
-                      Our Story
-                    </h3>
-                    <p style={{ fontSize: '14px', color: '#92400e', margin: '0' }}>
-                      💫 Meet the team
-                    </p>
-                  </div>
-                </div>
-                <p style={{ fontSize: '16px', color: '#1f2937', lineHeight: '1.5', marginBottom: '24px' }}>
-                  Learn about Talentix's mission and meet the passionate team behind your success! 🌟
-                </p>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{
-                    padding: '8px 16px',
-                    backgroundColor: '#ffffff',
-                    color: '#f59e0b',
-                    fontSize: '12px',
-                    fontWeight: '700',
-                    borderRadius: '20px',
-                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
-                  }}>
-                    👨‍💼 Meet Team
-                  </span>
-                  <span style={{ fontSize: '14px', color: '#1f2937', fontWeight: '600' }}>
-                    Discover →
-                  </span>
                 </div>
               </div>
 

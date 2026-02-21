@@ -1427,7 +1427,7 @@ html {
   display: block;
 }
 
-/* Homepage: stack image + text for Our Story/Services on mobile */
+/* Homepage: stack image + text for services cards on mobile */
 @media (max-width: 767px) {
   .stack-on-mobile {
     flex-direction: column !important;

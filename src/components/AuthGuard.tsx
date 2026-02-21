@@ -10,6 +10,15 @@ interface AuthGuardProps {
   children: React.ReactNode;
 }
 
+const guestAllowedToolPaths = new Set<string>([
+  '/search',
+  '/cv-reviewer',
+  '/interview-prep',
+  '/video-interview',
+  '/career-guidance',
+  '/cover-letter',
+]);
+
 // Map paths to feature names (matching homepage feature card names)
 const getFeatureNameFromPath = (path: string): string => {
   const featureMap: { [key: string]: string } = {
@@ -111,6 +120,7 @@ export default function AuthGuard({ children }: AuthGuardProps) {
   const router = useRouter();
   const pathname = usePathname();
   const [showSignUpPrompt, setShowSignUpPrompt] = useState(false);
+  const isGuestAllowedTool = guestAllowedToolPaths.has(pathname);
 
   useEffect(() => {
     // Wait for auth to finish loading
@@ -118,12 +128,12 @@ export default function AuthGuard({ children }: AuthGuardProps) {
       return;
     }
 
-    // If no user after loading, show sign-up prompt modal
-    if (!user) {
+    // If no user after loading and this path requires auth, show sign-up prompt modal
+    if (!user && !isGuestAllowedTool) {
       console.log('🔒 AuthGuard: No user found, showing sign-up prompt');
       setShowSignUpPrompt(true);
     }
-  }, [user, loading]);
+  }, [user, loading, isGuestAllowedTool]);
 
   const handleDismissModal = () => {
     setShowSignUpPrompt(false);
@@ -164,6 +174,11 @@ export default function AuthGuard({ children }: AuthGuardProps) {
         </div>
       </div>
     );
+  }
+
+  // Allow selected tools to be used without sign-up
+  if (!user && isGuestAllowedTool) {
+    return <>{children}</>;
   }
 
   // If no user, show SEO-friendly marketing content plus a gated CTA (returns 200 OK)
