@@ -156,7 +156,7 @@ export default function RootLayout({
               url: 'https://talentix.co.uk',
               logo: {
                 '@type': 'ImageObject',
-                url: 'https://talentix.co.uk/tixlogo.png',
+                url: 'https://talentix.co.uk/tixlogoupdated.png',
                 width: 500,
                 height: 225
               },

@@ -175,10 +175,9 @@ export default function VideoInterviewPage(): React.ReactElement {
   }, [stage, recordedBlob]);
 
   const checkCanUseVideoInterview = () => {
-    // Check subscription limits for free tier users (user-specific)
+    // Guests can use video interview practice; usage limits are tracked for signed-in users.
     if (!user?.email) {
-      console.error('User email not available for usage tracking');
-      return false;
+      return true;
     }
     
     const today = new Date().toDateString();
@@ -196,21 +195,18 @@ export default function VideoInterviewPage(): React.ReactElement {
   };
 
   const getRandomQuestionAndTrackUsage = () => {
-    // Only increment usage when user actually gets a question
-    if (!user?.email) {
-      console.error('User email not available for usage tracking');
-      return;
+    // Guests can still practice; only signed-in users have usage tracking.
+    if (user?.email) {
+      const today = new Date().toDateString();
+      const currentUsage = parseInt(localStorage.getItem(`video_interview_questions_used_${today}_${user.email}`) || '0');
+      const newUsage = currentUsage + 1;
+      localStorage.setItem(`video_interview_questions_used_${today}_${user.email}`, newUsage.toString());
+      setQuestionsUsed(newUsage);
+
+      // Notify other components of usage update
+      window.dispatchEvent(new CustomEvent('talentix-usage-update'));
     }
-    
-    const today = new Date().toDateString();
-    const currentUsage = parseInt(localStorage.getItem(`video_interview_questions_used_${today}_${user.email}`) || '0');
-    const newUsage = currentUsage + 1;
-    localStorage.setItem(`video_interview_questions_used_${today}_${user.email}`, newUsage.toString());
-    setQuestionsUsed(newUsage);
-    
-    // Notify other components of usage update
-    window.dispatchEvent(new CustomEvent('talentix-usage-update'));
-    
+
     const randomIndex = Math.floor(Math.random() * interviewQuestions.length);
     setCurrentQuestion(interviewQuestions[randomIndex]);
   };

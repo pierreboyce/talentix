@@ -271,7 +271,7 @@ export default function NavigationMobile() {
           <div className="flex items-center">
             <Link href="/" className="flex items-center">
               <Image
-                src="/tixlogo.png"
+                src="/tixlogoupdated.png"
                 alt="Talentix Logo"
                 width={120}
                 height={35}

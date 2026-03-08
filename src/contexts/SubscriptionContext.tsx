@@ -28,6 +28,9 @@ interface SubscriptionContextType {
 
 const SubscriptionContext = createContext<SubscriptionContextType | undefined>(undefined);
 
+// Temporary switch: keep paywall code in place but disable enforcement/UI gating.
+const PAYWALL_HIDDEN_FOR_NOW = true;
+
 // Feature definitions for each tier
 const TIER_FEATURES = {
   free: [
@@ -83,6 +86,14 @@ export function SubscriptionProvider({ children }: SubscriptionProviderProps) {
     cancelAtPeriodEnd: false
   });
   const [isLoading, setIsLoading] = useState(false);
+
+  const effectiveSubscription: Subscription = PAYWALL_HIDDEN_FOR_NOW
+    ? {
+        ...subscription,
+        tier: 'pro',
+        status: 'active'
+      }
+    : subscription;
 
 
   // Fetch subscription data
@@ -191,8 +202,11 @@ export function SubscriptionProvider({ children }: SubscriptionProviderProps) {
 
   // Check if user has a specific feature
   const hasFeature = (feature: string): boolean => {
+    if (PAYWALL_HIDDEN_FOR_NOW) {
+      return true;
+    }
 
-    const tier = subscription.tier;
+    const tier = effectiveSubscription.tier;
     
     // Check if feature exists in current tier
     if (TIER_FEATURES[tier]?.includes(feature)) {
@@ -213,9 +227,12 @@ export function SubscriptionProvider({ children }: SubscriptionProviderProps) {
 
   // Check if user can access a feature (considers subscription status)
   const canAccess = (feature: string): boolean => {
+    if (PAYWALL_HIDDEN_FOR_NOW) {
+      return true;
+    }
     
     // Check subscription status
-    if (subscription.status !== 'active' && subscription.status !== 'trialing') {
+    if (effectiveSubscription.status !== 'active' && effectiveSubscription.status !== 'trialing') {
       return false;
     }
 
@@ -228,9 +245,9 @@ export function SubscriptionProvider({ children }: SubscriptionProviderProps) {
   };
 
   // Computed properties
-  const isSubscribed = subscription.tier !== 'free';
-  const isPro = subscription.tier === 'pro';
-  const isEnterprise = subscription.tier === 'enterprise';
+  const isSubscribed = effectiveSubscription.tier !== 'free';
+  const isPro = effectiveSubscription.tier === 'pro';
+  const isEnterprise = effectiveSubscription.tier === 'enterprise';
 
   // Load subscription on auth change (but not during success flow)
   useEffect(() => {
@@ -249,7 +266,7 @@ export function SubscriptionProvider({ children }: SubscriptionProviderProps) {
   }, [user?.email, authLoading]);
 
   const contextValue: SubscriptionContextType = {
-    subscription,
+    subscription: effectiveSubscription,
     isLoading,
     hasFeature,
     canAccess,

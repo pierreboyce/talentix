@@ -103,6 +103,11 @@ export default function PricingModal({ isOpen, onClose }: PricingModalProps) {
       return;
     }
 
+    alert("Everything's free! (for now)");
+    showToast("Everything's free! (for now)", 'success');
+    onClose();
+    return;
+
     if (tier.id === 'enterprise') {
       window.open('mailto:enquiries@talentix.co.uk?subject=Enterprise Plan Inquiry&body=Hi Talentix Team,%0D%0A%0D%0AI am interested in the Enterprise plan for my organization.%0D%0A%0D%0APlease contact me with more details about:%0D%0A- Custom pricing options%0D%0A- Available features%0D%0A- Implementation timeline%0D%0A- Support options%0D%0A%0D%0AOrganization details:%0D%0A- Company name:%0D%0A- Number of users:%0D%0A- Specific requirements:%0D%0A%0D%0AThank you!', '_blank');
       return;

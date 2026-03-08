@@ -223,7 +223,7 @@ export default function Navigation() {
             className={`flex items-center ${user ? 'ml-6' : ''}`}
           >
             <Image
-              src="/tixlogo.png"
+              src="/tixlogoupdated.png"
               alt="Talentix Logo"
               width={140}
               height={40}
