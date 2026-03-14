@@ -127,7 +127,7 @@ export default function PricingModal({ isOpen, onClose }: PricingModalProps) {
         tier: tier.name,
         isYearly,
         priceId,
-        userEmail: user.email
+        userEmail: user?.email
       });
       
       if (!priceId) {
@@ -140,7 +140,7 @@ export default function PricingModal({ isOpen, onClose }: PricingModalProps) {
         headers: { 
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ priceId, userEmail: user.email })
+        body: JSON.stringify({ priceId, userEmail: user?.email })
       });
       
       if (!response.ok) {
@@ -163,10 +163,14 @@ export default function PricingModal({ isOpen, onClose }: PricingModalProps) {
       }
     } catch (error) {
       console.error('Subscription error:', error);
-      showToast(
-        error instanceof Error ? error.message : 'Failed to start subscription process',
-        'error'
-      );
+      let errorMessage = 'Failed to start subscription process';
+      if (error && typeof error === 'object' && 'message' in error) {
+        const maybeMessage = (error as { message?: unknown }).message;
+        if (typeof maybeMessage === 'string' && maybeMessage.trim().length > 0) {
+          errorMessage = maybeMessage;
+        }
+      }
+      showToast(errorMessage, 'error');
     } finally {
       setLoadingTier(null);
     }
