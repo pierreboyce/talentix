@@ -95,6 +95,21 @@ export default function PricingModal({ isOpen, onClose }: PricingModalProps) {
   const [isYearly, setIsYearly] = useState(false);
   const [loadingTier, setLoadingTier] = useState<string | null>(null);
 
+  const getErrorMessage = (value: unknown): string => {
+    if (typeof value === 'string' && value.trim().length > 0) {
+      return value;
+    }
+
+    if (value && typeof value === 'object') {
+      const maybeMessage = (value as { message?: unknown }).message;
+      if (typeof maybeMessage === 'string' && maybeMessage.trim().length > 0) {
+        return maybeMessage;
+      }
+    }
+
+    return 'Failed to start subscription process';
+  };
+
   if (!isOpen) return null;
 
   const handleSubscribe = async (tier: PricingTier) => {
@@ -163,10 +178,7 @@ export default function PricingModal({ isOpen, onClose }: PricingModalProps) {
       }
     } catch (error: unknown) {
       console.error('Subscription error:', error);
-      let errorMessage = 'Failed to start subscription process';
-      if (error instanceof Error && error.message.trim().length > 0) {
-        errorMessage = error.message;
-      }
+      const errorMessage = getErrorMessage(error);
       showToast(errorMessage, 'error');
     } finally {
       setLoadingTier(null);
