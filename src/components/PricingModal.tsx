@@ -161,14 +161,11 @@ export default function PricingModal({ isOpen, onClose }: PricingModalProps) {
       } else {
         throw new Error('No checkout URL received');
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Subscription error:', error);
       let errorMessage = 'Failed to start subscription process';
-      if (error && typeof error === 'object' && 'message' in error) {
-        const maybeMessage = (error as { message?: unknown }).message;
-        if (typeof maybeMessage === 'string' && maybeMessage.trim().length > 0) {
-          errorMessage = maybeMessage;
-        }
+      if (error instanceof Error && error.message.trim().length > 0) {
+        errorMessage = error.message;
       }
       showToast(errorMessage, 'error');
     } finally {
