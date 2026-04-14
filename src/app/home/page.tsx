@@ -469,7 +469,7 @@ function HomeContent() {
             {/* Logo - Centered slightly left */}
             <div className="hero-logo-container hero-logo-mobile-hidden w-full lg:w-auto px-8 md:px-12 lg:px-0 lg:mt-0 xl:mt-0">
               <Image
-                src="/talentixborder.png"
+                src="/longtalentixupdated.png"
                 alt="Talentix Logo"
                 width={280}
                 height={130}

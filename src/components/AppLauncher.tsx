@@ -447,7 +447,7 @@ export default function AppLauncher() {
             {/* Talentix Logo */}
             <div className="flex justify-center items-center pt-6 pb-2">
               <Image
-                src="/talentixborder.png"
+                src="/longtalentixupdated.png"
                 alt="Talentix"
                 width={150}
                 height={50}

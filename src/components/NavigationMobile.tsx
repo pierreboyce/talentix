@@ -59,6 +59,7 @@ export default function NavigationMobile() {
   const headerPositionClass = isSticky
     ? 'fixed top-0 left-0 right-0 z-[9999]'
     : 'relative';
+  const showApplyCta = pathname === '/home';
 
   // Close menus/panels when route changes
   useEffect(() => {
@@ -268,7 +269,7 @@ export default function NavigationMobile() {
               }}
             >
               <Image
-                src="/talentixborder.png"
+                src="/longtalentixupdated.png"
                 alt="Talentix Logo"
                 width={140}
                 height={52}
@@ -281,37 +282,63 @@ export default function NavigationMobile() {
           {/* Navigation buttons on the right - aligned horizontally with logo */}
           {!user ? (
             /* Non-auth: show gold burger */
-            <button
-              onClick={toggleHeaderPanel}
-              style={{ 
-                position: 'relative',
-                minHeight: '48px', 
-                minWidth: '48px',
-                padding: '12px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                backgroundImage: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
-                boxShadow: '0 8px 16px rgba(245, 158, 11, 0.35)',
-                borderRadius: '12px',
-                border: 'none',
-                outline: 'none',
-                cursor: 'pointer',
-                transition: 'all 200ms ease',
-                transform: 'scale(1)'
-              }}
-              onMouseDown={(e) => { e.currentTarget.style.transform = 'scale(0.95)'; }}
-              onMouseUp={(e) => { e.currentTarget.style.transform = 'scale(1)'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)'; }}
-              aria-label={showHeaderPanel ? 'Close menu' : 'Open menu'}
-              aria-expanded={showHeaderPanel}
-            >
-              <div style={{ display: 'grid', gap: '3px' }}>
-                <span style={{ width: '22px', height: '3px', background: '#000', borderRadius: '2px', display: 'block' }} />
-                <span style={{ width: '22px', height: '3px', background: '#000', borderRadius: '2px', display: 'block' }} />
-                <span style={{ width: '22px', height: '3px', background: '#000', borderRadius: '2px', display: 'block' }} />
-              </div>
-            </button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              {showApplyCta && (
+                <a
+                  href="https://forms.gle/Ntby8YetS3rMkTrt9"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    background: 'linear-gradient(135deg, #fde047 0%, #fbbf24 50%, #f59e0b 100%)',
+                    color: '#374151',
+                    padding: '12px 16px',
+                    borderRadius: '12px',
+                    border: 'none',
+                    fontSize: '13px',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    transition: 'all 200ms ease',
+                    boxShadow: '0 6px 16px rgba(245, 158, 11, 0.3)',
+                    fontFamily: 'Fredoka, sans-serif',
+                    textDecoration: 'none',
+                    whiteSpace: 'nowrap'
+                  }}
+                >
+                  Apply for Talentix!
+                </a>
+              )}
+              <button
+                onClick={toggleHeaderPanel}
+                style={{ 
+                  position: 'relative',
+                  minHeight: '48px', 
+                  minWidth: '48px',
+                  padding: '12px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backgroundImage: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
+                  boxShadow: '0 8px 16px rgba(245, 158, 11, 0.35)',
+                  borderRadius: '12px',
+                  border: 'none',
+                  outline: 'none',
+                  cursor: 'pointer',
+                  transition: 'all 200ms ease',
+                  transform: 'scale(1)'
+                }}
+                onMouseDown={(e) => { e.currentTarget.style.transform = 'scale(0.95)'; }}
+                onMouseUp={(e) => { e.currentTarget.style.transform = 'scale(1)'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)'; }}
+                aria-label={showHeaderPanel ? 'Close menu' : 'Open menu'}
+                aria-expanded={showHeaderPanel}
+              >
+                <div style={{ display: 'grid', gap: '3px' }}>
+                  <span style={{ width: '22px', height: '3px', background: '#000', borderRadius: '2px', display: 'block' }} />
+                  <span style={{ width: '22px', height: '3px', background: '#000', borderRadius: '2px', display: 'block' }} />
+                  <span style={{ width: '22px', height: '3px', background: '#000', borderRadius: '2px', display: 'block' }} />
+                </div>
+              </button>
+            </div>
           ) : (
             /* Authenticated user navigation - Show hamburger menu (uses side panel) */
             <button
@@ -637,23 +664,31 @@ export default function NavigationMobile() {
                       {/* Non-authenticated menu */}
                       {!showJobResourcesSubmenu ? (
                         <>
-                          <button
-                            onClick={() => { setShowCommunityModal(true); toggleHeaderPanel(); }}
-                            style={{
-                              background: 'linear-gradient(135deg, #dcfce7 0%, #22c55e 100%)',
-                              color: '#374151',
-                              padding: '12px 16px',
-                              borderRadius: '12px',
-                              border: 'none',
-                              fontSize: '14px',
-                              fontWeight: 600,
-                              cursor: 'pointer',
-                              boxShadow: '0 4px 12px rgba(34, 197, 94, 0.25)',
-                              fontFamily: 'Fredoka, sans-serif'
-                            }}
-                          >
-                            🌟 Join Our Community
-                          </button>
+                          {showApplyCta && (
+                            <a
+                              href="https://forms.gle/Ntby8YetS3rMkTrt9"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={() => toggleHeaderPanel()}
+                              style={{
+                                background: 'linear-gradient(135deg, #fde047 0%, #f59e0b 100%)',
+                                color: '#111827',
+                                padding: '12px 16px',
+                                borderRadius: '12px',
+                                border: 'none',
+                                fontSize: '14px',
+                                fontWeight: 800,
+                                cursor: 'pointer',
+                                boxShadow: '0 6px 16px rgba(245, 158, 11, 0.35)',
+                                fontFamily: 'Fredoka, sans-serif',
+                                textDecoration: 'none',
+                                display: 'block',
+                                textAlign: 'center'
+                              }}
+                            >
+                              Apply for Talentix!
+                            </a>
+                          )}
                           <button
                             onClick={() => { toggleHeaderPanel(); router.push('/our-services/workshops'); }}
                             style={{
