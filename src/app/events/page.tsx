@@ -84,9 +84,9 @@ const events: EventItem[] = [
     id: 'interview-series',
     title: 'Talentix Interview Series — Free Mock Interviews with Professionals',
     shortDescription:
-      'Get a real mock interview with a professional working in your chosen sector. Practise in a live setting, receive genuine feedback, and build the confidence you need before the real thing — completely free.',
+      'Practise with a working professional in your chosen sector. Honest feedback, real confidence — completely free.',
     fullDescription:
-      'Each sector runs over multiple days with limited spaces available. Sign up for the sector that matches your career interests — or sign up for more than one. Spaces will fill fast.',
+      'Limited spaces per sector. Sign up for one or more — they fill fast.',
     speakers: [],
     learnings: [
       'Real mock interview with a working professional',
@@ -95,14 +95,13 @@ const events: EventItem[] = [
       'Sector-specific interview practice',
     ],
     registrationLink: 'https://forms.gle/ysz72L7MWh6oR3xy8',
-    logo: '/interview-series-logo.png',
     poster: '/interview-series-poster.png',
     type: 'Interview Series',
     format: 'Online',
     soldOut: false,
     dateLabel: '13 May – 15 June',
     eventDateTimeUtc: '2026-06-15T23:59:59Z',
-    launchBadge: '🎉 LAUNCHING TODAY — Talentix Interview Series',
+    launchBadge: 'Talentix Interview Series',
     schedule: [
       { sector: 'Law', emoji: '⚖️', dates: '13–15th May' },
       { sector: 'Finance', emoji: '💰', dates: '20–22nd May' },
@@ -117,9 +116,9 @@ const events: EventItem[] = [
     id: 'interview-masterclass',
     title: 'Talentix Interview Masterclass',
     shortDescription:
-      'Kick off the Talentix Interview Series with our free live masterclass. Learn exactly how successful candidates approach interviews, get live Q&A with industry professionals, and discover which career sectors interest you — all in one hour.',
+      'One hour with industry professionals — the interview framework that actually works, plus live Q&A.',
     fullDescription:
-      "This is the gateway event to the Interview Series. Whether you're preparing for your first job, an apprenticeship, or exploring which career path is right for you, this session gives you the foundation to walk into any interview with confidence.",
+      'The gateway event to the Interview Series. Everything you need before the real thing.',
     speakers: [],
     learnings: [
       'The interview framework successful applicants use',
@@ -128,7 +127,6 @@ const events: EventItem[] = [
       'Explore career sectors: Law, Finance, Tech & more',
     ],
     registrationLink: 'https://luma.com/pyjh0o7a',
-    logo: '/interview-masterclass-logo.png',
     poster: '/interview-masterclass-poster.png',
     type: 'Masterclass',
     format: 'Online',
@@ -205,12 +203,31 @@ export default function EventsPage() {
             .workshops-testimonial-card {
               background: rgba(255, 255, 255, 0.96);
               border: 1px solid #ede9fe;
-              border-radius: 22px;
-              padding: 1.2rem;
+              border-radius: 20px;
+              padding: 1.25rem;
               box-shadow: 0 12px 26px rgba(124, 58, 237, 0.12);
               transition: transform 0.22s ease, box-shadow 0.22s ease;
               position: relative;
               overflow: hidden;
+            }
+
+            @media (min-width: 640px) {
+              .workshops-testimonial-card {
+                padding: 1.75rem;
+                border-radius: 22px;
+              }
+            }
+
+            @media (min-width: 768px) {
+              .workshops-testimonial-card {
+                padding: 2.5rem;
+              }
+            }
+
+            @media (min-width: 1024px) {
+              .workshops-testimonial-card {
+                padding: 3rem 3.25rem;
+              }
             }
 
             .workshops-testimonial-card:hover {
@@ -280,18 +297,18 @@ export default function EventsPage() {
 
       <main className="events-bg min-h-screen py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-6xl mx-auto">
-          <section className="events-shell text-center mb-10 px-6 py-10 md:px-10">
+          <section className="events-shell text-center mb-8 md:mb-10 px-5 py-8 md:px-10 md:py-10">
             <div className="flex justify-center">
               <Image
                 src="/talentixeventslogo.png"
                 alt="Talentix Events"
                 width={700}
                 height={120}
-                className="w-full max-w-[360px] md:max-w-[420px] h-auto"
+                className="w-full max-w-[280px] sm:max-w-[360px] md:max-w-[420px] h-auto"
                 priority
               />
             </div>
-            <p className="mt-4 text-gray-600 text-base md:text-lg max-w-2xl mx-auto">
+            <p className="mt-3 md:mt-4 text-gray-600 text-sm md:text-lg max-w-2xl mx-auto leading-relaxed">
               Workshops, masterclasses, and sessions built to help you stand out in the working world
             </p>
             <div className="workshops-dots justify-center">
@@ -325,44 +342,48 @@ export default function EventsPage() {
                 </div>
               </div>
             ) : (
-              <div className="grid gap-6">
+              <div className="grid gap-6 md:gap-10">
                 {currentEvents.map((event) => (
                   <article key={event.id} className="workshops-testimonial-card">
                     <div className="absolute -top-6 -right-6 w-24 h-24 rounded-full bg-purple-100/60 blur-2xl pointer-events-none" />
                     <div className="absolute -bottom-5 -left-5 w-20 h-20 rounded-full bg-yellow-100/80 blur-xl pointer-events-none" />
 
                     {event.launchBadge ? (
-                      <div className="inline-flex items-center gap-2 mb-5 px-4 py-2 rounded-xl text-sm font-black" style={{ background: 'linear-gradient(135deg,#fbbf24,#f59e0b)', color: '#1a1200', boxShadow: '0 4px 12px rgba(251,191,36,.4)' }}>
-                        {event.launchBadge}
+                      <div className="inline-flex flex-wrap items-center gap-1.5 md:gap-2 mb-6 md:mb-8 px-3.5 py-2 md:px-5 md:py-2.5 rounded-xl text-xs md:text-sm" style={{ background: 'linear-gradient(135deg,#fbbf24,#f59e0b)', color: '#1a1200', boxShadow: '0 4px 12px rgba(251,191,36,.4)', fontFamily: "var(--font-fredoka), 'Fredoka', 'Inter', sans-serif", fontWeight: 500 }}>
+                        <span aria-hidden="true">🎉</span>
+                        <strong style={{ fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+                          Launching Today
+                        </strong>
+                        <span>— {event.launchBadge}</span>
                       </div>
                     ) : null}
 
-                    <div className="grid lg:grid-cols-[1.2fr_0.8fr] gap-6 items-start">
+                    <div className="grid lg:grid-cols-[1.2fr_0.8fr] gap-6 md:gap-8 lg:gap-12 items-start">
                       <div>
-                        <div className="flex flex-wrap gap-2 mb-4">
+                        <div className="flex flex-wrap gap-2 md:gap-2.5 mb-5 md:mb-6">
                           <span className="pill pill-purple">🎓 {event.type}</span>
                           <span className="pill pill-blue">💻 {event.format}</span>
                           <span className="pill pill-green">✅ FREE</span>
-                          <span className="pill pill-yellow">📅 {event.dateLabel}</span>
+                          {event.id !== 'interview-series' ? <span className="pill pill-yellow">📅 {event.dateLabel}</span> : null}
                           {event.id === 'interview-series' ? <span className="pill pill-red">⚠️ Limited Spaces</span> : null}
                         </div>
 
-                        <h3 className="text-2xl md:text-3xl font-black text-gray-900 mb-6" style={{ fontFamily: "'Fredoka', 'Inter', sans-serif" }}>
+                        <h3 className="text-xl sm:text-2xl md:text-3xl font-black text-gray-900 mb-4 md:mb-6 leading-tight" style={{ fontFamily: "'Fredoka', 'Inter', sans-serif" }}>
                           {event.title}
                         </h3>
-                        <p className="text-gray-700 mb-5 leading-7">{event.shortDescription}</p>
-                        <p className="text-sm text-gray-600 leading-7 mb-8">{event.fullDescription}</p>
+                        <p className="text-gray-700 mb-4 md:mb-6 leading-relaxed md:leading-[1.8]">{event.shortDescription}</p>
+                        <p className="text-sm text-gray-600 leading-relaxed md:leading-[1.8] mb-8 md:mb-10">{event.fullDescription}</p>
 
                         {event.schedule && event.schedule.length > 0 ? (
-                          <div className="mb-8">
-                            <h4 className="text-xl font-black text-gray-900 mb-4" style={{ fontFamily: "'Fredoka', 'Inter', sans-serif" }}>
+                          <div className="mb-8 md:mb-10">
+                            <h4 className="text-lg md:text-xl font-black text-gray-900 mb-4 md:mb-5" style={{ fontFamily: "'Fredoka', 'Inter', sans-serif" }}>
                               Sector schedule
                             </h4>
-                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 md:gap-4">
                               {event.schedule.map((item) => (
-                                <div key={item.sector} className="rounded-2xl border border-yellow-200 px-4 py-3" style={{ background: 'linear-gradient(135deg,#fffbeb,#fef3c7)' }}>
-                                  <p style={{ fontFamily: "var(--font-fredoka), 'Inter', sans-serif", fontWeight: 700, fontSize: '0.85rem', color: '#92400e', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{item.emoji} {item.sector}</p>
-                                  <p style={{ fontFamily: "var(--font-fredoka), 'Inter', sans-serif", fontWeight: 700, fontSize: '1.05rem', color: '#111827', marginTop: '4px' }}>{item.dates}</p>
+                                <div key={item.sector} className="rounded-xl md:rounded-2xl border border-yellow-200 px-3 py-2.5 md:px-5 md:py-4" style={{ background: 'linear-gradient(135deg,#fffbeb,#fef3c7)' }}>
+                                  <p style={{ fontFamily: "var(--font-fredoka), 'Inter', sans-serif", fontWeight: 700, color: '#92400e', textTransform: 'uppercase', letterSpacing: '0.04em' }} className="text-[0.7rem] md:text-[0.85rem]">{item.emoji} {item.sector}</p>
+                                  <p style={{ fontFamily: "var(--font-fredoka), 'Inter', sans-serif", fontWeight: 700, color: '#111827', marginTop: '4px' }} className="text-[0.95rem] md:text-[1.05rem]">{item.dates}</p>
                                 </div>
                               ))}
                             </div>
@@ -370,11 +391,11 @@ export default function EventsPage() {
                         ) : null}
 
                         {event.speakers.length > 0 ? (
-                          <div className="mb-8 mt-4">
-                            <h4 className="text-2xl font-black text-gray-900 mb-3" style={{ fontFamily: "'Fredoka', 'Inter', sans-serif" }}>
+                          <div className="mb-8 md:mb-10">
+                            <h4 className="text-xl md:text-2xl font-black text-gray-900 mb-3 md:mb-4" style={{ fontFamily: "'Fredoka', 'Inter', sans-serif" }}>
                               Guest speakers
                             </h4>
-                            <div className="flex flex-wrap gap-2">
+                            <div className="flex flex-wrap gap-2 md:gap-2.5">
                               {event.speakers.map((speaker) => (
                                 <span key={speaker} className="pill pill-gray">{speaker}</span>
                               ))}
@@ -382,20 +403,20 @@ export default function EventsPage() {
                           </div>
                         ) : null}
 
-                        <div className="mb-6 mt-2">
-                          <p className="font-black text-gray-900 mb-2" style={{ fontFamily: "'Fredoka', 'Inter', sans-serif" }}>
+                        <div className="mb-6 md:mb-8">
+                          <p className="font-black text-gray-900 mb-2.5 md:mb-3 text-base md:text-lg" style={{ fontFamily: "'Fredoka', 'Inter', sans-serif" }}>
                             What you will learn
                           </p>
-                          <div className="flex flex-wrap gap-2">
+                          <div className="flex flex-wrap gap-2 md:gap-2.5">
                             {event.learnings.map((learning) => (
                               <span key={learning} className="pill pill-pink">✨ {learning}</span>
                             ))}
                           </div>
                         </div>
 
-                        {event.bonus ? <p className="pill pill-yellow mb-5">🔥 Bonus: {event.bonus}</p> : null}
+                        {event.bonus ? <p className="pill pill-yellow mb-5 md:mb-6">🔥 Bonus: {event.bonus}</p> : null}
 
-                        <div className="flex flex-wrap items-center gap-3">
+                        <div className="flex flex-wrap items-center gap-3 mt-1 md:mt-2">
                           <Link
                             href={event.registrationLink}
                             target="_blank"
@@ -415,7 +436,7 @@ export default function EventsPage() {
                         </div>
                       </div>
 
-                      <div className="flex flex-col gap-4">
+                      <div className="flex flex-col gap-4 lg:sticky lg:top-6 self-start">
                         {event.logo ? (
                           <div className="flex justify-center">
                             <Image
@@ -423,7 +444,7 @@ export default function EventsPage() {
                               alt={`${event.title} logo`}
                               width={400}
                               height={240}
-                              className="w-full max-w-[200px] lg:max-w-[260px] h-auto"
+                              className="w-full max-w-[180px] lg:max-w-[220px] h-auto"
                               priority
                             />
                           </div>
