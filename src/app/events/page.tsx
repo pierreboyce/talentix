@@ -361,8 +361,8 @@ export default function EventsPage() {
                             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                               {event.schedule.map((item) => (
                                 <div key={item.sector} className="rounded-2xl border border-yellow-200 px-4 py-3" style={{ background: 'linear-gradient(135deg,#fffbeb,#fef3c7)' }}>
-                                  <p className="font-black text-amber-800 uppercase tracking-wide" style={{ fontFamily: "'Fredoka', 'Inter', sans-serif", fontSize: '0.85rem' }}>{item.emoji} {item.sector}</p>
-                                  <p className="font-black text-gray-900 mt-1" style={{ fontFamily: "'Fredoka', 'Inter', sans-serif", fontSize: '1rem' }}>{item.dates}</p>
+                                  <p style={{ fontFamily: "var(--font-fredoka), 'Inter', sans-serif", fontWeight: 700, fontSize: '0.85rem', color: '#92400e', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{item.emoji} {item.sector}</p>
+                                  <p style={{ fontFamily: "var(--font-fredoka), 'Inter', sans-serif", fontWeight: 700, fontSize: '1.05rem', color: '#111827', marginTop: '4px' }}>{item.dates}</p>
                                 </div>
                               ))}
                             </div>
@@ -421,9 +421,9 @@ export default function EventsPage() {
                             <Image
                               src={event.logo}
                               alt={`${event.title} logo`}
-                              width={300}
-                              height={180}
-                              className="w-full max-w-[180px] lg:max-w-[220px] h-auto"
+                              width={400}
+                              height={240}
+                              className="w-full max-w-[200px] lg:max-w-[260px] h-auto"
                               priority
                             />
                           </div>
