@@ -361,8 +361,8 @@ export default function EventsPage() {
                             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                               {event.schedule.map((item) => (
                                 <div key={item.sector} className="rounded-2xl border border-yellow-200 px-4 py-3" style={{ background: 'linear-gradient(135deg,#fffbeb,#fef3c7)' }}>
-                                  <p className="text-xs font-black text-amber-800 uppercase tracking-wide">{item.emoji} {item.sector}</p>
-                                  <p className="text-sm font-bold text-gray-900 mt-1">{item.dates}</p>
+                                  <p className="font-black text-amber-800 uppercase tracking-wide" style={{ fontFamily: "'Fredoka', 'Inter', sans-serif", fontSize: '0.85rem' }}>{item.emoji} {item.sector}</p>
+                                  <p className="font-black text-gray-900 mt-1" style={{ fontFamily: "'Fredoka', 'Inter', sans-serif", fontSize: '1rem' }}>{item.dates}</p>
                                 </div>
                               ))}
                             </div>
@@ -417,13 +417,13 @@ export default function EventsPage() {
 
                       <div className="flex flex-col gap-4">
                         {event.logo ? (
-                          <div className="rounded-2xl overflow-hidden border-2 border-yellow-400 shadow-lg" style={{ background: 'linear-gradient(135deg,#1a1200,#2d2000)' }}>
+                          <div className="flex justify-center">
                             <Image
                               src={event.logo}
                               alt={`${event.title} logo`}
-                              width={500}
-                              height={300}
-                              className="w-full h-auto"
+                              width={300}
+                              height={180}
+                              className="w-full max-w-[180px] lg:max-w-[220px] h-auto"
                               priority
                             />
                           </div>
