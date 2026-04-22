@@ -51,6 +51,12 @@ export const metadata: Metadata = {
   },
 };
 
+interface ScheduleItem {
+  sector: string;
+  emoji: string;
+  dates: string;
+}
+
 interface EventItem {
   id: string;
   title: string;
@@ -61,6 +67,7 @@ interface EventItem {
   bonus?: string;
   registrationLink: string;
   logo?: string;
+  secondaryLogo?: string;
   poster?: string;
   spotsAvailable?: number;
   type: string;
@@ -68,9 +75,67 @@ interface EventItem {
   soldOut?: boolean;
   dateLabel: string;
   eventDateTimeUtc: string;
+  schedule?: ScheduleItem[];
+  launchBadge?: string;
 }
 
 const events: EventItem[] = [
+  {
+    id: 'interview-series',
+    title: 'Talentix Interview Series — Free Mock Interviews with Professionals',
+    shortDescription:
+      'Get a real mock interview with a professional working in your chosen sector. Practise in a live setting, receive genuine feedback, and build the confidence you need before the real thing — completely free.',
+    fullDescription:
+      'Each sector runs over multiple days with limited spaces available. Sign up for the sector that matches your career interests — or sign up for more than one. Spaces will fill fast.',
+    speakers: [],
+    learnings: [
+      'Real mock interview with a working professional',
+      'Genuine, personalised feedback on your performance',
+      'Build confidence before the real thing',
+      'Sector-specific interview practice',
+    ],
+    registrationLink: 'https://forms.gle/ysz72L7MWh6oR3xy8',
+    logo: '/interview-series-logo.png',
+    poster: '/interview-series-poster.png',
+    type: 'Interview Series',
+    format: 'Online',
+    soldOut: false,
+    dateLabel: '13 May – 15 June',
+    eventDateTimeUtc: '2026-06-15T23:59:59Z',
+    launchBadge: '🎉 LAUNCHING TODAY — Talentix Interview Series',
+    schedule: [
+      { sector: 'Law', emoji: '⚖️', dates: '13–15th May' },
+      { sector: 'Finance', emoji: '💰', dates: '20–22nd May' },
+      { sector: 'Tech', emoji: '💻', dates: '27–29th May' },
+      { sector: 'Engineering', emoji: '⚙️', dates: '3–5th June' },
+      { sector: 'Healthcare', emoji: '🏥', dates: '8–10th June' },
+      { sector: 'Creative Industries', emoji: '🎨', dates: '11–12th June' },
+      { sector: 'Business + Consulting', emoji: '📊', dates: '13–15th June' },
+    ],
+  },
+  {
+    id: 'interview-masterclass',
+    title: 'Talentix Interview Masterclass',
+    shortDescription:
+      'Kick off the Talentix Interview Series with our free live masterclass. Learn exactly how successful candidates approach interviews, get live Q&A with industry professionals, and discover which career sectors interest you — all in one hour.',
+    fullDescription:
+      "This is the gateway event to the Interview Series. Whether you're preparing for your first job, an apprenticeship, or exploring which career path is right for you, this session gives you the foundation to walk into any interview with confidence.",
+    speakers: [],
+    learnings: [
+      'The interview framework successful applicants use',
+      'How to turn interview nerves into confidence',
+      'Live Q&A with industry professionals',
+      'Explore career sectors: Law, Finance, Tech & more',
+    ],
+    registrationLink: 'https://luma.com/pyjh0o7a',
+    logo: '/interview-masterclass-logo.png',
+    poster: '/interview-masterclass-poster.png',
+    type: 'Masterclass',
+    format: 'Online',
+    soldOut: false,
+    dateLabel: '11th May, 6–7 PM',
+    eventDateTimeUtc: '2026-05-11T19:00:00Z',
+  },
   {
     id: 'rise-talentix-masterclass',
     title: 'RISE x Talentix Online Assessment and Interview Masterclass',
@@ -266,13 +331,20 @@ export default function EventsPage() {
                     <div className="absolute -top-6 -right-6 w-24 h-24 rounded-full bg-purple-100/60 blur-2xl pointer-events-none" />
                     <div className="absolute -bottom-5 -left-5 w-20 h-20 rounded-full bg-yellow-100/80 blur-xl pointer-events-none" />
 
+                    {event.launchBadge ? (
+                      <div className="inline-flex items-center gap-2 mb-5 px-4 py-2 rounded-xl text-sm font-black" style={{ background: 'linear-gradient(135deg,#fbbf24,#f59e0b)', color: '#1a1200', boxShadow: '0 4px 12px rgba(251,191,36,.4)' }}>
+                        {event.launchBadge}
+                      </div>
+                    ) : null}
+
                     <div className="grid lg:grid-cols-[1.2fr_0.8fr] gap-6 items-start">
                       <div>
                         <div className="flex flex-wrap gap-2 mb-4">
                           <span className="pill pill-purple">🎓 {event.type}</span>
                           <span className="pill pill-blue">💻 {event.format}</span>
-                          <span className="pill pill-red">✅ Sold Out</span>
+                          <span className="pill pill-green">✅ FREE</span>
                           <span className="pill pill-yellow">📅 {event.dateLabel}</span>
+                          {event.id === 'interview-series' ? <span className="pill pill-red">⚠️ Limited Spaces</span> : null}
                         </div>
 
                         <h3 className="text-2xl md:text-3xl font-black text-gray-900 mb-6" style={{ fontFamily: "'Fredoka', 'Inter', sans-serif" }}>
@@ -281,16 +353,34 @@ export default function EventsPage() {
                         <p className="text-gray-700 mb-5 leading-7">{event.shortDescription}</p>
                         <p className="text-sm text-gray-600 leading-7 mb-8">{event.fullDescription}</p>
 
-                        <div className="mb-8 mt-12">
-                          <h4 className="text-2xl font-black text-gray-900 mb-3" style={{ fontFamily: "'Fredoka', 'Inter', sans-serif" }}>
-                            Guest speakers
-                          </h4>
-                          <div className="flex flex-wrap gap-2">
-                            {event.speakers.map((speaker) => (
-                              <span key={speaker} className="pill pill-gray">{speaker}</span>
-                            ))}
+                        {event.schedule && event.schedule.length > 0 ? (
+                          <div className="mb-8">
+                            <h4 className="text-xl font-black text-gray-900 mb-4" style={{ fontFamily: "'Fredoka', 'Inter', sans-serif" }}>
+                              Sector schedule
+                            </h4>
+                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                              {event.schedule.map((item) => (
+                                <div key={item.sector} className="rounded-2xl border border-yellow-200 px-4 py-3" style={{ background: 'linear-gradient(135deg,#fffbeb,#fef3c7)' }}>
+                                  <p className="text-xs font-black text-amber-800 uppercase tracking-wide">{item.emoji} {item.sector}</p>
+                                  <p className="text-sm font-bold text-gray-900 mt-1">{item.dates}</p>
+                                </div>
+                              ))}
+                            </div>
                           </div>
-                        </div>
+                        ) : null}
+
+                        {event.speakers.length > 0 ? (
+                          <div className="mb-8 mt-4">
+                            <h4 className="text-2xl font-black text-gray-900 mb-3" style={{ fontFamily: "'Fredoka', 'Inter', sans-serif" }}>
+                              Guest speakers
+                            </h4>
+                            <div className="flex flex-wrap gap-2">
+                              {event.speakers.map((speaker) => (
+                                <span key={speaker} className="pill pill-gray">{speaker}</span>
+                              ))}
+                            </div>
+                          </div>
+                        ) : null}
 
                         <div className="mb-6 mt-2">
                           <p className="font-black text-gray-900 mb-2" style={{ fontFamily: "'Fredoka', 'Inter', sans-serif" }}>
@@ -313,7 +403,7 @@ export default function EventsPage() {
                             className="btn-primary-purple-small !rounded-full !px-6 !py-3 !font-black hover:scale-[1.03] transition-transform"
                             style={{ fontFamily: "'Fredoka', 'Inter', sans-serif" }}
                           >
-                            Register Now 🚀
+                            {event.id === 'interview-series' ? 'Sign Up Now 🎯' : 'Register Now 🚀'}
                           </Link>
                           {event.spotsAvailable ? <span className="pill pill-yellow">⚠️ Only {event.spotsAvailable} spots</span> : null}
                         </div>
@@ -325,7 +415,19 @@ export default function EventsPage() {
                         </div>
                       </div>
 
-                      <div className="relative">
+                      <div className="flex flex-col gap-4">
+                        {event.logo ? (
+                          <div className="rounded-2xl overflow-hidden border-2 border-yellow-400 shadow-lg" style={{ background: 'linear-gradient(135deg,#1a1200,#2d2000)' }}>
+                            <Image
+                              src={event.logo}
+                              alt={`${event.title} logo`}
+                              width={500}
+                              height={300}
+                              className="w-full h-auto"
+                              priority
+                            />
+                          </div>
+                        ) : null}
                         <div className="p-3 rounded-[22px] bg-gradient-to-br from-yellow-50 via-white to-purple-50 border border-yellow-100 shadow-md">
                           {event.poster ? (
                             <Image
