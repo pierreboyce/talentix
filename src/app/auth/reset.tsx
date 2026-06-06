@@ -90,7 +90,7 @@ export default function ResetPassword() {
           </Link>
         </div>
       </div>
-      <p className="mt-8 text-gray-400 text-xs">© 2024 Talentix. All rights reserved.</p>
+      <p className="mt-8 text-gray-400 text-xs">© 2026 Talentix. All rights reserved.</p>
     </div>
   );
 } 

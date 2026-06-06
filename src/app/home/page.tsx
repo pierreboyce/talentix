@@ -515,7 +515,7 @@ function HomeContent() {
               <Image
                 key={heroWorkshopImages[activeHeroWorkshopImage]}
                 src={heroWorkshopImages[activeHeroWorkshopImage]}
-                alt="Talentix workshop highlight"
+                alt="Talentix youth-led employability workshop in a UK secondary school"
                 fill
                 sizes="(max-width: 1024px) 320px, 520px"
                 style={{ objectFit: "cover" }}
@@ -547,7 +547,7 @@ function HomeContent() {
               <Image
                 key={isMobile ? heroWorkshopImages[activeHeroWorkshopImage] : '/Talentix%20Workshops%20Images/IMG_2234.jpeg'}
                 src={isMobile ? heroWorkshopImages[activeHeroWorkshopImage] : '/Talentix%20Workshops%20Images/IMG_2234.jpeg'}
-                alt="Talentix workshop session"
+                alt="Students taking part in a Talentix employability workshop"
                 width={900}
                 height={720}
                 className="workshops-main-image"
@@ -768,448 +768,52 @@ function HomeContent() {
         </div>
       </section>
 
-      {/* PLAYFUL TESTIMONIALS CARDS SECTION */}
+      {/* SCHOOL TESTIMONIAL SECTION */}
       <div style={{
         padding: '80px 0',
         background: 'linear-gradient(135deg, #FEF7CD 0%, #FDE047 30%, #FACC15 70%, #F59E0B 100%)',
-        minHeight: '600px'
       }}>
-        <div style={{
-          maxWidth: '1200px',
-          margin: '0 auto',
-          padding: '0 24px'
-        }}>
-          {/* Header */}
-          <div style={{
-            textAlign: 'center',
-            marginBottom: '60px'
-          }}>
-            <h2 style={{
-              fontSize: '3rem',
-              fontWeight: '900',
-              color: '#374151',
-              marginBottom: '16px',
-              fontFamily: 'Fredoka, sans-serif',
-              textShadow: '2px 2px 4px rgba(0,0,0,0.1)'
-            }}>
-              What our users are saying 🌟
-          </h2>
-            <p style={{
-              fontSize: '1.2rem',
-              color: '#6B7280',
-              fontFamily: 'Fredoka, sans-serif'
-            }}>
-              Here's what some of our users have to say about Talentix! 💖
+        <div style={{ maxWidth: '900px', margin: '0 auto', padding: '0 24px' }}>
+          <div style={{ textAlign: 'center', marginBottom: '48px' }}>
+            <h2 style={{ fontSize: '3rem', fontWeight: '900', color: '#1a1a2e', marginBottom: '12px', fontFamily: 'Fredoka, sans-serif' }}>
+              What schools say about us 🌟
+            </h2>
+            <p style={{ fontSize: '1.2rem', color: '#374151', fontFamily: 'Fredoka, sans-serif' }}>
+              Real feedback from a school we have worked with.
             </p>
           </div>
-
-          {/* 3-Column Grid */}
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))',
-            gap: '30px',
-            marginBottom: '60px'
-          }}>
-            {/* Card 1 */}
-            <div style={{
-              background: 'linear-gradient(135deg, #374151 0%, #1F2937 100%)',
-              padding: '32px',
-              borderRadius: '24px',
-              boxShadow: '0 20px 40px rgba(0, 0, 0, 0.3)',
-              transform: 'translateY(0)',
-              transition: 'all 0.3s ease',
-              cursor: 'pointer'
-            }}
-            onMouseEnter={(e) => {
-              (e.target as HTMLElement).style.transform = 'translateY(-8px)';
-              (e.target as HTMLElement).style.boxShadow = '0 25px 50px rgba(0, 0, 0, 0.4)';
-            }}
-            onMouseLeave={(e) => {
-              (e.target as HTMLElement).style.transform = 'translateY(0)';
-              (e.target as HTMLElement).style.boxShadow = '0 20px 40px rgba(0, 0, 0, 0.3)';
-            }}>
-              <div style={{ marginBottom: '20px' }}>
-                <h4 style={{
-                  fontSize: '1.3rem',
-                  fontWeight: 'bold',
-                  color: 'white',
-                  marginBottom: '8px',
-                  fontFamily: 'Fredoka, sans-serif'
-                }}>
-                  Sarah Johnson 😊
-                </h4>
-                <p style={{
-                  fontSize: '0.9rem',
-                  color: '#9CA3AF',
-                  fontFamily: 'Fredoka, sans-serif'
-                }}>
-                  @sarahjohnson
-                </p>
-              </div>
-              <p style={{
-                color: '#D1D5DB',
-                marginBottom: '20px',
-                lineHeight: '1.6',
-                fontFamily: 'Fredoka, sans-serif',
-                fontSize: '1rem'
-              }}>
-                The platform has really helped me stay focused on my career goals and discover opportunities I never knew existed! 🚀
-              </p>
-              <div style={{ display: 'flex', gap: '4px' }}>
-                {[...Array(5)].map((_, i) => (
-                  <span key={i} style={{
-                    color: '#FFD600',
-                    fontSize: '1.4rem',
-                    textShadow: '0 0 10px rgba(255, 214, 0, 0.5)'
-                  }}>★</span>
-                ))}
-              </div>
-            </div>
-            
-            {/* Card 2 */}
-            <div style={{
-              background: 'linear-gradient(135deg, #374151 0%, #1F2937 100%)',
-              padding: '32px',
-              borderRadius: '24px',
-              boxShadow: '0 20px 40px rgba(0, 0, 0, 0.3)',
-              transform: 'translateY(0)',
-              transition: 'all 0.3s ease',
-              cursor: 'pointer'
-            }}
-            onMouseEnter={(e) => {
-              (e.target as HTMLElement).style.transform = 'translateY(-8px)';
-              (e.target as HTMLElement).style.boxShadow = '0 25px 50px rgba(0, 0, 0, 0.4)';
-            }}
-            onMouseLeave={(e) => {
-              (e.target as HTMLElement).style.transform = 'translateY(0)';
-              (e.target as HTMLElement).style.boxShadow = '0 20px 40px rgba(0, 0, 0, 0.3)';
-            }}>
-              <div style={{ marginBottom: '20px' }}>
-                <h4 style={{
-                  fontSize: '1.3rem',
-                  fontWeight: 'bold',
-                  color: 'white',
-                  marginBottom: '8px',
-                  fontFamily: 'Fredoka, sans-serif'
-                }}>
-                  Marcus Chen 🎯
-                </h4>
-                <p style={{
-                  fontSize: '0.9rem',
-                  color: '#9CA3AF',
-                  fontFamily: 'Fredoka, sans-serif'
-                }}>
-                  @marcuschen
-                </p>
-              </div>
-              <p style={{
-                color: '#D1D5DB',
-                marginBottom: '20px',
-                lineHeight: '1.6',
-                fontFamily: 'Fredoka, sans-serif',
-                fontSize: '1rem'
-              }}>
-                The site is super easy to use and understand, especially for someone like me just starting my career journey! ✨
-              </p>
-              <div style={{ display: 'flex', gap: '4px' }}>
-                {[...Array(5)].map((_, i) => (
-                  <span key={i} style={{
-                    color: '#FFD600',
-                    fontSize: '1.4rem',
-                    textShadow: '0 0 10px rgba(255, 214, 0, 0.5)'
-                  }}>★</span>
-                ))}
-              </div>
-            </div>
-            
-            {/* Card 3 */}
-            <div style={{
-              background: 'linear-gradient(135deg, #374151 0%, #1F2937 100%)',
-              padding: '32px',
-              borderRadius: '24px',
-              boxShadow: '0 20px 40px rgba(0, 0, 0, 0.3)',
-              transform: 'translateY(0)',
-              transition: 'all 0.3s ease',
-              cursor: 'pointer'
-            }}
-            onMouseEnter={(e) => {
-              (e.target as HTMLElement).style.transform = 'translateY(-8px)';
-              (e.target as HTMLElement).style.boxShadow = '0 25px 50px rgba(0, 0, 0, 0.4)';
-            }}
-            onMouseLeave={(e) => {
-              (e.target as HTMLElement).style.transform = 'translateY(0)';
-              (e.target as HTMLElement).style.boxShadow = '0 20px 40px rgba(0, 0, 0, 0.3)';
-            }}>
-              <div style={{ marginBottom: '20px' }}>
-                <h4 style={{
-                  fontSize: '1.3rem',
-                  fontWeight: 'bold',
-                  color: 'white',
-                  marginBottom: '8px',
-                  fontFamily: 'Fredoka, sans-serif'
-                }}>
-                  Emma Rodriguez 💼
-                </h4>
-                <p style={{
-                  fontSize: '0.9rem',
-                  color: '#9CA3AF',
-                  fontFamily: 'Fredoka, sans-serif'
-                }}>
-                  @emmarodriguez
-                </p>
-              </div>
-              <p style={{
-                color: '#D1D5DB',
-                marginBottom: '20px',
-                lineHeight: '1.6',
-                fontFamily: 'Fredoka, sans-serif',
-                fontSize: '1rem'
-              }}>
-                Talentix is clean and looks professional. It gave me the confidence boost I needed to pursue better opportunities! 🌟
-              </p>
-              <div style={{ display: 'flex', gap: '4px' }}>
-                {[...Array(5)].map((_, i) => (
-                  <span key={i} style={{
-                    color: '#FFD600',
-                    fontSize: '1.4rem',
-                    textShadow: '0 0 10px rgba(255, 214, 0, 0.5)'
-                  }}>★</span>
-                ))}
-            </div>
+          <div style={{ background: '#1a1a2e', border: '4px solid #FFD23F', boxShadow: '10px 10px 0 #FF6B9D', borderRadius: '24px', padding: '40px 36px', maxWidth: '720px', margin: '0 auto 56px' }}>
+            <blockquote style={{ margin: 0, fontSize: '1.35rem', lineHeight: 1.6, color: '#ffffff', fontFamily: 'Fredoka, sans-serif', fontWeight: 500 }}>
+              "I would definitely recommend Talentix to other schools, you're really inclusive, you really tailored it to our students. I haven't seen them more engaged."
+            </blockquote>
+            <p style={{ margin: '24px 0 0', fontWeight: 800, color: '#FFD23F', fontFamily: 'Fredoka, sans-serif', fontSize: '1.1rem' }}>
+              Emma Seffens
+            </p>
+            <p style={{ margin: '2px 0 0', color: '#cbd5e1', fontFamily: 'Fredoka, sans-serif', fontSize: '0.98rem' }}>
+              Careers Officer, Endeavour Academy Bexley
+            </p>
           </div>
-          
-            {/* Card 4 */}
-            <div style={{
-              background: 'linear-gradient(135deg, #374151 0%, #1F2937 100%)',
-              padding: '32px',
-              borderRadius: '24px',
-              boxShadow: '0 20px 40px rgba(0, 0, 0, 0.3)',
-              transform: 'translateY(0)',
-              transition: 'all 0.3s ease',
-              cursor: 'pointer'
-            }}
-            onMouseEnter={(e) => {
-              (e.target as HTMLElement).style.transform = 'translateY(-8px)';
-              (e.target as HTMLElement).style.boxShadow = '0 25px 50px rgba(0, 0, 0, 0.4)';
-            }}
-            onMouseLeave={(e) => {
-              (e.target as HTMLElement).style.transform = 'translateY(0)';
-              (e.target as HTMLElement).style.boxShadow = '0 20px 40px rgba(0, 0, 0, 0.3)';
-            }}>
-              <div style={{ marginBottom: '20px' }}>
-                <h4 style={{
-                  fontSize: '1.3rem',
-                  fontWeight: 'bold',
-                  color: 'white',
-                  marginBottom: '8px',
-                  fontFamily: 'Fredoka, sans-serif'
-                }}>
-                  David Thompson 🏆
-                </h4>
-                <p style={{
-                  fontSize: '0.9rem',
-                  color: '#9CA3AF',
-                  fontFamily: 'Fredoka, sans-serif'
-                }}>
-                  @davidthompson
-                </p>
-              </div>
-              <p style={{
-                color: '#D1D5DB',
-                marginBottom: '20px',
-                lineHeight: '1.6',
-                fontFamily: 'Fredoka, sans-serif',
-                fontSize: '1rem'
-              }}>
-                The AI interview practice has been invaluable in preparing me for real interviews. I feel so much more confident now! 💪
-              </p>
-              <div style={{ display: 'flex', gap: '4px' }}>
-                {[...Array(5)].map((_, i) => (
-                  <span key={i} style={{
-                    color: '#FFD600',
-                    fontSize: '1.4rem',
-                    textShadow: '0 0 10px rgba(255, 214, 0, 0.5)'
-                  }}>★</span>
-                ))}
-              </div>
-            </div>
-
-            {/* Card 5 */}
-            <div style={{
-              background: 'linear-gradient(135deg, #374151 0%, #1F2937 100%)',
-              padding: '32px',
-              borderRadius: '24px',
-              boxShadow: '0 20px 40px rgba(0, 0, 0, 0.3)',
-              transform: 'translateY(0)',
-              transition: 'all 0.3s ease',
-              cursor: 'pointer'
-            }}
-            onMouseEnter={(e) => {
-              (e.target as HTMLElement).style.transform = 'translateY(-8px)';
-              (e.target as HTMLElement).style.boxShadow = '0 25px 50px rgba(0, 0, 0, 0.4)';
-            }}
-            onMouseLeave={(e) => {
-              (e.target as HTMLElement).style.transform = 'translateY(0)';
-              (e.target as HTMLElement).style.boxShadow = '0 20px 40px rgba(0, 0, 0, 0.3)';
-            }}>
-              <div style={{ marginBottom: '20px' }}>
-                <h4 style={{
-                  fontSize: '1.3rem',
-                  fontWeight: 'bold',
-                  color: 'white',
-                  marginBottom: '8px',
-                  fontFamily: 'Fredoka, sans-serif'
-                }}>
-                  Lisa Park 📄
-                </h4>
-                <p style={{
-                  fontSize: '0.9rem',
-                  color: '#9CA3AF',
-                  fontFamily: 'Fredoka, sans-serif'
-                }}>
-                  @lisapark
-                </p>
-              </div>
-              <p style={{
-                color: '#D1D5DB',
-                marginBottom: '20px',
-                lineHeight: '1.6',
-                fontFamily: 'Fredoka, sans-serif',
-                fontSize: '1rem'
-              }}>
-                The CV builder helped me create a professional resume that stands out. I started getting more interview calls immediately! 📞
-              </p>
-              <div style={{ display: 'flex', gap: '4px' }}>
-                {[...Array(5)].map((_, i) => (
-                  <span key={i} style={{
-                    color: '#FFD600',
-                    fontSize: '1.4rem',
-                    textShadow: '0 0 10px rgba(255, 214, 0, 0.5)'
-                  }}>★</span>
-                ))}
-              </div>
-            </div>
-
-            {/* Card 6 */}
-            <div style={{
-              background: 'linear-gradient(135deg, #374151 0%, #1F2937 100%)',
-              padding: '32px',
-              borderRadius: '24px',
-              boxShadow: '0 20px 40px rgba(0, 0, 0, 0.3)',
-              transform: 'translateY(0)',
-              transition: 'all 0.3s ease',
-              cursor: 'pointer'
-            }}
-            onMouseEnter={(e) => {
-              (e.target as HTMLElement).style.transform = 'translateY(-8px)';
-              (e.target as HTMLElement).style.boxShadow = '0 25px 50px rgba(0, 0, 0, 0.4)';
-            }}
-            onMouseLeave={(e) => {
-              (e.target as HTMLElement).style.transform = 'translateY(0)';
-              (e.target as HTMLElement).style.boxShadow = '0 20px 40px rgba(0, 0, 0, 0.3)';
-            }}>
-              <div style={{ marginBottom: '20px' }}>
-                <h4 style={{
-                  fontSize: '1.3rem',
-                  fontWeight: 'bold',
-                  color: 'white',
-                  marginBottom: '8px',
-                  fontFamily: 'Fredoka, sans-serif'
-                }}>
-                  Alex Kumar 📚
-                </h4>
-                <p style={{
-                  fontSize: '0.9rem',
-                  color: '#9CA3AF',
-                  fontFamily: 'Fredoka, sans-serif'
-                }}>
-                  @alexkumar
-                </p>
-              </div>
-              <p style={{
-                color: '#D1D5DB',
-                marginBottom: '20px',
-                lineHeight: '1.6',
-                fontFamily: 'Fredoka, sans-serif',
-                fontSize: '1rem'
-              }}>
-                The learning resources are comprehensive and well-organized. Perfect for continuous skill development and career growth! 🌱
-              </p>
-              <div style={{ display: 'flex', gap: '4px' }}>
-                {[...Array(5)].map((_, i) => (
-                  <span key={i} style={{
-                    color: '#FFD600',
-                    fontSize: '1.4rem',
-                    textShadow: '0 0 10px rgba(255, 214, 0, 0.5)'
-                  }}>★</span>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* CTA Section */}
           <div style={{ textAlign: 'center' }}>
-            <div style={{
-              background: 'linear-gradient(135deg, #FDE047 0%, #F97316 100%)',
-              borderRadius: '24px',
-              padding: '40px',
-              maxWidth: '600px',
-              margin: '0 auto',
-              boxShadow: '0 20px 40px rgba(0, 0, 0, 0.2)'
-            }}>
-              <h3 style={{
-                fontSize: '1.8rem',
-                fontWeight: 'bold',
-                color: '#111827',
-                marginBottom: '12px',
-                fontFamily: 'Fredoka, sans-serif'
-              }}>
-                Ready to join them? 🚀
+            <div style={{ background: 'linear-gradient(135deg, #FDE047 0%, #F97316 100%)', borderRadius: '24px', padding: '40px', maxWidth: '600px', margin: '0 auto', boxShadow: '0 20px 40px rgba(0, 0, 0, 0.2)' }}>
+              <h3 style={{ fontSize: '1.8rem', fontWeight: 'bold', color: '#111827', marginBottom: '12px', fontFamily: 'Fredoka, sans-serif' }}>
+                Ready to get started? 🚀
               </h3>
-              <p style={{
-                color: '#374151',
-                marginBottom: '24px',
-                fontFamily: 'Fredoka, sans-serif',
-                fontSize: '1.1rem'
-              }}>
-                Start your career journey today and become our next success story! ✨
+              <p style={{ color: '#374151', marginBottom: '24px', fontFamily: 'Fredoka, sans-serif', fontSize: '1.1rem' }}>
+                Join Talentix and take your next step today.
               </p>
-            <button 
-              onClick={() => setShowSignUpModal(true)}
-                style={{
-                  background: '#111827',
-                  color: 'white',
-                  fontWeight: 'bold',
-                  padding: '16px 32px',
-                  borderRadius: '16px',
-                  border: 'none',
-                  cursor: 'pointer',
-                  fontSize: '1.1rem',
-                  fontFamily: 'Fredoka, sans-serif',
-                  transition: 'all 0.3s ease',
-                  boxShadow: '0 8px 16px rgba(0, 0, 0, 0.3)'
-                }}
-                onMouseEnter={(e) => {
-                  (e.target as HTMLElement).style.transform = 'scale(1.05)';
-                  (e.target as HTMLElement).style.boxShadow = '0 12px 24px rgba(0, 0, 0, 0.4)';
-                }}
-                onMouseLeave={(e) => {
-                  (e.target as HTMLElement).style.transform = 'scale(1)';
-                  (e.target as HTMLElement).style.boxShadow = '0 8px 16px rgba(0, 0, 0, 0.3)';
-                }}
-              >
+              <button onClick={() => setShowSignUpModal(true)} style={{ background: '#111827', color: 'white', fontWeight: 'bold', padding: '16px 32px', borderRadius: '16px', border: 'none', cursor: 'pointer', fontSize: '1.1rem', fontFamily: 'Fredoka, sans-serif', boxShadow: '0 8px 16px rgba(0, 0, 0, 0.3)' }}>
                 Get Started Free 💫
-            </button>
+              </button>
+            </div>
           </div>
-        </div>
         </div>
       </div>
 
-      {/* Simple Footer */}
+            {/* Simple Footer */}
       <footer className="bg-gray-900 py-8">
         <div className="max-w-6xl mx-auto px-6 text-center">
           <p className="text-gray-400" style={{ fontFamily: 'Fredoka, sans-serif' }}>
-            © 2024 Talentix - Made with 💖 for job seekers everywhere!
+            © 2026 Talentix - Made with 💖 for job seekers everywhere!
           </p>
         </div>
       </footer>
@@ -1279,115 +883,30 @@ function HomeContent() {
 
             {/* Content */}
             <div style={{ textAlign: 'center' }}>
-              <h2 
-                className="modal-title"
-                style={{ 
-                  fontSize: '36px', 
-                  fontWeight: 'bold', 
-                  marginBottom: '20px',
-                  fontFamily: "'Fredoka', sans-serif"
-                }}
-              >
-                What We Do 🎉
+              <h2 className="modal-title" style={{ fontSize: '34px', fontWeight: 'bold', marginBottom: '14px', fontFamily: "'Fredoka', sans-serif" }}>
+                What we do 🎉
               </h2>
-              
-              <p 
-                className="modal-description"
-                style={{ 
-                  fontSize: '18px', 
-                  marginBottom: '30px',
-                  lineHeight: '1.6'
-                }}
-              >
-                <strong>Talentix</strong> is a youth-led employment agency helping teenagers land their dream jobs through interactive workshops and powerful digital tools! 🚀
+              <p className="modal-description" style={{ fontSize: '17px', marginBottom: '24px', lineHeight: 1.6, color: '#374151' }}>
+                <strong>Talentix</strong> is a youth-led employment organisation. We help teenagers take their next step through in-school workshops, free online events, and a platform built for teens.
               </p>
-
-              <h3 
-                className="modal-subtitle"
-                style={{ 
-                  fontSize: '24px', 
-                  fontWeight: 'bold', 
-                  marginBottom: '20px',
-                  fontFamily: "'Fredoka', sans-serif"
-                }}
-              >
-                ✨ Our Amazing Features
-              </h3>
-
-              {/* Simple feature list */}
-              <div 
-                className="modal-features-grid"
-                style={{ 
-                  display: 'grid', 
-                  gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', 
-                  gap: '15px',
-                  marginBottom: '30px'
-                }}
-              >
-                <div style={{ 
-                  backgroundColor: '#f3f4f6', 
-                  padding: '20px', 
-                  borderRadius: '15px',
-                  textAlign: 'center'
-                }}>
-                  <div style={{ fontSize: '30px', marginBottom: '10px' }}>📄</div>
-                  <h4 style={{ fontWeight: 'bold', marginBottom: '5px' }}>CV Reviewer</h4>
-                  <p style={{ fontSize: '14px', color: '#666' }}>AI-powered analysis</p>
+              <div style={{ display: 'grid', gap: '14px', marginBottom: '26px', textAlign: 'left' }}>
+                <div style={{ background: '#f9fafb', borderLeft: '6px solid #FFD23F', borderRadius: '12px', padding: '16px 18px' }}>
+                  <h3 style={{ margin: '0 0 6px', fontSize: '18px', fontWeight: 800, color: '#1a1a2e', fontFamily: "'Fredoka', sans-serif" }}>🏫 Workshops</h3>
+                  <p style={{ margin: 0, fontSize: '14.5px', lineHeight: 1.6, color: '#374151' }}>
+                    In-school employability workshops for Years 10 to 13. Two flagship formats: Teens and Jobs covers CVs, mock interviews, and job search. Future Ready Teens builds confidence, communication, goal-setting, and personal branding. We also build bespoke sessions around your cohort. Every facilitator is DBS-checked and SEN-trained, and sessions are adapted for SEN and SEND learners in mainstream and specialist settings. 94% of students recommend us to other schools.
+                  </p>
                 </div>
-                
-                <div style={{ 
-                  backgroundColor: '#f3f4f6', 
-                  padding: '20px', 
-                  borderRadius: '15px',
-                  textAlign: 'center'
-                }}>
-                  <div style={{ fontSize: '30px', marginBottom: '10px' }}>🎤</div>
-                  <h4 style={{ fontWeight: 'bold', marginBottom: '5px' }}>Interview Practice</h4>
-                  <p style={{ fontSize: '14px', color: '#666' }}>Video prep & feedback</p>
+                <div style={{ background: '#f9fafb', borderLeft: '6px solid #4ECDC4', borderRadius: '12px', padding: '16px 18px' }}>
+                  <h3 style={{ margin: '0 0 6px', fontSize: '18px', fontWeight: 800, color: '#1a1a2e', fontFamily: "'Fredoka', sans-serif" }}>🎤 Events</h3>
+                  <p style={{ margin: 0, fontSize: '14.5px', lineHeight: 1.6, color: '#374151' }}>
+                    Free online career events open to teens across the UK. Past events include our Ultimate CV Workshop and an Assessment Centre and Interview Masterclass with RISE. Our Mock Interview Series puts students in front of real professionals by sector.
+                  </p>
                 </div>
-                
-                <div style={{ 
-                  backgroundColor: '#f3f4f6', 
-                  padding: '20px', 
-                  borderRadius: '15px',
-                  textAlign: 'center'
-                }}>
-                  <div style={{ fontSize: '30px', marginBottom: '10px' }}>🔍</div>
-                  <h4 style={{ fontWeight: 'bold', marginBottom: '5px' }}>Job Search</h4>
-                  <p style={{ fontSize: '14px', color: '#666' }}>Perfect opportunities</p>
-                </div>
-                
-                <div style={{ 
-                  backgroundColor: '#f3f4f6', 
-                  padding: '20px', 
-                  borderRadius: '15px',
-                  textAlign: 'center'
-                }}>
-                  <div style={{ fontSize: '30px', marginBottom: '10px' }}>🧭</div>
-                  <h4 style={{ fontWeight: 'bold', marginBottom: '5px' }}>Career Guidance</h4>
-                  <p style={{ fontSize: '14px', color: '#666' }}>Expert advice</p>
-                </div>
-                
-                <div style={{ 
-                  backgroundColor: '#f3f4f6', 
-                  padding: '20px', 
-                  borderRadius: '15px',
-                  textAlign: 'center'
-                }}>
-                  <div style={{ fontSize: '30px', marginBottom: '10px' }}>🏆</div>
-                  <h4 style={{ fontWeight: 'bold', marginBottom: '5px' }}>Talentix Points</h4>
-                  <p style={{ fontSize: '14px', color: '#666' }}>Earn rewards</p>
-                </div>
-                
-                <div style={{ 
-                  backgroundColor: '#f3f4f6', 
-                  padding: '20px', 
-                  borderRadius: '15px',
-                  textAlign: 'center'
-                }}>
-                  <div style={{ fontSize: '30px', marginBottom: '10px' }}>👥</div>
-                  <h4 style={{ fontWeight: 'bold', marginBottom: '5px' }}>Community</h4>
-                  <p style={{ fontSize: '14px', color: '#666' }}>Connect & share</p>
+                <div style={{ background: '#f9fafb', borderLeft: '6px solid #4A90E2', borderRadius: '12px', padding: '16px 18px' }}>
+                  <h3 style={{ margin: '0 0 6px', fontSize: '18px', fontWeight: 800, color: '#1a1a2e', fontFamily: "'Fredoka', sans-serif" }}>💻 Platform</h3>
+                  <p style={{ margin: 0, fontSize: '14.5px', lineHeight: 1.6, color: '#374151' }}>
+                    talentix.co.uk gives teens job search, a CV reviewer, interview prep, and AI career guidance. Built for teens, by teens.
+                  </p>
                 </div>
               </div>
 

@@ -40,6 +40,10 @@ export const metadata: Metadata = {
   },
   description: 'Free career tools for UK teenagers and students aged 16-18. CV reviewer, interview practice, job search, apprenticeship tracker, and more. Get your first job with Talentix - for teenagers by teenagers.',
   keywords: [
+    'SEN employability workshops schools UK',
+    'SEND careers workshops secondary school',
+    'in-school careers workshops London',
+    'youth-led careers workshops UK',
     'teen jobs UK',
     'first job UK',
     'jobs for 16 year olds UK',
