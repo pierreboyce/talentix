@@ -464,7 +464,7 @@ export default function WorkshopsDetailPage() {
           </div>
           <div style={{ background: 'linear-gradient(135deg, #e6faf8 0%, #c7f0ec 100%)', borderRadius: '24px', border: '3px solid rgba(78,205,196,0.6)', boxShadow: '0 14px 30px rgba(20, 120, 110, 0.18)', padding: '24px' }}>
             <p style={{ margin: '0 0 14px', color: '#374151', lineHeight: 1.7 }}>
-              Most careers content is built for mainstream cohorts. It moves too fast and assumes confidence many SEN students have not built yet. We rewrite our sessions for SEN groups so every student in the room can take part.
+              We run workshops in both mainstream and SEN settings. For SEN cohorts, most off-the-shelf careers content does not fit. It moves too fast and assumes confidence many SEN students have not built yet, so we rewrite those sessions so every student in the room can take part.
             </p>
             <p style={{ margin: '0 0 18px', color: '#374151', lineHeight: 1.7 }}>
               We also build bespoke workshops around each SEN cohort. Tell us how your students learn and what you want them to leave with, and we match the pace, language, and activities to them. We are proud of how flexible we can be.
@@ -500,16 +500,16 @@ export default function WorkshopsDetailPage() {
           </div>
           <div style={{ background: 'linear-gradient(135deg, #eaf2fd 0%, #e7ecfb 100%)', borderRadius: '24px', border: '3px solid rgba(74,144,226,0.55)', boxShadow: '0 14px 30px rgba(29, 78, 216, 0.16)', padding: '24px' }}>
             <p style={{ margin: '0 0 14px', color: '#374151', lineHeight: 1.7 }}>
-              Young people run our workshops, not long out of school themselves. Being peer-led changes how the room feels. Students drop their guard and ask the questions they actually have.
+              Our workshops are run by young people, not long out of school themselves. Being peer-led changes how the room feels. Students drop their guard, ask the questions they actually have, and stay in the session.
             </p>
             <p style={{ margin: '0 0 18px', color: '#374151', lineHeight: 1.7 }}>
-              Students get a role model close to their own age, someone they look up to and want to be like. Because the facilitator is barely older than them, the message lands and sticks far more than a lecture would.
+              A peer-led session gives students a role model close to their own age, someone they can look up to and want to be like. Because the person at the front is barely older than them, the content lands and they resonate with it far more than they would from a lecture.
             </p>
             <ul style={{ margin: 0, paddingLeft: '20px', color: '#374151', lineHeight: 1.8 }}>
               <li>A relatable role model students can aspire to</li>
               <li>Closeness in age means the message resonates and sticks</li>
               <li>The teacher and student power dynamic disappears, so quieter students speak up</li>
-              <li>Sessions stay current and real</li>
+              <li>Sessions stay current and real, not a lecture from the front</li>
             </ul>
           </div>
         </section>
