@@ -49,37 +49,40 @@ export default function WorkshopsDetailPage() {
 
   const workshopFormats = [
     {
-      title: 'TEENS & JOBS',
-      emoji: '💼',
-      text: 'Practical employability. CV building, mock interviews, and job search.',
-      focus: 'Applications, interview performance, and workplace professionalism.',
-      outcomes: [
-        'A draft CV they can keep building on',
-        'A practised interview answer',
-        'A clear next step to act on',
-      ],
-      color: '#7c3aed',
-      bg: 'linear-gradient(135deg, #ede9fe 0%, #c4b5fd 100%)',
-    },
-    {
       title: 'FUTURE READY TEENS',
       emoji: '💡',
-      text: 'Confidence, communication, and the personal foundations for life after school.',
-      focus: 'Goal-setting, self-belief, and personal branding.',
+      text: 'Build confidence, resilience, communication, and self-awareness for life beyond school.',
+      focus: 'Personal branding, interview readiness, goal setting, and negotiation skills.',
       outcomes: [
-        'Stronger confidence and self-belief',
-        'Clear personal goals',
-        'Better communication and teamwork',
+        'In-depth personal branding awareness',
+        'Mock interviews with peer/staff feedback',
+        'SMART goals for personal and career growth',
+        'Stronger communication, teamwork, and negotiation skills',
       ],
       color: '#f59e0b',
       bg: 'linear-gradient(135deg, #fff7cc 0%, #fde68a 100%)',
     },
+    {
+      title: 'TEENS & JOBS',
+      emoji: '💼',
+      text: 'Equip students with practical tools for job search, applications, and interview success.',
+      focus: 'Job applications, interview performance, and workplace professionalism.',
+      outcomes: [
+        'Ready-to-send CV and cover letter',
+        'Mock interview practice and confidence boost',
+        'Improved professionalism and employability awareness',
+        'Physical job toolkit students can refer back to',
+      ],
+      color: '#7c3aed',
+      bg: 'linear-gradient(135deg, #ede9fe 0%, #c4b5fd 100%)',
+    },
   ];
 
   const impactStats = [
-    { value: '500+', label: 'students engaged' },
-    { value: '94%', label: 'recommend us to other schools' },
-    { value: '100%', label: 'of facilitators DBS-checked and SEN-trained' },
+    { value: '94%', label: 'students rated workshops 5 stars and would recommend to other schools' },
+    { value: '450', label: 'Year 11 students supported' },
+    { value: '210', label: 'Year 12 students supported' },
+    { value: '275', label: 'SEN students supported' },
   ];
 
   const kpiSupport = [
@@ -139,18 +142,18 @@ export default function WorkshopsDetailPage() {
             backdropFilter: 'blur(6px)',
           }}
         >
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', marginBottom: '8px', color: '#374151', fontWeight: 700 }}>
-            <span>🎨</span>
-            <span>Workshops for Schools & Youth Groups</span>
-            </div>
           <Image
             src="/talentixworkshopslogo.png"
             alt="Talentix Workshops"
             width={340}
             height={150}
-            style={{ width: 'min(340px, 75vw)', height: 'auto', margin: '0 auto 6px' }}
+            style={{ width: 'min(340px, 75vw)', height: 'auto', margin: '0 auto 10px' }}
             priority
           />
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', marginBottom: '8px', color: '#374151', fontWeight: 700 }}>
+            <span>🎨</span>
+            <span>Workshops for Schools & Youth Groups</span>
+            </div>
           <h1
             style={{
               fontSize: 'clamp(2rem, 5vw, 3.8rem)',
@@ -161,7 +164,9 @@ export default function WorkshopsDetailPage() {
               lineHeight: 1.04,
             }}
           >
-            In-school employability workshops for Years 10 to 13
+            Interactive, youth-led workshops
+            <br />
+            that students actually remember
           </h1>
           <p style={{ maxWidth: '860px', margin: '12px auto 0', color: '#4b5563', lineHeight: 1.7, fontSize: '1.05rem' }}>
             Talentix runs in-school employability workshops for secondary students in Years 10 to 13. Sessions are youth-led, DBS-checked, and adapted for SEN and SEND cohorts. We work with mainstream schools and specialist settings.
@@ -312,6 +317,15 @@ export default function WorkshopsDetailPage() {
         </section>
 
         <section style={{ marginBottom: '30px' }}>
+          <article style={{ background: 'linear-gradient(135deg, #4ECDC4 0%, #4A90E2 100%)', borderRadius: '24px', border: '4px solid #ffffff', boxShadow: '0 16px 32px rgba(74, 144, 226, 0.3)', padding: '24px 22px', color: '#ffffff', textAlign: 'center' }}>
+            <h3 style={{ margin: '0 0 8px', fontSize: 'clamp(1.4rem, 3vw, 2rem)', fontWeight: 900 }}>🧩 Bespoke sessions</h3>
+            <p style={{ margin: '0 auto', maxWidth: '720px', lineHeight: 1.65, fontWeight: 500 }}>
+              We also offer bespoke sessions for every school. Tell us about your students and we will tailor a workshop to suit their needs. Every booking includes a scoping call.
+            </p>
+          </article>
+        </section>
+
+        <section style={{ marginBottom: '30px' }}>
           <h2
             style={{
               textAlign: 'center',
@@ -323,7 +337,7 @@ export default function WorkshopsDetailPage() {
           >
             📈 The Numbers
           </h2>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '12px' }} className="stats-grid">
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: '12px' }} className="stats-grid">
             {impactStats.map((stat) => (
               <article
                 key={stat.label}
@@ -421,14 +435,6 @@ export default function WorkshopsDetailPage() {
             </div>
         </section>
 
-        <section style={{ marginBottom: '30px' }}>
-          <article style={{ background: 'linear-gradient(135deg, #4ECDC4 0%, #4A90E2 100%)', borderRadius: '24px', border: '4px solid #ffffff', boxShadow: '0 16px 32px rgba(74, 144, 226, 0.3)', padding: '24px 22px', color: '#ffffff', textAlign: 'center' }}>
-            <h3 style={{ margin: '0 0 8px', fontSize: 'clamp(1.4rem, 3vw, 2rem)', fontWeight: 900 }}>🧩 Bespoke sessions</h3>
-            <p style={{ margin: '0 auto', maxWidth: '720px', lineHeight: 1.65, fontWeight: 500 }}>
-              Tell us about your cohort and we will build a session around them. Every booking includes a scoping call, with pace and language adapted for SEN.
-            </p>
-          </article>
-        </section>
 
         <section style={{ marginBottom: '30px' }}>
           <h2 style={{ textAlign: 'center', margin: '0 0 14px', fontSize: 'clamp(1.7rem, 3.6vw, 2.8rem)', fontWeight: 900, color: '#111827' }}>
@@ -447,6 +453,54 @@ export default function WorkshopsDetailPage() {
               <h3 style={{ margin: '0 0 6px', fontSize: '1.15rem', fontWeight: 800, color: '#111827' }}>💪 Higher confidence</h3>
               <p style={{ margin: 0, color: '#374151', lineHeight: 1.55, fontSize: '0.95rem' }}>Staff report a measurable improvement in students willingness to apply and speak up.</p>
             </article>
+          </div>
+        </section>
+
+        <section style={{ marginBottom: '30px' }}>
+          <h2 style={{ textAlign: 'center', margin: '0 0 14px', fontSize: 'clamp(1.7rem, 3.6vw, 2.8rem)', fontWeight: 900, color: '#111827' }}>
+            💛 Our SEN Impact
+          </h2>
+          <div style={{ background: 'rgba(255,255,255,0.93)', borderRadius: '24px', border: '2px solid rgba(255,255,255,0.9)', boxShadow: '0 14px 30px rgba(0,0,0,0.12)', padding: '22px' }}>
+            <p style={{ margin: '0 0 16px', color: '#374151', lineHeight: 1.7 }}>
+              Most careers content is built for mainstream cohorts. It moves too fast and assumes confidence many SEN students have not built yet. We rewrite our sessions from the ground up so every student in the room can take part.
+            </p>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '12px', marginBottom: '18px' }} className="stats-grid">
+              <article style={{ background: '#fff7cc', borderRadius: '16px', padding: '14px', border: '2px solid rgba(245,158,11,0.33)', textAlign: 'center' }}>
+                <p style={{ margin: 0, fontSize: '1.8rem', fontWeight: 900, color: '#111827' }}>500+</p>
+                <p style={{ margin: '4px 0 0', color: '#4b5563', fontSize: '0.88rem', lineHeight: 1.45 }}>students engaged</p>
+              </article>
+              <article style={{ background: '#fff7cc', borderRadius: '16px', padding: '14px', border: '2px solid rgba(245,158,11,0.33)', textAlign: 'center' }}>
+                <p style={{ margin: 0, fontSize: '1.8rem', fontWeight: 900, color: '#111827' }}>94%</p>
+                <p style={{ margin: '4px 0 0', color: '#4b5563', fontSize: '0.88rem', lineHeight: 1.45 }}>would recommend us to other schools</p>
+              </article>
+              <article style={{ background: '#fff7cc', borderRadius: '16px', padding: '14px', border: '2px solid rgba(245,158,11,0.33)', textAlign: 'center' }}>
+                <p style={{ margin: 0, fontSize: '1.8rem', fontWeight: 900, color: '#111827' }}>100%</p>
+                <p style={{ margin: '4px 0 0', color: '#4b5563', fontSize: '0.88rem', lineHeight: 1.45 }}>of facilitators DBS-checked and SEN-trained</p>
+              </article>
+            </div>
+            <ul style={{ margin: 0, paddingLeft: '20px', color: '#374151', lineHeight: 1.8 }}>
+              <li>Plain-English language with visual prompts on every slide</li>
+              <li>Small-group activities so quieter students get the chance to contribute</li>
+              <li>Youth-led facilitation that removes the teacher and student power dynamic</li>
+              <li>Take-home outputs so progress does not end at the door</li>
+            </ul>
+          </div>
+        </section>
+
+        <section style={{ marginBottom: '30px' }}>
+          <h2 style={{ textAlign: 'center', margin: '0 0 14px', fontSize: 'clamp(1.7rem, 3.6vw, 2.8rem)', fontWeight: 900, color: '#111827' }}>
+            🙌 Our Youth-Led Approach
+          </h2>
+          <div style={{ background: 'rgba(255,255,255,0.93)', borderRadius: '24px', border: '2px solid rgba(255,255,255,0.9)', boxShadow: '0 14px 30px rgba(0,0,0,0.12)', padding: '22px' }}>
+            <p style={{ margin: '0 0 16px', color: '#374151', lineHeight: 1.7 }}>
+              Our workshops are run by young people, not long out of school themselves. That changes how the room feels. Students drop their guard, ask the questions they actually have, and stay in the session.
+            </p>
+            <ul style={{ margin: 0, paddingLeft: '20px', color: '#374151', lineHeight: 1.8 }}>
+              <li>Advice lands harder when it comes from someone who recently sat where they sit</li>
+              <li>The teacher and student power dynamic disappears, so quieter students speak up</li>
+              <li>Sessions stay relatable and current, not a lecture from the front</li>
+              <li>Students leave believing the next step is theirs to take</li>
+            </ul>
           </div>
         </section>
 

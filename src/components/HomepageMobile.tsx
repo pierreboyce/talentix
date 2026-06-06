@@ -798,12 +798,6 @@ export default function HomepageMobile() {
             <p style={{ margin: '16px 0 0', fontWeight: 800, color: '#FFD23F', fontFamily: 'Fredoka, sans-serif' }}>Emma Seffens</p>
             <p style={{ margin: '2px 0 0', color: '#cbd5e1', fontSize: '0.9rem', fontFamily: 'Fredoka, sans-serif' }}>Careers Officer, Endeavour Academy Bexley</p>
           </div>
-          <div style={{ marginTop: '20px', background: '#1a1a2e', border: '4px solid #4ECDC4', boxShadow: '6px 6px 0 #FFD23F', borderRadius: '18px', padding: '20px', textAlign: 'center' }}>
-            <span style={{ display: 'inline-block', background: '#4ECDC4', color: '#1a1a2e', fontWeight: 800, padding: '3px 12px', borderRadius: '999px', fontFamily: 'Fredoka, sans-serif', fontSize: '0.85rem' }}>SEN-adapted workshops</span>
-            <p style={{ margin: '10px 0 0', color: '#cbd5e1', lineHeight: 1.6, fontSize: '0.92rem', fontFamily: 'Fredoka, sans-serif' }}>
-              Every session is delivered by DBS-checked, SEN-trained facilitators and adapted for SEN and SEND learners.
-            </p>
-          </div>
         </div>
       </section>
 

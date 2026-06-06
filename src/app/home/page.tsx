@@ -625,21 +625,6 @@ function HomeContent() {
         </div>
       </section>
 
-      {/* SEN positioning band */}
-      <section style={{ padding: '48px 24px', background: '#1a1a2e' }}>
-        <div style={{ maxWidth: '900px', margin: '0 auto', background: '#1a1a2e', border: '4px solid #4ECDC4', boxShadow: '8px 8px 0 #FFD23F', borderRadius: '20px', padding: '28px 26px', textAlign: 'center' }}>
-          <span style={{ display: 'inline-block', background: '#4ECDC4', color: '#1a1a2e', fontWeight: 800, padding: '4px 14px', borderRadius: '999px', fontFamily: 'Fredoka, sans-serif', fontSize: '0.95rem' }}>
-            SEN-adapted workshops
-          </span>
-          <h2 style={{ margin: '12px 0 8px', color: '#ffffff', fontSize: '1.6rem', fontWeight: 900, fontFamily: 'Fredoka, sans-serif' }}>
-            Built to be inclusive
-          </h2>
-          <p style={{ margin: '0 auto', maxWidth: '640px', color: '#cbd5e1', lineHeight: 1.6, fontFamily: 'Fredoka, sans-serif' }}>
-            All our sessions are delivered by DBS-checked, SEN-trained facilitators. We adapt pace and language for SEN and SEND learners and deliver in both mainstream and specialist settings.
-          </p>
-        </div>
-      </section>
-
       {/* Worked With Section */}
       <section
         className="pt-28 pb-28 md:pt-32 md:pb-32 relative overflow-hidden"
