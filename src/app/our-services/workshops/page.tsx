@@ -457,24 +457,27 @@ export default function WorkshopsDetailPage() {
         </section>
 
         <section style={{ marginBottom: '30px' }}>
-          <h2 style={{ textAlign: 'center', margin: '0 0 14px', fontSize: 'clamp(1.7rem, 3.6vw, 2.8rem)', fontWeight: 900, color: '#111827' }}>
+          <h2 style={{ textAlign: 'center', margin: '0 0 14px', fontSize: 'clamp(1.7rem, 3.6vw, 2.8rem)', fontWeight: 900, color: '#0f766e' }}>
             💛 Our SEN Impact
           </h2>
-          <div style={{ background: 'rgba(255,255,255,0.93)', borderRadius: '24px', border: '2px solid rgba(255,255,255,0.9)', boxShadow: '0 14px 30px rgba(0,0,0,0.12)', padding: '22px' }}>
-            <p style={{ margin: '0 0 16px', color: '#374151', lineHeight: 1.7 }}>
+          <div style={{ background: 'linear-gradient(135deg, #e6faf8 0%, #c7f0ec 100%)', borderRadius: '24px', border: '3px solid rgba(78,205,196,0.6)', boxShadow: '0 14px 30px rgba(20, 120, 110, 0.18)', padding: '24px' }}>
+            <p style={{ margin: '0 0 14px', color: '#374151', lineHeight: 1.7 }}>
               Most careers content is built for mainstream cohorts. It moves too fast and assumes confidence many SEN students have not built yet. We rewrite our sessions from the ground up so every student in the room can take part.
             </p>
+            <p style={{ margin: '0 0 18px', color: '#374151', lineHeight: 1.7 }}>
+              We also build bespoke workshops around each SEN cohort. Tell us how your students learn and what you want them to walk away with, and we shape the pace, language, and activities to fit. That flexibility is something we pride ourselves on.
+            </p>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '12px', marginBottom: '18px' }} className="stats-grid">
-              <article style={{ background: '#fff7cc', borderRadius: '16px', padding: '14px', border: '2px solid rgba(245,158,11,0.33)', textAlign: 'center' }}>
-                <p style={{ margin: 0, fontSize: '1.8rem', fontWeight: 900, color: '#111827' }}>500+</p>
+              <article style={{ background: '#ffffff', borderRadius: '16px', padding: '14px', border: '2px solid rgba(78,205,196,0.5)', textAlign: 'center' }}>
+                <p style={{ margin: 0, fontSize: '1.8rem', fontWeight: 900, color: '#0f766e' }}>500+</p>
                 <p style={{ margin: '4px 0 0', color: '#4b5563', fontSize: '0.88rem', lineHeight: 1.45 }}>students engaged</p>
               </article>
-              <article style={{ background: '#fff7cc', borderRadius: '16px', padding: '14px', border: '2px solid rgba(245,158,11,0.33)', textAlign: 'center' }}>
-                <p style={{ margin: 0, fontSize: '1.8rem', fontWeight: 900, color: '#111827' }}>94%</p>
+              <article style={{ background: '#ffffff', borderRadius: '16px', padding: '14px', border: '2px solid rgba(78,205,196,0.5)', textAlign: 'center' }}>
+                <p style={{ margin: 0, fontSize: '1.8rem', fontWeight: 900, color: '#0f766e' }}>94%</p>
                 <p style={{ margin: '4px 0 0', color: '#4b5563', fontSize: '0.88rem', lineHeight: 1.45 }}>would recommend us to other schools</p>
               </article>
-              <article style={{ background: '#fff7cc', borderRadius: '16px', padding: '14px', border: '2px solid rgba(245,158,11,0.33)', textAlign: 'center' }}>
-                <p style={{ margin: 0, fontSize: '1.8rem', fontWeight: 900, color: '#111827' }}>100%</p>
+              <article style={{ background: '#ffffff', borderRadius: '16px', padding: '14px', border: '2px solid rgba(78,205,196,0.5)', textAlign: 'center' }}>
+                <p style={{ margin: 0, fontSize: '1.8rem', fontWeight: 900, color: '#0f766e' }}>100%</p>
                 <p style={{ margin: '4px 0 0', color: '#4b5563', fontSize: '0.88rem', lineHeight: 1.45 }}>of facilitators DBS-checked and SEN-trained</p>
               </article>
             </div>
@@ -488,18 +491,21 @@ export default function WorkshopsDetailPage() {
         </section>
 
         <section style={{ marginBottom: '30px' }}>
-          <h2 style={{ textAlign: 'center', margin: '0 0 14px', fontSize: 'clamp(1.7rem, 3.6vw, 2.8rem)', fontWeight: 900, color: '#111827' }}>
+          <h2 style={{ textAlign: 'center', margin: '0 0 14px', fontSize: 'clamp(1.7rem, 3.6vw, 2.8rem)', fontWeight: 900, color: '#1d4ed8' }}>
             🙌 Our Youth-Led Approach
           </h2>
-          <div style={{ background: 'rgba(255,255,255,0.93)', borderRadius: '24px', border: '2px solid rgba(255,255,255,0.9)', boxShadow: '0 14px 30px rgba(0,0,0,0.12)', padding: '22px' }}>
-            <p style={{ margin: '0 0 16px', color: '#374151', lineHeight: 1.7 }}>
-              Our workshops are run by young people, not long out of school themselves. That changes how the room feels. Students drop their guard, ask the questions they actually have, and stay in the session.
+          <div style={{ background: 'linear-gradient(135deg, #eaf2fd 0%, #e7ecfb 100%)', borderRadius: '24px', border: '3px solid rgba(74,144,226,0.55)', boxShadow: '0 14px 30px rgba(29, 78, 216, 0.16)', padding: '24px' }}>
+            <p style={{ margin: '0 0 14px', color: '#374151', lineHeight: 1.7 }}>
+              Our workshops are run by young people, not long out of school themselves. Being peer-led changes how the room feels. Students drop their guard, ask the questions they actually have, and stay in the session.
+            </p>
+            <p style={{ margin: '0 0 18px', color: '#374151', lineHeight: 1.7 }}>
+              A peer-led session gives students a role model close to their own age, someone they can look up to and want to be like. Because the person at the front is barely older than them, the content lands and they resonate with it far more than they would from a lecture.
             </p>
             <ul style={{ margin: 0, paddingLeft: '20px', color: '#374151', lineHeight: 1.8 }}>
-              <li>Advice lands harder when it comes from someone who recently sat where they sit</li>
+              <li>A relatable role model students can aspire to</li>
+              <li>Closeness in age means the message resonates and sticks</li>
               <li>The teacher and student power dynamic disappears, so quieter students speak up</li>
-              <li>Sessions stay relatable and current, not a lecture from the front</li>
-              <li>Students leave believing the next step is theirs to take</li>
+              <li>Sessions stay current and real, not a lecture from the front</li>
             </ul>
           </div>
         </section>
