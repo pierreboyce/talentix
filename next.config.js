@@ -6,6 +6,13 @@ const nextConfig = {
   },
   
   
+  // Redirects
+  async redirects() {
+    return [
+      { source: '/workshops', destination: '/our-services/workshops', permanent: true },
+    ];
+  },
+
   // Domain configuration
   async headers() {
     return [

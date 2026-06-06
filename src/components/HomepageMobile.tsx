@@ -787,54 +787,22 @@ export default function HomepageMobile() {
       <section className="py-12 px-4">
         <div className="text-center mb-8">
           <h2 className="text-2xl font-bold text-gray-900 mb-2" style={{ fontFamily: 'Fredoka, sans-serif' }}>
-            💬 What Students Say
+            💬 What schools say
           </h2>
         </div>
-        
-        <div className="space-y-6 max-w-sm mx-auto">
-          <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl p-6 text-white shadow-lg">
-            <div className="flex items-center space-x-1 mb-3">
-              {[...Array(5)].map((_, i) => (
-                <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-              ))}
-            </div>
-            <p className="text-gray-100 mb-4 leading-relaxed">
-              "Talentix helped me get my first job at McDonald's! The interview practice was amazing."
+        <div className="max-w-sm mx-auto">
+          <div style={{ background: '#1a1a2e', border: '4px solid #FFD23F', boxShadow: '6px 6px 0 #FF6B9D', borderRadius: '18px', padding: '22px' }}>
+            <p style={{ margin: 0, color: '#ffffff', lineHeight: 1.6, fontFamily: 'Fredoka, sans-serif' }}>
+              "I would definitely recommend Talentix to other schools, you're really inclusive, you really tailored it to our students. I haven't seen them more engaged."
             </p>
-            <div>
-              <p className="font-bold text-white">Sarah Johnson</p>
-              <p className="text-gray-400 text-sm">@sarah_j_2024</p>
-            </div>
+            <p style={{ margin: '16px 0 0', fontWeight: 800, color: '#FFD23F', fontFamily: 'Fredoka, sans-serif' }}>Emma Seffens</p>
+            <p style={{ margin: '2px 0 0', color: '#cbd5e1', fontSize: '0.9rem', fontFamily: 'Fredoka, sans-serif' }}>Careers Officer, Endeavour Academy Bexley</p>
           </div>
-          
-          <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl p-6 text-white shadow-lg">
-            <div className="flex items-center space-x-1 mb-3">
-              {[...Array(5)].map((_, i) => (
-                <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-              ))}
-            </div>
-            <p className="text-gray-100 mb-4 leading-relaxed">
-              "The CV reviewer pointed out things I never noticed. Got my dream job at Boots!"
+          <div style={{ marginTop: '20px', background: '#1a1a2e', border: '4px solid #4ECDC4', boxShadow: '6px 6px 0 #FFD23F', borderRadius: '18px', padding: '20px', textAlign: 'center' }}>
+            <span style={{ display: 'inline-block', background: '#4ECDC4', color: '#1a1a2e', fontWeight: 800, padding: '3px 12px', borderRadius: '999px', fontFamily: 'Fredoka, sans-serif', fontSize: '0.85rem' }}>SEN-adapted workshops</span>
+            <p style={{ margin: '10px 0 0', color: '#cbd5e1', lineHeight: 1.6, fontSize: '0.92rem', fontFamily: 'Fredoka, sans-serif' }}>
+              Every session is delivered by DBS-checked, SEN-trained facilitators and adapted for SEN and SEND learners.
             </p>
-            <div>
-              <p className="font-bold text-white">Mike Thompson</p>
-              <p className="text-gray-400 text-sm">@mike_t_jobs</p>
-            </div>
-          </div>
-          
-          <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl p-6 text-white shadow-lg">
-            <div className="flex items-center space-x-1 mb-3">
-              {[...Array(5)].map((_, i) => (
-                <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-              ))}
-            </div>
-            <p className="text-gray-100 mb-4 leading-relaxed">
-              "Amazing platform! The career guidance section taught me so much about job searching."
-            </p>
-            <div>
-              <p className="font-bold text-white">Emma Davis</p>
-              <p className="text-gray-400 text-sm">@emma_career</p>
-            </div>
           </div>
         </div>
       </section>
@@ -879,7 +847,7 @@ export default function HomepageMobile() {
             </Link>
           </div>
           <p className="text-gray-400 text-sm">
-            © 2024 Talentix. Helping you get your first job! 🎯
+            © 2026 Talentix. Helping you get your first job! 🎯
           </p>
         </div>
       </footer>

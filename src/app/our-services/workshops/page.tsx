@@ -49,40 +49,37 @@ export default function WorkshopsDetailPage() {
 
   const workshopFormats = [
     {
-      title: 'FUTURE READY TEENS',
-      emoji: '💡',
-      text: 'Build confidence, resilience, communication, and self-awareness for life beyond school.',
-      focus: 'Personal branding, interview readiness, goal setting, and negotiation skills.',
-      outcomes: [
-        'In-depth personal branding awareness',
-        'Mock interviews with peer/staff feedback',
-        'SMART goals for personal and career growth',
-        'Stronger communication, teamwork, and negotiation skills',
-      ],
-      color: '#f59e0b',
-      bg: 'linear-gradient(135deg, #fff7cc 0%, #fde68a 100%)',
-    },
-    {
       title: 'TEENS & JOBS',
       emoji: '💼',
-      text: 'Equip students with practical tools for job search, applications, and interview success.',
-      focus: 'Job applications, interview performance, and workplace professionalism.',
+      text: 'Practical employability. CV building, mock interviews, and job search.',
+      focus: 'Applications, interview performance, and workplace professionalism.',
       outcomes: [
-        'Ready-to-send CV and cover letter',
-        'Mock interview practice and confidence boost',
-        'Improved professionalism and employability awareness',
-        'Physical job toolkit students can refer back to',
+        'A draft CV they can keep building on',
+        'A practised interview answer',
+        'A clear next step to act on',
       ],
       color: '#7c3aed',
       bg: 'linear-gradient(135deg, #ede9fe 0%, #c4b5fd 100%)',
     },
+    {
+      title: 'FUTURE READY TEENS',
+      emoji: '💡',
+      text: 'Confidence, communication, and the personal foundations for life after school.',
+      focus: 'Goal-setting, self-belief, and personal branding.',
+      outcomes: [
+        'Stronger confidence and self-belief',
+        'Clear personal goals',
+        'Better communication and teamwork',
+      ],
+      color: '#f59e0b',
+      bg: 'linear-gradient(135deg, #fff7cc 0%, #fde68a 100%)',
+    },
   ];
 
   const impactStats = [
-    { value: '94%', label: 'students rated workshops 5 stars and would recommend to other schools' },
-    { value: '450', label: 'Year 11 students supported' },
-    { value: '210', label: 'Year 12 students supported' },
-    { value: '275', label: 'SEN students supported' },
+    { value: '500+', label: 'students engaged' },
+    { value: '94%', label: 'recommend us to other schools' },
+    { value: '100%', label: 'of facilitators DBS-checked and SEN-trained' },
   ];
 
   const kpiSupport = [
@@ -164,12 +161,10 @@ export default function WorkshopsDetailPage() {
               lineHeight: 1.04,
             }}
           >
-            Interactive, youth-led workshops
-            <br />
-            that students actually remember
+            In-school employability workshops for Years 10 to 13
           </h1>
           <p style={{ maxWidth: '860px', margin: '12px auto 0', color: '#4b5563', lineHeight: 1.7, fontSize: '1.05rem' }}>
-            Talentix workshops blend confidence-building, employability training, and real-world practice into engaging sessions tailored for teenagers in SEND, secondary, and post-16 education.
+            Talentix runs in-school employability workshops for secondary students in Years 10 to 13. Sessions are youth-led, DBS-checked, and adapted for SEN and SEND cohorts. We work with mainstream schools and specialist settings.
               </p>
             </div>
 
@@ -195,7 +190,7 @@ export default function WorkshopsDetailPage() {
             <Image
               key={workshopImages[activeWorkshopImage]}
               src={workshopImages[activeWorkshopImage]}
-              alt="Talentix workshop in action"
+              alt="Talentix SEN-inclusive employability workshop in a UK school"
               fill
               sizes="(max-width: 1024px) 100vw, 60vw"
               style={{ objectFit: 'cover' }}
@@ -328,7 +323,7 @@ export default function WorkshopsDetailPage() {
           >
             📈 The Numbers
           </h2>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: '12px' }} className="stats-grid">
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '12px' }} className="stats-grid">
             {impactStats.map((stat) => (
               <article
                 key={stat.label}
@@ -426,6 +421,35 @@ export default function WorkshopsDetailPage() {
             </div>
         </section>
 
+        <section style={{ marginBottom: '30px' }}>
+          <article style={{ background: 'linear-gradient(135deg, #4ECDC4 0%, #4A90E2 100%)', borderRadius: '24px', border: '4px solid #ffffff', boxShadow: '0 16px 32px rgba(74, 144, 226, 0.3)', padding: '24px 22px', color: '#ffffff', textAlign: 'center' }}>
+            <h3 style={{ margin: '0 0 8px', fontSize: 'clamp(1.4rem, 3vw, 2rem)', fontWeight: 900 }}>🧩 Bespoke sessions</h3>
+            <p style={{ margin: '0 auto', maxWidth: '720px', lineHeight: 1.65, fontWeight: 500 }}>
+              Tell us about your cohort and we will build a session around them. Every booking includes a scoping call, with pace and language adapted for SEN.
+            </p>
+          </article>
+        </section>
+
+        <section style={{ marginBottom: '30px' }}>
+          <h2 style={{ textAlign: 'center', margin: '0 0 14px', fontSize: 'clamp(1.7rem, 3.6vw, 2.8rem)', fontWeight: 900, color: '#111827' }}>
+            ✅ What schools see
+          </h2>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '16px' }} className="outcomes-grid">
+            <article style={{ background: 'rgba(255,255,255,0.95)', borderRadius: '20px', padding: '20px', border: '2px solid rgba(255,255,255,0.9)', boxShadow: '0 12px 24px rgba(0,0,0,0.12)' }}>
+              <h3 style={{ margin: '0 0 6px', fontSize: '1.15rem', fontWeight: 800, color: '#111827' }}>🙋 More engaged learners</h3>
+              <p style={{ margin: 0, color: '#374151', lineHeight: 1.55, fontSize: '0.95rem' }}>Students who normally opt out of careers content stay in the room, ask questions, and contribute.</p>
+            </article>
+            <article style={{ background: 'rgba(255,255,255,0.95)', borderRadius: '20px', padding: '20px', border: '2px solid rgba(255,255,255,0.9)', boxShadow: '0 12px 24px rgba(0,0,0,0.12)' }}>
+              <h3 style={{ margin: '0 0 6px', fontSize: '1.15rem', fontWeight: 800, color: '#111827' }}>📝 Tangible outputs</h3>
+              <p style={{ margin: 0, color: '#374151', lineHeight: 1.55, fontSize: '0.95rem' }}>Each student leaves with something written down, like a draft CV, a goal, or a practised answer.</p>
+            </article>
+            <article style={{ background: 'rgba(255,255,255,0.95)', borderRadius: '20px', padding: '20px', border: '2px solid rgba(255,255,255,0.9)', boxShadow: '0 12px 24px rgba(0,0,0,0.12)' }}>
+              <h3 style={{ margin: '0 0 6px', fontSize: '1.15rem', fontWeight: 800, color: '#111827' }}>💪 Higher confidence</h3>
+              <p style={{ margin: 0, color: '#374151', lineHeight: 1.55, fontSize: '0.95rem' }}>Staff report a measurable improvement in students willingness to apply and speak up.</p>
+            </article>
+          </div>
+        </section>
+
         <section
           style={{
             background: 'linear-gradient(135deg, #f472b6 0%, #f59e0b 50%, #facc15 100%)',
@@ -440,7 +464,7 @@ export default function WorkshopsDetailPage() {
             🎉 Bring Talentix Workshops to Your School
           </h3>
           <p style={{ maxWidth: '760px', margin: '0 auto 18px', color: '#1f2937', fontWeight: 500 }}>
-            Download our full proposal to see session outcomes, structure, and delivery options, or contact us to book directly.
+            For a quote, tell us three things: the size of your cohort, the length of the workshop, and the workshop type. Email us and we will come back with options.
           </p>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', justifyContent: 'center' }}>
             <a
@@ -512,6 +536,10 @@ export default function WorkshopsDetailPage() {
             grid-template-columns: 1fr 1fr !important;
           }
 
+          .outcomes-grid {
+            grid-template-columns: 1fr 1fr !important;
+          }
+
           .formats-grid {
             grid-template-columns: 1fr !important;
           }
@@ -523,6 +551,10 @@ export default function WorkshopsDetailPage() {
 
         @media (max-width: 640px) {
           .testimonials-grid {
+            grid-template-columns: 1fr !important;
+          }
+
+          .outcomes-grid {
             grid-template-columns: 1fr !important;
           }
 
