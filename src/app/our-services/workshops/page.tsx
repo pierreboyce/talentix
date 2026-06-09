@@ -19,9 +19,24 @@ export default function WorkshopsDetailPage() {
     const interval = window.setInterval(() => {
       setActiveWorkshopImage((current) => (current + 1) % workshopImages.length);
     }, 3200);
-
     return () => window.clearInterval(interval);
   }, [workshopImages.length]);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('wp-visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.08 }
+    );
+    document.querySelectorAll('[data-wp-animate]').forEach((el) => observer.observe(el));
+    return () => observer.disconnect();
+  }, []);
 
   const highlights = [
     {
@@ -115,7 +130,7 @@ export default function WorkshopsDetailPage() {
   return (
     <div
       style={{
-      minHeight: '100vh',
+        minHeight: '100vh',
         background: 'linear-gradient(135deg, #fde047 0%, #facc15 35%, #f59e0b 100%)',
         padding: '40px 20px 60px',
         fontFamily: 'Fredoka, sans-serif',
@@ -129,7 +144,38 @@ export default function WorkshopsDetailPage() {
       <div style={{ position: 'absolute', bottom: '14%', left: '7%', fontSize: '3.2rem', opacity: 0.13 }}>🚀</div>
       <div style={{ position: 'absolute', bottom: '8%', right: '6%', fontSize: '3.8rem', opacity: 0.15 }}>💼</div>
 
+      <style dangerouslySetInnerHTML={{ __html: `
+        [data-wp-animate] {
+          opacity: 0;
+          transform: translateY(26px);
+          transition: opacity 350ms ease-out, transform 350ms ease-out;
+        }
+        [data-wp-animate].wp-visible {
+          opacity: 1;
+          transform: translateY(0);
+        }
+        @keyframes workshopImgFadeIn {
+          from { opacity: 0; }
+          to   { opacity: 1; }
+        }
+        .workshop-carousel-img {
+          animation: workshopImgFadeIn 0.45s ease-out;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          [data-wp-animate] {
+            opacity: 1 !important;
+            transform: none !important;
+            transition: none !important;
+          }
+          .workshop-carousel-img {
+            animation: none !important;
+          }
+        }
+      `}} />
+
       <div style={{ maxWidth: '1200px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
+
+        {/* Header */}
         <div
           style={{
             textAlign: 'center',
@@ -153,7 +199,7 @@ export default function WorkshopsDetailPage() {
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', marginBottom: '8px', color: '#374151', fontWeight: 700 }}>
             <span>🎨</span>
             <span>Workshops for Schools & Youth Groups</span>
-            </div>
+          </div>
           <h1
             style={{
               fontSize: 'clamp(2rem, 5vw, 3.8rem)',
@@ -170,9 +216,10 @@ export default function WorkshopsDetailPage() {
           </h1>
           <p style={{ maxWidth: '860px', margin: '12px auto 0', color: '#4b5563', lineHeight: 1.7, fontSize: '1.05rem' }}>
             Talentix runs in-school employability workshops for secondary students in Years 10 to 13. Sessions are youth-led, DBS-checked, and adapted for SEN and SEND cohorts. We work with mainstream schools and specialist settings.
-              </p>
-            </div>
+          </p>
+        </div>
 
+        {/* Hero grid — image + highlights */}
         <section
           style={{
             display: 'grid',
@@ -198,6 +245,7 @@ export default function WorkshopsDetailPage() {
               alt="Talentix SEN-inclusive employability workshop in a UK school"
               fill
               sizes="(max-width: 1024px) 100vw, 60vw"
+              className="workshop-carousel-img"
               style={{ objectFit: 'cover' }}
             />
             <div
@@ -239,8 +287,8 @@ export default function WorkshopsDetailPage() {
                   }}
                 />
               ))}
+            </div>
           </div>
-        </div>
 
           <div
             style={{
@@ -268,14 +316,15 @@ export default function WorkshopsDetailPage() {
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
                   <span style={{ fontSize: '1.4rem' }}>{item.emoji}</span>
                   <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 800, color: '#111827' }}>{item.title}</h3>
-            </div>
+                </div>
                 <p style={{ margin: 0, color: '#374151', lineHeight: 1.55, fontSize: '0.95rem' }}>{item.text}</p>
               </div>
             ))}
           </div>
         </section>
 
-        <section style={{ marginBottom: '30px' }}>
+        {/* Workshop Formats */}
+        <section data-wp-animate style={{ marginBottom: '30px' }}>
           <h2
             style={{
               textAlign: 'center',
@@ -313,10 +362,11 @@ export default function WorkshopsDetailPage() {
                 </ul>
               </article>
             ))}
-        </div>
+          </div>
         </section>
 
-        <section style={{ marginBottom: '30px' }}>
+        {/* Bespoke sessions */}
+        <section data-wp-animate style={{ marginBottom: '30px' }}>
           <article style={{ background: 'linear-gradient(135deg, #4ECDC4 0%, #4A90E2 100%)', borderRadius: '24px', border: '4px solid #ffffff', boxShadow: '0 16px 32px rgba(74, 144, 226, 0.3)', padding: '24px 22px', color: '#ffffff', textAlign: 'center' }}>
             <h3 style={{ margin: '0 0 8px', fontSize: 'clamp(1.4rem, 3vw, 2rem)', fontWeight: 900 }}>🧩 Bespoke sessions</h3>
             <p style={{ margin: '0 auto', maxWidth: '720px', lineHeight: 1.65, fontWeight: 500 }}>
@@ -325,7 +375,8 @@ export default function WorkshopsDetailPage() {
           </article>
         </section>
 
-        <section style={{ marginBottom: '30px' }}>
+        {/* The Numbers */}
+        <section data-wp-animate style={{ marginBottom: '30px' }}>
           <h2
             style={{
               textAlign: 'center',
@@ -357,9 +408,10 @@ export default function WorkshopsDetailPage() {
           </div>
         </section>
 
-        <section style={{ marginBottom: '30px' }}>
+        {/* School Priorities */}
+        <section data-wp-animate style={{ marginBottom: '30px' }}>
           <h2
-                  style={{
+            style={{
               textAlign: 'center',
               margin: '0 0 14px',
               fontSize: 'clamp(1.7rem, 3.6vw, 2.8rem)',
@@ -386,9 +438,10 @@ export default function WorkshopsDetailPage() {
           </div>
         </section>
 
-        <section style={{ marginBottom: '30px' }}>
+        {/* Testimonials */}
+        <section data-wp-animate style={{ marginBottom: '30px' }}>
           <h2
-                  style={{
+            style={{
               textAlign: 'center',
               margin: '0 0 14px',
               fontSize: 'clamp(1.7rem, 3.6vw, 2.8rem)',
@@ -426,17 +479,17 @@ export default function WorkshopsDetailPage() {
                   }}
                 >
                   ⭐ Verified feedback
-              </div>
+                </div>
                 <p style={{ margin: 0, color: '#1f2937', lineHeight: 1.6, fontWeight: 600 }}>"{item.quote}"</p>
                 <p style={{ margin: '12px 0 0', color: '#111827', fontWeight: 800 }}>{item.name}</p>
                 <p style={{ margin: '2px 0 0', color: '#6b7280', fontSize: '0.88rem' }}>{item.role}</p>
               </article>
             ))}
-            </div>
+          </div>
         </section>
 
-
-        <section style={{ marginBottom: '30px' }}>
+        {/* What schools see */}
+        <section data-wp-animate style={{ marginBottom: '30px' }}>
           <h2 style={{ textAlign: 'center', margin: '0 0 14px', fontSize: 'clamp(1.7rem, 3.6vw, 2.8rem)', fontWeight: 900, color: '#111827' }}>
             ✅ What schools see
           </h2>
@@ -456,7 +509,8 @@ export default function WorkshopsDetailPage() {
           </div>
         </section>
 
-        <section style={{ marginBottom: '30px' }}>
+        {/* SEN Impact */}
+        <section data-wp-animate style={{ marginBottom: '30px' }}>
           <div style={{ textAlign: 'center', marginBottom: '14px' }}>
             <h2 style={{ display: 'inline-block', margin: 0, fontSize: 'clamp(1.7rem, 3.6vw, 2.8rem)', fontWeight: 900, color: '#111827', border: '3px solid #4ECDC4', borderRadius: '16px', padding: '8px 22px', background: 'rgba(230,250,248,0.9)' }}>
               💛 Our SEN Impact
@@ -492,7 +546,8 @@ export default function WorkshopsDetailPage() {
           </div>
         </section>
 
-        <section style={{ marginBottom: '30px' }}>
+        {/* Youth-Led Approach */}
+        <section data-wp-animate style={{ marginBottom: '30px' }}>
           <div style={{ textAlign: 'center', marginBottom: '14px' }}>
             <h2 style={{ display: 'inline-block', margin: 0, fontSize: 'clamp(1.7rem, 3.6vw, 2.8rem)', fontWeight: 900, color: '#111827', border: '3px solid #4A90E2', borderRadius: '16px', padding: '8px 22px', background: 'rgba(234,242,253,0.9)' }}>
               🙌 Our Youth-Led Approach
@@ -514,7 +569,9 @@ export default function WorkshopsDetailPage() {
           </div>
         </section>
 
+        {/* CTA */}
         <section
+          data-wp-animate
           style={{
             background: 'linear-gradient(135deg, #f472b6 0%, #f59e0b 50%, #facc15 100%)',
             borderRadius: '28px',
@@ -566,7 +623,7 @@ export default function WorkshopsDetailPage() {
             >
               🚀 Book a workshop
             </a>
-            </div>
+          </div>
         </section>
 
         <div style={{ textAlign: 'center', marginTop: '24px' }}>

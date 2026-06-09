@@ -2,6 +2,23 @@ import Image from 'next/image';
 import Link from 'next/link';
 import type { Metadata } from 'next';
 
+const jsonLdEvents = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Event',
+    name: 'Talentix Interview Series — Free Mock Interviews with Professionals',
+    description: 'Practice with a working professional in your chosen sector. Honest feedback, real confidence — completely free. Sectors: Law, Finance, Tech, Engineering, Healthcare, Creative Industries, Business + Consulting.',
+    startDate: '2026-05-13',
+    endDate: '2026-06-15',
+    eventStatus: 'https://schema.org/EventScheduled',
+    eventAttendanceMode: 'https://schema.org/OnlineEventAttendanceMode',
+    isAccessibleForFree: true,
+    url: 'https://forms.gle/ysz72L7MWh6oR3xy8',
+    organizer: { '@type': 'Organization', name: 'Talentix', url: 'https://talentix.co.uk' },
+    audience: { '@type': 'Audience', audienceType: 'UK Teenagers and Students aged 16-18' },
+  },
+];
+
 export const metadata: Metadata = {
   title: 'Events - Career Workshops & Webinars for UK Students | Talentix',
   description: 'Upcoming Talentix events including career workshops, webinars, and sessions for UK teenagers. Learn about job searching, interview prep, and getting your first job.',
@@ -76,7 +93,6 @@ interface EventItem {
   dateLabel: string;
   eventDateTimeUtc: string;
   schedule?: ScheduleItem[];
-  launchBadge?: string;
 }
 
 const events: EventItem[] = [
@@ -100,8 +116,7 @@ const events: EventItem[] = [
     format: 'Online',
     soldOut: false,
     dateLabel: '13 May – 15 June',
-    eventDateTimeUtc: '2026-06-15T23:59:59Z',
-    launchBadge: 'Talentix Interview Series',
+    eventDateTimeUtc: '2026-06-08T23:59:59Z',
     schedule: [
       { sector: 'Law', emoji: '⚖️', dates: '13–15th May' },
       { sector: 'Finance', emoji: '💰', dates: '20–22nd May' },
@@ -183,6 +198,10 @@ export default function EventsPage() {
 
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdEvents) }}
+      />
       <style
         dangerouslySetInnerHTML={{
           __html: `
@@ -298,10 +317,11 @@ export default function EventsPage() {
       <main className="events-bg min-h-screen py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-6xl mx-auto">
           <section className="events-shell text-center mb-8 md:mb-10 px-5 py-8 md:px-10 md:py-10">
-            <div className="flex justify-center">
+            <h1 className="sr-only">Talentix Events — Career Workshops &amp; Webinars for UK Teenagers</h1>
+            <div className="flex justify-center" aria-hidden="true">
               <Image
                 src="/talentixeventslogo.png"
-                alt="Talentix Events"
+                alt=""
                 width={700}
                 height={120}
                 className="w-full max-w-[280px] sm:max-w-[360px] md:max-w-[420px] h-auto"
@@ -318,23 +338,26 @@ export default function EventsPage() {
             </div>
           </section>
 
-          <section className="mb-12">
-            <div className="flex flex-wrap items-center gap-2 mb-5">
+          <section className="mb-12" aria-labelledby="current-events-heading">
+            <h2 id="current-events-heading" className="sr-only">Current Events</h2>
+            <div className="flex flex-wrap items-center gap-2 mb-5" aria-hidden="true">
               <span className="pill pill-green">🚀 Current Events</span>
               <span className="pill pill-yellow">Open now</span>
               <span className="pill pill-purple">Limited spots</span>
             </div>
 
             {currentEvents.length === 0 ? (
-              <div className="workshops-testimonial-card text-center border-dashed border-yellow-300">
+              <div className="workshops-testimonial-card text-center" style={{ border: '2px dashed #fde68a' }}>
                 <div className="inline-flex flex-wrap gap-2 justify-center mb-3">
-                  <span className="pill pill-yellow">No live events</span>
-                  <span className="pill pill-pink">Coming soon</span>
+                  <span className="pill pill-yellow">Nothing on right now</span>
+                  <span className="pill pill-pink">Coming soon ✨</span>
                 </div>
-                <p className="text-xl font-black text-gray-900" style={{ fontFamily: "'Fredoka', 'Inter', sans-serif" }}>
-                  There are no current events right now
+                <p className="text-xl font-black text-gray-900 mb-1" style={{ fontFamily: "'Fredoka', 'Inter', sans-serif" }}>
+                  No events running right now
                 </p>
-                <p className="mt-1 text-gray-600">Keep a look out for some coming soon ✨</p>
+                <p className="text-sm text-gray-500 max-w-md mx-auto">
+                  We run masterclasses, mock interview series, and workshops regularly — check back soon or follow us on Instagram to be the first to know.
+                </p>
                 <div className="workshops-dots justify-center">
                   <span className="workshops-dot is-active" />
                   <span className="workshops-dot" />
@@ -348,15 +371,6 @@ export default function EventsPage() {
                     <div className="absolute -top-6 -right-6 w-24 h-24 rounded-full bg-purple-100/60 blur-2xl pointer-events-none" />
                     <div className="absolute -bottom-5 -left-5 w-20 h-20 rounded-full bg-yellow-100/80 blur-xl pointer-events-none" />
 
-                    {event.launchBadge ? (
-                      <div className="inline-flex flex-wrap items-center gap-1.5 md:gap-2 mb-6 md:mb-8 px-3.5 py-2 md:px-5 md:py-2.5 rounded-xl text-xs md:text-sm" style={{ background: 'linear-gradient(135deg,#fbbf24,#f59e0b)', color: '#1a1200', boxShadow: '0 4px 12px rgba(251,191,36,.4)', fontFamily: "var(--font-fredoka), 'Fredoka', 'Inter', sans-serif", fontWeight: 500 }}>
-                        <span aria-hidden="true">🎉</span>
-                        <strong style={{ fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-                          Launching Today
-                        </strong>
-                        <span>— {event.launchBadge}</span>
-                      </div>
-                    ) : null}
 
                     <div className="grid lg:grid-cols-[1.2fr_0.8fr] gap-6 md:gap-8 lg:gap-12 items-start">
                       <div>
@@ -364,8 +378,7 @@ export default function EventsPage() {
                           <span className="pill pill-purple">🎓 {event.type}</span>
                           <span className="pill pill-blue">💻 {event.format}</span>
                           <span className="pill pill-green">✅ FREE</span>
-                          {event.id !== 'interview-series' ? <span className="pill pill-yellow">📅 {event.dateLabel}</span> : null}
-                          {event.id === 'interview-series' ? <span className="pill pill-red">⚠️ Limited Spaces</span> : null}
+                          <span className="pill pill-yellow">📅 {event.dateLabel}</span>
                         </div>
 
                         <h3 className="text-xl sm:text-2xl md:text-3xl font-black text-gray-900 mb-4 md:mb-6 leading-tight" style={{ fontFamily: "'Fredoka', 'Inter', sans-serif" }}>
@@ -424,7 +437,7 @@ export default function EventsPage() {
                             className="btn-primary-purple-small !rounded-full !px-6 !py-3 !font-black hover:scale-[1.03] transition-transform"
                             style={{ fontFamily: "'Fredoka', 'Inter', sans-serif" }}
                           >
-                            {event.id === 'interview-series' ? 'Sign Up Now 🎯' : 'Register Now 🚀'}
+                            Register Now 🚀
                           </Link>
                           {event.spotsAvailable ? <span className="pill pill-yellow">⚠️ Only {event.spotsAvailable} spots</span> : null}
                         </div>
@@ -445,7 +458,7 @@ export default function EventsPage() {
                               width={400}
                               height={240}
                               className="w-full max-w-[180px] lg:max-w-[220px] h-auto"
-                              priority
+                              loading="lazy"
                             />
                           </div>
                         ) : null}
@@ -457,7 +470,7 @@ export default function EventsPage() {
                               width={500}
                               height={700}
                               className="w-full max-w-[320px] mx-auto h-auto rounded-2xl border border-yellow-100 shadow-lg"
-                              priority
+                              loading="lazy"
                             />
                           ) : (
                             <div className="text-gray-500 text-sm text-center py-12">Poster coming soon</div>
@@ -471,31 +484,45 @@ export default function EventsPage() {
             )}
           </section>
 
-          <section>
-            <div className="flex flex-wrap items-center gap-2 mb-5">
-              <span className="pill pill-gray">🗂️ Past / Sold Out</span>
+          <section aria-labelledby="past-events-heading">
+            <h2 id="past-events-heading" className="sr-only">Past and Sold Out Events</h2>
+            <div className="flex flex-wrap items-center gap-2 mb-5" aria-hidden="true">
+              <span className="pill pill-gray">🗂️ Past Events</span>
               <span className="pill pill-purple">Archive</span>
               <span className="pill pill-blue">Previous sessions</span>
             </div>
 
             {pastOrSoldOutEvents.length === 0 ? (
-              <div className="workshops-testimonial-card">
-                <p className="text-sm text-gray-600">No past or sold out events yet.</p>
+              <div className="workshops-testimonial-card text-center">
+                <p className="text-gray-500 text-sm font-medium">No past events yet — check back soon! 🎉</p>
               </div>
             ) : (
-              <div className="grid gap-4">
+              <div className="grid gap-4 sm:grid-cols-2">
                 {pastOrSoldOutEvents.map((event) => (
-                  <article key={event.id} className="workshops-testimonial-card">
-                    <div className="flex flex-wrap items-center gap-2 mb-2">
-                      <span className="pill pill-gray">Past / Sold Out</span>
+                  <article
+                    key={event.id}
+                    className="workshops-testimonial-card"
+                    style={{ opacity: 0.85 }}
+                    aria-label={event.title}
+                  >
+                    <div className="flex flex-wrap items-center gap-2 mb-3">
+                      <span className="pill pill-gray">📁 Past</span>
                       <span className="pill pill-purple">{event.type}</span>
-                      <span className="pill pill-blue">{event.format}</span>
-                      <span className="pill pill-yellow">📅 {event.dateLabel}</span>
+                      <span className="pill pill-blue">💻 {event.format}</span>
                     </div>
-                    <h3 className="text-xl font-black text-gray-900" style={{ fontFamily: "'Fredoka', 'Inter', sans-serif" }}>
+                    <h3
+                      className="text-lg font-black text-gray-800 mb-1 leading-snug"
+                      style={{ fontFamily: "'Fredoka', 'Inter', sans-serif" }}
+                    >
                       {event.title}
                     </h3>
-                    <p className="mt-2 text-gray-600">{event.shortDescription}</p>
+                    <p className="text-sm text-gray-500 mb-2">
+                      <span className="inline-flex items-center gap-1">
+                        <span aria-hidden="true">📅</span>
+                        <time>{event.dateLabel}</time>
+                      </span>
+                    </p>
+                    <p className="text-sm text-gray-600 leading-relaxed">{event.shortDescription}</p>
                     <div className="workshops-dots">
                       <span className="workshops-dot is-active" />
                       <span className="workshops-dot" />
