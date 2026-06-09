@@ -203,6 +203,7 @@ function HomeContent() {
   const [oauthError, setOauthError] = useState<string | null>(null);
   const [activeHeroWorkshopImage, setActiveHeroWorkshopImage] = useState(0);
   const [activeWorkshopTestimonial, setActiveWorkshopTestimonial] = useState(0);
+  const [animReady, setAnimReady] = useState(false);
 
   // Listen for custom events from feature carousel
   useEffect(() => {
@@ -224,6 +225,12 @@ function HomeContent() {
       setIsLoaded(true);
     }
   }, []);
+
+  useEffect(() => {
+    if (!isLoaded) return;
+    const t = setTimeout(() => setAnimReady(true), 220);
+    return () => clearTimeout(t);
+  }, [isLoaded]);
 
   // Add redirect guard to prevent multiple redirects
   const [hasRedirected, setHasRedirected] = useState(false);
@@ -291,6 +298,24 @@ function HomeContent() {
 
     return () => window.clearInterval(timer);
   }, []);
+
+  // Scroll-triggered entrance animations
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('hp-visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.1 }
+    );
+    document.querySelectorAll('[data-hp-animate]').forEach((el) => observer.observe(el));
+    return () => observer.disconnect();
+  }, [isLoaded]);
 
   useEffect(() => {
     const testimonialTimer = window.setInterval(() => {
@@ -489,13 +514,13 @@ function HomeContent() {
                   letterSpacing: "-0.02em",
                 }}
               >
-                <span className="hero-word-black">FOR </span>
+                <span className="hero-word-black" style={{ display: 'inline-block', marginRight: '0.22em', ...(animReady && { animation: 'wordPop 380ms ease-out 0ms both' }) }}>FOR</span>
                 <br className="hero-split-break" />
-                <span className="hero-word-gold">TEENAGERS</span>
+                <span className="hero-word-gold" style={{ display: 'inline-block', ...(animReady && { animation: 'wordPop 380ms ease-out 130ms both' }) }}>TEENAGERS</span>
                 <br />
-                <span className="hero-word-black">BY </span>
+                <span className="hero-word-black" style={{ display: 'inline-block', marginRight: '0.22em', ...(animReady && { animation: 'wordPop 380ms ease-out 260ms both' }) }}>BY</span>
                 <br className="hero-split-break" />
-                <span className="hero-word-gold">TEENAGERS</span>
+                <span className="hero-word-gold" style={{ display: 'inline-block', ...(animReady && { animation: 'wordPop 380ms ease-out 390ms both' }) }}>TEENAGERS</span>
               </h1>
               <div className="hero-what-we-do-wrap mt-8 md:mt-10 lg:mt-16 xl:mt-20">
                 <button
@@ -518,6 +543,7 @@ function HomeContent() {
                 alt="Talentix youth-led employability workshop in a UK secondary school"
                 fill
                 sizes="(max-width: 1024px) 320px, 520px"
+                className="hero-carousel-img"
                 style={{ objectFit: "cover" }}
               />
             </div>
@@ -533,7 +559,7 @@ function HomeContent() {
         </div>
 
         <div className="max-w-6xl mx-auto relative z-10">
-          <div className="workshops-layout">
+          <div className="workshops-layout" data-hp-animate>
             <Image
               src="/talentixworkshopslogo.png"
               alt="Talentix Workshops logo"
@@ -627,8 +653,8 @@ function HomeContent() {
 
       {/* Worked With Section */}
       <section
-        className="pt-28 pb-28 md:pt-32 md:pb-32 relative overflow-hidden"
-        style={{ background: '#FFD700' }}
+        className="relative overflow-hidden"
+        style={{ background: '#FFD700', paddingTop: 'clamp(56px, 7vw, 96px)', paddingBottom: 'clamp(56px, 7vw, 96px)' }}
       >
         <div className="absolute inset-0 opacity-10 pointer-events-none">
           <div className="absolute top-8 left-8 text-6xl animate-bounce">🏢</div>
@@ -638,13 +664,13 @@ function HomeContent() {
         </div>
 
         <div className="max-w-7xl mx-auto px-6 md:px-8 relative z-10">
-          <div className="text-center mb-14">
+          <div className="text-center mb-16" data-hp-animate>
             <h2
               className="font-black text-gray-900 mb-3"
               style={{
-                fontSize: 'clamp(2.2rem, 5vw, 4rem)',
+                fontSize: 'clamp(1.2rem, 2.2vw, 1.7rem)',
                 fontFamily: "'Fredoka', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-                textShadow: '2px 2px 0 rgba(255,255,255,0.35)',
+                textShadow: '1px 1px 0 rgba(255,255,255,0.35)',
               }}
             >
               Worked With
@@ -654,49 +680,19 @@ function HomeContent() {
             </p>
           </div>
 
-          <div
-            className="mx-auto rounded-[28px] p-5 md:p-8"
-            style={{
-              background: 'rgba(255, 255, 255, 0.22)',
-              border: '2px solid rgba(255,255,255,0.5)',
-              boxShadow: '0 18px 40px rgba(0,0,0,0.12)',
-              backdropFilter: 'blur(3px)',
-            }}
-          >
-            <div className="worked-with-logos md:grid md:grid-cols-4 md:gap-8">
-              {workedWithLogos.map((logo) => (
-                <div
-                  key={logo.alt}
-                  className="group worked-with-logo-card p-2 md:p-[20px_18px] min-h-[78px] md:min-h-[130px]"
-                  style={{
-                    background: 'rgba(255,255,255,0.94)',
-                    borderRadius: '20px',
-                    border: '2px solid rgba(255,255,255,0.9)',
-                    boxShadow: '0 10px 24px rgba(0,0,0,0.12)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    transition: 'transform 0.25s ease, box-shadow 0.25s ease',
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = 'translateY(-4px) scale(1.02)';
-                    e.currentTarget.style.boxShadow = '0 16px 28px rgba(0,0,0,0.18)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = 'translateY(0) scale(1)';
-                    e.currentTarget.style.boxShadow = '0 10px 24px rgba(0,0,0,0.12)';
-                  }}
-                >
+          <div data-hp-animate style={{ position: 'relative', overflow: 'hidden' }}>
+            {/* Fade edges */}
+            <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: '80px', background: 'linear-gradient(to right, #FFD700, transparent)', zIndex: 2, pointerEvents: 'none' }} />
+            <div style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: '80px', background: 'linear-gradient(to left, #FFD700, transparent)', zIndex: 2, pointerEvents: 'none' }} />
+            <div className="logos-marquee-track">
+              {[...workedWithLogos, ...workedWithLogos].map((logo, i) => (
+                <div key={i} className="logo-mq-card">
                   <Image
                     src={logo.src}
                     alt={logo.alt}
-                    width={200}
-                    height={90}
-                    className="mx-auto object-contain worked-with-logo-image w-full h-[34px] md:h-[78px] max-w-[78px] md:max-w-[190px]"
-                    style={{
-                      transform: `scale(${logo.mobileScale})`,
-                      transformOrigin: 'center'
-                    }}
+                    width={110}
+                    height={50}
+                    style={{ objectFit: 'contain', width: '100%', height: '100%', transform: `scale(${logo.mobileScale * 0.75})`, transformOrigin: 'center' }}
                   />
                 </div>
               ))}
@@ -709,71 +705,12 @@ function HomeContent() {
 
       <HomepageFeaturesCarousel />
 
-      {/* Contact Us Section - Modern Playful Design */}
-      <section className="py-24 bg-gradient-to-br from-yellow-100 via-pink-100 to-purple-100 relative overflow-hidden">
-        {/* Enhanced Background Elements */}
-        <div className="absolute inset-0 opacity-15">
-          <div className="absolute top-10 left-10 text-6xl animate-bounce">📞</div>
-          <div className="absolute top-20 right-20 text-5xl animate-pulse">📧</div>
-          <div className="absolute bottom-20 left-20 text-7xl animate-spin" style={{ animationDuration: '6s' }}>💬</div>
-          <div className="absolute bottom-10 right-10 text-6xl animate-pulse" style={{ animationDelay: '1s' }}>🤝</div>
-          <div className="absolute top-1/2 left-1/4 text-4xl animate-bounce" style={{ animationDelay: '2s' }}>✨</div>
-          <div className="absolute top-1/3 right-1/3 text-5xl animate-pulse" style={{ animationDelay: '1.5s' }}>💫</div>
-        </div>
-        
-        <div className="max-w-6xl mx-auto px-6 text-center relative z-10">
-          <div className="mb-16">
-          <h2 
-              className="font-black text-gray-900 mb-6" 
-            style={{ 
-                fontSize: '5rem',
-                fontFamily: 'Fredoka, sans-serif',
-                background: 'linear-gradient(135deg, #8b5cf6 0%, #ec4899 30%, #f59e0b 70%, #10b981 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              textShadow: '2px 2px 4px rgba(0,0,0,0.1)'
-            }}
-          >
-            💬 Get In Touch! 💬
-          </h2>
-          </div>
-          
-          <div className="grid md:grid-cols-2 gap-12 max-w-4xl mx-auto">
-            {/* Email Card - Enhanced */}
-            <div 
-              className="group bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl border-4 border-gradient-to-r from-purple-300 to-pink-300 transform transition-all duration-500 hover:scale-110 hover:rotate-2 hover:shadow-3xl"
-              style={{ 
-                padding: '40px 30px',
-                boxShadow: '0 25px 50px rgba(139, 92, 246, 0.3)',
-                border: '4px solid transparent',
-                background: 'linear-gradient(white, white) padding-box, linear-gradient(135deg, #a855f7, #ec4899) border-box'
-              }}
-            >
-              <div className="text-8xl mb-6 group-hover:animate-bounce">📧</div>
-              <h3 className="text-3xl font-black text-gray-900 mb-4" style={{ fontFamily: 'Fredoka, sans-serif' }}>
-                Email Us
-              </h3>
-              <p className="text-lg text-gray-600 mb-6 font-medium" style={{ fontFamily: 'Fredoka, sans-serif' }}>
-                Send us a message anytime!
-              </p>
-              <a 
-                href="mailto:enquiries@talentix.co.uk"
-                className="inline-block bg-gradient-to-r from-purple-500 to-pink-500 text-white px-10 py-4 rounded-3xl font-black text-xl transition-all duration-300 hover:shadow-2xl hover:scale-105 group-hover:animate-pulse"
-                style={{ textDecoration: 'none', fontFamily: 'Fredoka, sans-serif' }}
-              >
-                enquiries@talentix.co.uk
-              </a>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* SCHOOL TESTIMONIAL SECTION */}
       <div style={{
         padding: '80px 0',
         background: 'linear-gradient(135deg, #FEF7CD 0%, #FDE047 30%, #FACC15 70%, #F59E0B 100%)',
       }}>
-        <div style={{ maxWidth: '900px', margin: '0 auto', padding: '0 24px' }}>
+        <div style={{ maxWidth: '900px', margin: '0 auto', padding: '0 24px' }} data-hp-animate>
           <div style={{ textAlign: 'center', marginBottom: '48px' }}>
             <h2 style={{ fontSize: '3rem', fontWeight: '900', color: '#1a1a2e', marginBottom: '12px', fontFamily: 'Fredoka, sans-serif' }}>
               What schools say about us 🌟
@@ -808,6 +745,65 @@ function HomeContent() {
           </div>
         </div>
       </div>
+
+      {/* Contact Us Section - Modern Playful Design */}
+      <section className="py-24 bg-gradient-to-br from-yellow-100 via-pink-100 to-purple-100 relative overflow-hidden">
+        {/* Enhanced Background Elements */}
+        <div className="absolute inset-0 opacity-15">
+          <div className="absolute top-10 left-10 text-6xl animate-bounce">📞</div>
+          <div className="absolute top-20 right-20 text-5xl animate-pulse">📧</div>
+          <div className="absolute bottom-20 left-20 text-7xl animate-spin" style={{ animationDuration: '6s' }}>💬</div>
+          <div className="absolute bottom-10 right-10 text-6xl animate-pulse" style={{ animationDelay: '1s' }}>🤝</div>
+          <div className="absolute top-1/2 left-1/4 text-4xl animate-bounce" style={{ animationDelay: '2s' }}>✨</div>
+          <div className="absolute top-1/3 right-1/3 text-5xl animate-pulse" style={{ animationDelay: '1.5s' }}>💫</div>
+        </div>
+
+        <div className="max-w-6xl mx-auto px-6 text-center relative z-10" data-hp-animate>
+          <div className="mb-16">
+          <h2
+              className="font-black text-gray-900 mb-6"
+            style={{
+                fontSize: '5rem',
+                fontFamily: 'Fredoka, sans-serif',
+                background: 'linear-gradient(135deg, #8b5cf6 0%, #ec4899 30%, #f59e0b 70%, #10b981 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              textShadow: '2px 2px 4px rgba(0,0,0,0.1)'
+            }}
+          >
+            💬 Get In Touch! 💬
+          </h2>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-12 max-w-4xl mx-auto">
+            {/* Email Card - Enhanced */}
+            <div
+              className="group bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl border-4 border-gradient-to-r from-purple-300 to-pink-300 transform transition-all duration-500 hover:scale-110 hover:rotate-2 hover:shadow-3xl"
+              style={{
+                padding: '40px 30px',
+                boxShadow: '0 25px 50px rgba(139, 92, 246, 0.3)',
+                border: '4px solid transparent',
+                background: 'linear-gradient(white, white) padding-box, linear-gradient(135deg, #a855f7, #ec4899) border-box'
+              }}
+            >
+              <div className="text-8xl mb-6 group-hover:animate-bounce">📧</div>
+              <h3 className="text-3xl font-black text-gray-900 mb-4" style={{ fontFamily: 'Fredoka, sans-serif' }}>
+                Email Us
+              </h3>
+              <p className="text-lg text-gray-600 mb-6 font-medium" style={{ fontFamily: 'Fredoka, sans-serif' }}>
+                Send us a message anytime!
+              </p>
+              <a
+                href="mailto:enquiries@talentix.co.uk"
+                className="inline-block bg-gradient-to-r from-purple-500 to-pink-500 text-white px-10 py-4 rounded-3xl font-black text-xl transition-all duration-300 hover:shadow-2xl hover:scale-105 group-hover:animate-pulse"
+                style={{ textDecoration: 'none', fontFamily: 'Fredoka, sans-serif' }}
+              >
+                enquiries@talentix.co.uk
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
 
             {/* Simple Footer */}
       <footer className="bg-gray-900 py-8">
@@ -937,6 +933,79 @@ function HomeContent() {
       
       {/* Fun Animations for Job Cards */}
       <style jsx global>{`
+        /* ── Hero word pop ── */
+        @keyframes wordPop {
+          0%   { transform: scale(1); }
+          45%  { transform: scale(1.18) rotate(-1.5deg); }
+          75%  { transform: scale(0.95); }
+          100% { transform: scale(1); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .hero-word-black, .hero-word-gold { animation: none !important; }
+        }
+
+        /* ── Logos marquee ── */
+        @keyframes logoScroll {
+          0%   { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+        .logos-marquee-track {
+          display: flex;
+          align-items: center;
+          gap: 18px;
+          animation: logoScroll 24s linear infinite;
+          width: max-content;
+        }
+        .logos-marquee-track:hover {
+          animation-play-state: paused;
+        }
+        .logo-mq-card {
+          flex-shrink: 0;
+          width: 130px;
+          height: 64px;
+          background: rgba(255,255,255,0.94);
+          border-radius: 14px;
+          border: 2px solid rgba(255,255,255,0.9);
+          box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 10px;
+        }
+        @media (max-width: 640px) {
+          .logo-mq-card { width: 96px; height: 52px; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .logos-marquee-track { animation: none; }
+        }
+
+        /* ── Carousel image fade ── */
+        @keyframes heroImageFadeIn {
+          from { opacity: 0; }
+          to   { opacity: 1; }
+        }
+        .hero-carousel-img {
+          animation: heroImageFadeIn 0.55s ease-out;
+        }
+
+        /* ── Scroll-triggered entrance ── */
+        [data-hp-animate] {
+          opacity: 0;
+          transform: translateY(26px);
+          transition: opacity 350ms ease-out, transform 350ms ease-out;
+        }
+        [data-hp-animate].hp-visible {
+          opacity: 1;
+          transform: translateY(0);
+        }
+        @media (prefers-reduced-motion: reduce) {
+          [data-hp-animate] {
+            opacity: 1 !important;
+            transform: none !important;
+            transition: none !important;
+          }
+        }
+
         @keyframes gradientShift {
           0% { background-position: 0% 0%; }
           50% { background-position: 100% 100%; }

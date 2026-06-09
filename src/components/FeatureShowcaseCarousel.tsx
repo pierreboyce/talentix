@@ -3,349 +3,227 @@
 import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 
-interface FeatureShowcase {
+interface Feature {
   name: string;
   image: string;
   description: string;
   emoji: string;
 }
 
-const features: FeatureShowcase[] = [
-  {
-    name: 'Job Search',
-    image: '/jobsearch.png',
-    description: 'Browse thousands of job opportunities from top UK companies with smart filters and easy application tracking.',
-    emoji: '🔍'
-  },
-  {
-    name: 'CV Reviewer',
-    image: '/cv reviewer.png',
-    description: 'Get instant AI-powered feedback on your CV with personalized improvement suggestions to help you stand out.',
-    emoji: '📄'
-  },
-  {
-    name: 'Interview Prep',
-    image: '/interviewprep.png',
-    description: 'Practice with AI-generated interview questions tailored to your industry and role to boost your confidence.',
-    emoji: '🎭'
-  },
-  {
-    name: 'Video Interview',
-    image: '/videointerviewscreenshot.png',
-    description: 'Record timed answers on camera and get instant AI feedback on clarity, confidence and relevance.',
-    emoji: '🎥'
-  },
-  {
-    name: 'Job Tracker',
-    image: '/jobtracker (2).png',
-    description: 'Keep track of all your job applications and follow up on opportunities systematically with our smart tracker.',
-    emoji: '📊'
-  },
-  {
-    name: 'Apprenticeship Tracker',
-    image: '/apprenticeshiptracker.png',
-    description: 'Discover and track apprenticeship opportunities that match your interests and career goals.',
-    emoji: '📋'
-  },
-  {
-    name: 'Cover Letter Maker',
-    image: '/coverlettermaker.png',
-    description: 'Generate compelling cover letters tailored to each job application with AI assistance.',
-    emoji: '✍️'
-  }
+const features: Feature[] = [
+  { name: 'CV Reviewer', image: '/cv reviewer.png', description: 'Get instant AI-powered feedback on your CV with personalised improvement suggestions to help you stand out.', emoji: '📄' },
+  { name: 'Interview Prep', image: '/interviewprep.png', description: 'Practice with AI-generated interview questions tailored to your industry and role to boost your confidence.', emoji: '🎭' },
+  { name: 'Video Interview', image: '/videointerviewscreenshot.png', description: 'Record timed answers on camera and get instant AI feedback on clarity, confidence and relevance.', emoji: '🎥' },
+  { name: 'Job Search', image: '/jobsearch.png', description: 'Browse thousands of job opportunities from top UK companies with smart filters and easy application tracking.', emoji: '🔍' },
+  { name: 'Job Tracker', image: '/jobtracker (2).png', description: 'Keep track of all your job applications and follow up on opportunities systematically.', emoji: '📊' },
+  { name: 'Cover Letter', image: '/coverlettermaker.png', description: 'Generate compelling cover letters tailored to each job application with AI assistance.', emoji: '✍️' },
+  { name: 'Apprenticeships', image: '/apprenticeshiptracker.png', description: 'Discover and track apprenticeship opportunities that match your interests and career goals.', emoji: '📋' },
 ];
 
+const FONT = "'Fredoka', 'Inter', sans-serif";
+
 export default function FeatureShowcaseCarousel() {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [isPaused, setIsPaused] = useState(false);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // Auto-play carousel
   useEffect(() => {
-    if (!isPaused) {
+    if (!paused) {
       intervalRef.current = setInterval(() => {
-        setCurrentIndex((prev) => (prev + 1) % features.length);
-      }, 4000); // Change slide every 4 seconds
+        setActiveIndex((prev) => (prev + 1) % features.length);
+      }, 4000);
     }
+    return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
+  }, [paused]);
 
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
-    };
-  }, [isPaused]);
-
-  const goToSlide = (index: number) => {
-    setCurrentIndex(index);
-    setIsPaused(true);
-    // Resume auto-play after manual navigation
-    setTimeout(() => setIsPaused(false), 8000);
+  const goTo = (i: number) => {
+    setActiveIndex(i);
+    setPaused(true);
+    setTimeout(() => setPaused(false), 8000);
   };
 
-  const nextSlide = () => {
-    goToSlide((currentIndex + 1) % features.length);
-  };
-
-  const prevSlide = () => {
-    goToSlide((currentIndex - 1 + features.length) % features.length);
-  };
-
-  const currentFeature = features[currentIndex];
+  const current = features[activeIndex];
 
   return (
-    <>
-      <style jsx>{`
-        @media (max-width: 767px) {
-          .feature-showcase-header h2 {
-            font-size: clamp(1.4rem, 4vw, 1.75rem) !important;
-          }
-        }
-        @media (min-width: 768px) {
-          .feature-showcase-carousel {
-            max-width: 450px !important;
-          }
-          .feature-showcase-header h2 {
-            font-size: clamp(1.5rem, 3vw, 2rem) !important;
-          }
-          .feature-showcase-header p {
-            font-size: clamp(0.85rem, 1.5vw, 0.95rem) !important;
-          }
-          .feature-showcase-info {
-            padding: 20px !important;
-          }
-          .feature-showcase-info h3 {
-            font-size: clamp(1.1rem, 2vw, 1.3rem) !important;
-          }
-          .feature-showcase-info p {
-            font-size: clamp(0.8rem, 1.2vw, 0.875rem) !important;
-          }
-          .feature-showcase-emoji {
-            font-size: 1.75rem !important;
-          }
-        }
-        @keyframes float-carousel {
-          0%, 100% { transform: translateY(0px) rotate(0deg); }
-          50% { transform: translateY(-15px) rotate(5deg); }
-        }
-        .floating-bg-emoji {
-          position: absolute;
-          opacity: 0.22;
-          pointer-events: none;
-          animation: float-carousel 4s ease-in-out infinite;
-        }
-        .floating-bg-emoji:nth-child(2) { animation-delay: 0.5s; }
-        .floating-bg-emoji:nth-child(3) { animation-delay: 1s; }
-        .floating-bg-emoji:nth-child(4) { animation-delay: 1.5s; }
-        .floating-bg-emoji:nth-child(5) { animation-delay: 2s; }
-        .floating-bg-emoji:nth-child(6) { animation-delay: 2.5s; }
-        .floating-bg-emoji:nth-child(7) { animation-delay: 0.3s; }
-        .floating-bg-emoji:nth-child(8) { animation-delay: 0.8s; }
-        .floating-bg-emoji:nth-child(9) { animation-delay: 1.3s; }
-        .floating-bg-emoji:nth-child(10) { animation-delay: 1.8s; }
-        .floating-bg-emoji:nth-child(11) { animation-delay: 2.3s; }
-        .floating-bg-emoji:nth-child(12) { animation-delay: 2.8s; }
-      `}</style>
-      <section style={{
+    <section
+      style={{
         background: 'linear-gradient(135deg, #fef3c7 0%, #fbbf24 50%, #f59e0b 100%)',
-        padding: 'clamp(40px, 8vw, 60px) clamp(16px, 4vw, 24px)',
-        position: 'relative',
-        overflow: 'hidden'
-      }}>
-        {/* Floating Background Elements */}
-        <div className="floating-bg-emoji" style={{ top: '8%', left: '4%', fontSize: 'clamp(2.5rem, 7vw, 4.5rem)' }}>✨</div>
-        <div className="floating-bg-emoji" style={{ top: '15%', right: '6%', fontSize: 'clamp(3rem, 8vw, 5rem)' }}>🚀</div>
-        <div className="floating-bg-emoji" style={{ top: '22%', left: '25%', fontSize: 'clamp(2.5rem, 7vw, 4rem)' }}>💼</div>
-        <div className="floating-bg-emoji" style={{ top: '35%', right: '22%', fontSize: 'clamp(3rem, 8vw, 4.5rem)' }}>⭐</div>
-        <div className="floating-bg-emoji" style={{ top: '45%', left: '35%', fontSize: 'clamp(2.5rem, 7vw, 4rem)' }}>📄</div>
-        <div className="floating-bg-emoji" style={{ top: '55%', right: '30%', fontSize: 'clamp(3rem, 8vw, 5rem)' }}>💫</div>
-        <div className="floating-bg-emoji" style={{ top: '65%', left: '28%', fontSize: 'clamp(2.5rem, 7vw, 4rem)' }}>🎯</div>
-        <div className="floating-bg-emoji" style={{ top: '75%', right: '7%', fontSize: 'clamp(3rem, 8vw, 4.5rem)' }}>🌟</div>
-        <div className="floating-bg-emoji" style={{ bottom: '18%', left: '32%', fontSize: 'clamp(2.5rem, 7vw, 4rem)' }}>🎉</div>
-        <div className="floating-bg-emoji" style={{ bottom: '25%', right: '38%', fontSize: 'clamp(3rem, 8vw, 5rem)' }}>🔥</div>
-        <div className="floating-bg-emoji" style={{ bottom: '12%', left: '9%', fontSize: 'clamp(2.5rem, 7vw, 4rem)' }}>💎</div>
-        <div className="floating-bg-emoji" style={{ bottom: '8%', right: '9%', fontSize: 'clamp(3rem, 8vw, 4.5rem)' }}>⚡</div>
-      <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-        {/* Section Header */}
-        <div className="feature-showcase-header" style={{ textAlign: 'center', marginBottom: '32px' }}>
-          <h2 style={{
-            fontSize: 'clamp(1.75rem, 4vw, 2.5rem)',
-            fontWeight: 900,
-            color: '#111827',
-            marginBottom: '10px',
-            fontFamily: "'Fredoka', 'Inter', sans-serif"
-          }}>
-            See Talentix in Action 🚀
-          </h2>
-          <p style={{
-            fontSize: 'clamp(0.9rem, 1.8vw, 1.1rem)',
-            color: '#374151',
-            fontFamily: "'Fredoka', 'Inter', sans-serif",
-            maxWidth: '500px',
-            margin: '0 auto'
-          }}>
-            Explore our powerful features designed to help you land your dream job
-          </p>
-        </div>
+        padding: 'clamp(32px, 5vw, 52px) clamp(16px, 4vw, 32px)',
+        overflow: 'hidden',
+      }}
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+    >
+      <style dangerouslySetInnerHTML={{ __html: `
+        .fsc-wrap { max-width: 760px; margin: 0 auto; }
+        .fsc-heading {
+          text-align: center;
+          margin-bottom: 24px;
+          font-size: clamp(1.6rem, 3.5vw, 2.3rem);
+          font-weight: 900;
+          color: #111827;
+          font-family: ${FONT};
+        }
+        .fsc-layout {
+          display: grid;
+          grid-template-columns: 210px 1fr;
+          gap: 16px;
+          align-items: start;
+        }
+        .fsc-tabs { display: flex; flex-direction: column; gap: 5px; }
+        .fsc-tab {
+          display: flex;
+          align-items: center;
+          gap: 9px;
+          padding: 10px 13px;
+          border-radius: 12px;
+          border: 2px solid transparent;
+          background: transparent;
+          cursor: pointer;
+          text-align: left;
+          font-family: ${FONT};
+          font-size: 0.9rem;
+          font-weight: 600;
+          color: #374151;
+          transition: background 0.15s, border-color 0.15s, color 0.15s;
+          white-space: nowrap;
+        }
+        .fsc-tab:hover { background: rgba(255,255,255,0.55); color: #111827; }
+        .fsc-tab.fsc-active {
+          background: rgba(255,255,255,0.94);
+          border-color: rgba(255,255,255,0.9);
+          color: #111827;
+          font-weight: 800;
+          box-shadow: 0 4px 14px rgba(0,0,0,0.11);
+        }
+        .fsc-panel {
+          background: rgba(255,255,255,0.96);
+          border-radius: 18px;
+          overflow: hidden;
+          box-shadow: 0 12px 36px rgba(0,0,0,0.17);
+          border: 2px solid rgba(255,255,255,0.9);
+        }
+        .fsc-img-wrap { position: relative; width: 100%; padding-top: 56.25%; background: #f9fafb; }
+        .fsc-info {
+          padding: 16px 20px;
+          border-top: 2px solid #fbbf24;
+          display: flex;
+          align-items: flex-start;
+          gap: 11px;
+        }
+        .fsc-info-emoji { font-size: 1.5rem; flex-shrink: 0; line-height: 1.3; }
+        .fsc-info-name {
+          margin: 0 0 3px;
+          font-size: 1.05rem;
+          font-weight: 800;
+          color: #111827;
+          font-family: ${FONT};
+        }
+        .fsc-info-desc {
+          margin: 0;
+          font-size: 0.85rem;
+          color: #4b5563;
+          line-height: 1.5;
+          font-family: 'Inter', sans-serif;
+        }
+        .fsc-dots {
+          display: flex;
+          justify-content: center;
+          gap: 7px;
+          padding: 10px 16px;
+          border-top: 1px solid #f3f4f6;
+        }
+        .fsc-dot {
+          height: 9px;
+          border-radius: 5px;
+          border: none;
+          cursor: pointer;
+          transition: width 0.22s ease, background 0.22s ease;
+          padding: 0;
+        }
+        @keyframes fscImgFade {
+          from { opacity: 0; transform: scale(0.985); }
+          to   { opacity: 1; transform: scale(1); }
+        }
+        @media (max-width: 767px) {
+          .fsc-layout { grid-template-columns: 1fr; }
+          .fsc-tabs {
+            flex-direction: row;
+            overflow-x: auto;
+            padding-bottom: 4px;
+            gap: 7px;
+            -webkit-overflow-scrolling: touch;
+          }
+          .fsc-tab { flex-shrink: 0; font-size: 0.82rem; padding: 8px 11px; }
+        }
+      `}} />
 
-        {/* Carousel Container */}
-        <div className="feature-showcase-carousel" style={{
-          position: 'relative',
-          borderRadius: '20px',
-          overflow: 'hidden',
-          boxShadow: '0 16px 40px rgba(0, 0, 0, 0.2)',
-          backgroundColor: '#ffffff',
-          maxWidth: 'clamp(100%, 85vw, 550px)',
-          margin: '0 auto'
-        }}>
-          {/* Feature Image */}
-          <div style={{
-            position: 'relative',
-            width: '100%',
-            paddingTop: '56.25%', // 16:9 aspect ratio
-            backgroundColor: '#f9fafb',
-            overflow: 'hidden'
-          }}>
-            <Image
-              src={currentFeature.image}
-              alt={currentFeature.name}
-              fill
-              style={{
-                objectFit: 'contain',
-                padding: '20px'
-              }}
-              priority={currentIndex === 0}
-              sizes="(max-width: 768px) 100vw, 1000px"
-            />
-          </div>
+      <div className="fsc-wrap">
+        <h2 className="fsc-heading">See Talentix in Action 🚀</h2>
 
-          {/* Feature Info */}
-          <div className="feature-showcase-info" style={{
-            padding: '24px',
-            backgroundColor: '#ffffff',
-            borderTop: '3px solid #fbbf24'
-          }}>
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '10px',
-              marginBottom: '12px'
-            }}>
-              <span className="feature-showcase-emoji" style={{ fontSize: '2rem' }}>{currentFeature.emoji}</span>
-              <h3 style={{
-                fontSize: 'clamp(1.25rem, 2.5vw, 1.5rem)',
-                fontWeight: 800,
-                color: '#111827',
-                margin: 0,
-                fontFamily: "'Fredoka', 'Inter', sans-serif"
-              }}>
-                {currentFeature.name}
-              </h3>
-            </div>
-            <p style={{
-              fontSize: 'clamp(0.875rem, 1.3vw, 0.95rem)',
-              color: '#4b5563',
-              lineHeight: '1.5',
-              margin: 0,
-              fontFamily: "'Inter', sans-serif"
-            }}>
-              {currentFeature.description}
-            </p>
-          </div>
-
-          {/* Navigation Arrows */}
-          <button
-            onClick={prevSlide}
-            onMouseEnter={() => setIsPaused(true)}
-            onMouseLeave={() => setIsPaused(false)}
-            style={{
-              position: 'absolute',
-              left: 'clamp(8px, 2vw, 12px)',
-              top: '50%',
-              transform: 'translateY(-50%)',
-              width: 'clamp(36px, 7vw, 40px)',
-              height: 'clamp(36px, 7vw, 40px)',
-              borderRadius: '50%',
-              backgroundColor: 'rgba(255, 255, 255, 0.95)',
-              border: '2px solid #fbbf24',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-              zIndex: 10,
-              boxShadow: '0 3px 10px rgba(0, 0, 0, 0.15)',
-              transition: 'all 0.2s ease',
-              fontSize: 'clamp(18px, 3.5vw, 20px)',
-              color: '#111827',
-              touchAction: 'manipulation'
-            }}
-            aria-label="Previous feature"
-          >
-            ←
-          </button>
-
-          <button
-            onClick={nextSlide}
-            onMouseEnter={() => setIsPaused(true)}
-            onMouseLeave={() => setIsPaused(false)}
-            style={{
-              position: 'absolute',
-              right: 'clamp(8px, 2vw, 12px)',
-              top: '50%',
-              transform: 'translateY(-50%)',
-              width: 'clamp(36px, 7vw, 40px)',
-              height: 'clamp(36px, 7vw, 40px)',
-              borderRadius: '50%',
-              backgroundColor: 'rgba(255, 255, 255, 0.95)',
-              border: '2px solid #fbbf24',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-              zIndex: 10,
-              boxShadow: '0 3px 10px rgba(0, 0, 0, 0.15)',
-              transition: 'all 0.2s ease',
-              fontSize: 'clamp(18px, 3.5vw, 20px)',
-              color: '#111827',
-              touchAction: 'manipulation'
-            }}
-            aria-label="Next feature"
-          >
-            →
-          </button>
-
-          {/* Dots Indicator */}
-          <div style={{
-            display: 'flex',
-            justifyContent: 'center',
-            gap: '10px',
-            padding: '16px',
-            backgroundColor: '#ffffff',
-            borderTop: '1px solid #e5e7eb'
-          }}>
-            {features.map((_, index) => (
+        <div className="fsc-layout">
+          {/* Tab list */}
+          <div className="fsc-tabs" role="tablist" aria-label="Feature tabs">
+            {features.map((f, i) => (
               <button
-                key={index}
-                onClick={() => goToSlide(index)}
-                onMouseEnter={() => setIsPaused(true)}
-                onMouseLeave={() => setIsPaused(false)}
-                style={{
-                  width: currentIndex === index ? '32px' : '12px',
-                  height: '12px',
-                  borderRadius: '6px',
-                  backgroundColor: currentIndex === index ? '#fbbf24' : '#d1d5db',
-                  border: 'none',
-                  cursor: 'pointer',
-                  transition: 'all 0.3s ease',
-                  padding: 0
-                }}
-                aria-label={`Go to ${features[index].name}`}
-              />
+                key={f.name}
+                className={`fsc-tab${activeIndex === i ? ' fsc-active' : ''}`}
+                role="tab"
+                aria-selected={activeIndex === i}
+                onClick={() => goTo(i)}
+              >
+                <span style={{ fontSize: '1.05rem' }}>{f.emoji}</span>
+                <span>{f.name}</span>
+                {activeIndex === i && (
+                  <span style={{ marginLeft: 'auto', fontSize: '0.7rem', opacity: 0.45 }}>▶</span>
+                )}
+              </button>
             ))}
+          </div>
+
+          {/* Screenshot panel */}
+          <div className="fsc-panel" role="tabpanel">
+            <div className="fsc-img-wrap">
+              <Image
+                key={current.name}
+                src={current.image}
+                alt={current.name}
+                fill
+                style={{
+                  objectFit: 'contain',
+                  padding: '14px',
+                  animation: 'fscImgFade 0.26s ease-out both',
+                }}
+                priority={activeIndex === 0}
+                sizes="(max-width: 768px) 100vw, 860px"
+              />
+            </div>
+
+            <div className="fsc-info">
+              <span className="fsc-info-emoji">{current.emoji}</span>
+              <div>
+                <h3 className="fsc-info-name">{current.name}</h3>
+                <p className="fsc-info-desc">{current.description}</p>
+              </div>
+            </div>
+
+            <div className="fsc-dots">
+              {features.map((_, i) => (
+                <button
+                  key={i}
+                  className="fsc-dot"
+                  style={{
+                    width: activeIndex === i ? '26px' : '9px',
+                    background: activeIndex === i ? '#f59e0b' : '#d1d5db',
+                  }}
+                  onClick={() => goTo(i)}
+                  aria-label={`Go to ${features[i].name}`}
+                />
+              ))}
+            </div>
           </div>
         </div>
       </div>
     </section>
-    </>
   );
 }
-

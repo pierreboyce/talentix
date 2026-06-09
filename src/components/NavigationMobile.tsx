@@ -59,8 +59,6 @@ export default function NavigationMobile() {
   const headerPositionClass = isSticky
     ? 'fixed top-0 left-0 right-0 z-[9999]'
     : 'relative';
-  const showApplyCta = pathname === '/home';
-
   // Close menus/panels when route changes
   useEffect(() => {
     setShowMobileMenu(false);
@@ -261,11 +259,7 @@ export default function NavigationMobile() {
               className="flex items-center"
               onClick={(e) => {
                 e.preventDefault();
-                if (pathname === '/home') {
-                  if (typeof window !== 'undefined') window.location.assign('/home');
-                } else {
-                  router.push('/home');
-                }
+                if (typeof window !== 'undefined') window.location.assign('/home');
               }}
             >
               <Image
@@ -283,30 +277,6 @@ export default function NavigationMobile() {
           {!user ? (
             /* Non-auth: show gold burger */
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              {showApplyCta && (
-                <a
-                  href="https://forms.gle/Ntby8YetS3rMkTrt9"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{
-                    background: 'linear-gradient(135deg, #fde047 0%, #fbbf24 50%, #f59e0b 100%)',
-                    color: '#374151',
-                    padding: '12px 16px',
-                    borderRadius: '12px',
-                    border: 'none',
-                    fontSize: '13px',
-                    fontWeight: 700,
-                    cursor: 'pointer',
-                    transition: 'all 200ms ease',
-                    boxShadow: '0 6px 16px rgba(245, 158, 11, 0.3)',
-                    fontFamily: 'Fredoka, sans-serif',
-                    textDecoration: 'none',
-                    whiteSpace: 'nowrap'
-                  }}
-                >
-                  Apply for Talentix!
-                </a>
-              )}
               <button
                 onClick={toggleHeaderPanel}
                 style={{ 
@@ -664,31 +634,6 @@ export default function NavigationMobile() {
                       {/* Non-authenticated menu */}
                       {!showJobResourcesSubmenu ? (
                         <>
-                          {showApplyCta && (
-                            <a
-                              href="https://forms.gle/Ntby8YetS3rMkTrt9"
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              onClick={() => toggleHeaderPanel()}
-                              style={{
-                                background: 'linear-gradient(135deg, #fde047 0%, #f59e0b 100%)',
-                                color: '#111827',
-                                padding: '12px 16px',
-                                borderRadius: '12px',
-                                border: 'none',
-                                fontSize: '14px',
-                                fontWeight: 800,
-                                cursor: 'pointer',
-                                boxShadow: '0 6px 16px rgba(245, 158, 11, 0.35)',
-                                fontFamily: 'Fredoka, sans-serif',
-                                textDecoration: 'none',
-                                display: 'block',
-                                textAlign: 'center'
-                              }}
-                            >
-                              Apply for Talentix!
-                            </a>
-                          )}
                           <button
                             onClick={() => { toggleHeaderPanel(); router.push('/our-services/workshops'); }}
                             style={{
@@ -739,6 +684,23 @@ export default function NavigationMobile() {
                             }}
                           >
                             🎉 Events
+                          </button>
+                          <button
+                            onClick={() => { toggleHeaderPanel(); router.push('/career-guidance'); }}
+                            style={{
+                              background: 'linear-gradient(135deg, #fef9c3 0%, #fbbf24 100%)',
+                              color: '#374151',
+                              padding: '12px 16px',
+                              borderRadius: '12px',
+                              border: 'none',
+                              fontSize: '14px',
+                              fontWeight: 600,
+                              cursor: 'pointer',
+                              boxShadow: '0 4px 12px rgba(251, 191, 36, 0.25)',
+                              fontFamily: 'Fredoka, sans-serif'
+                            }}
+                          >
+                            🎓 Career Guidance
                           </button>
                           <button
                             onClick={() => { setShowSignInModal(true); toggleHeaderPanel(); }}
@@ -1029,6 +991,23 @@ export default function NavigationMobile() {
                         }}
                       >
                         🎉 Events
+                      </button>
+                      <button
+                        onClick={() => { toggleHeaderPanel(); router.push('/career-guidance'); }}
+                        style={{
+                          background: 'linear-gradient(135deg, #fef9c3 0%, #fbbf24 100%)',
+                          color: '#374151',
+                          padding: '12px 16px',
+                          borderRadius: '12px',
+                          border: 'none',
+                          fontSize: '14px',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                          boxShadow: '0 4px 12px rgba(251, 191, 36, 0.25)',
+                          fontFamily: 'Fredoka, sans-serif'
+                        }}
+                      >
+                        🎓 Career Guidance
                       </button>
                       <button
                         onClick={() => { toggleHeaderPanel(); router.push('/our-services/workshops'); }}

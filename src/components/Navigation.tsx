@@ -199,8 +199,6 @@ export default function Navigation() {
   const headerPositionClass = isSticky
     ? 'fixed top-0 left-0 right-0 z-[60]'
     : 'relative';
-  const showApplyCta = pathname === '/home';
-
   return (
     <>
     <header className={`w-full bg-[rgb(255,255,255)] border-b border-gray-200/80 ${headerPositionClass}`} style={{ marginTop: 0, paddingTop: 0, minHeight: '80px', maxHeight: '80px', zIndex: 60 }}>
@@ -213,12 +211,7 @@ export default function Navigation() {
           <a
             onClick={(e) => {
               e.preventDefault();
-              if (pathname === '/home') {
-                // If we're already on home, refresh to prevent a blank interim state
-                if (typeof window !== 'undefined') window.location.assign('/home');
-              } else {
-                router.push('/home');
-              }
+              if (typeof window !== 'undefined') window.location.assign('/home');
             }}
             href="/home"
             className={`flex items-center ${user ? 'ml-6' : ''}`}
@@ -239,39 +232,6 @@ export default function Navigation() {
           <div style={{ position: 'relative' }}>
             {isMounted && (
               <div className="flex items-center space-x-3">
-                {showApplyCta && (
-                  <a
-                    href="https://forms.gle/Ntby8YetS3rMkTrt9"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{
-                      background: 'linear-gradient(135deg, #fde047 0%, #fbbf24 50%, #f59e0b 100%)',
-                      color: '#374151',
-                      padding: '10px 18px',
-                      borderRadius: '25px',
-                      border: 'none',
-                      fontSize: '14px',
-                      fontWeight: '600',
-                      cursor: 'pointer',
-                      transition: 'all 0.3s ease',
-                      boxShadow: '0 4px 15px rgba(245, 158, 11, 0.3)',
-                      fontFamily: "'Fredoka', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-                      textDecoration: 'none'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.transform = 'translateY(-3px) scale(1.05)';
-                      e.currentTarget.style.boxShadow = '0 8px 25px rgba(245, 158, 11, 0.4)';
-                      e.currentTarget.style.background = 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.transform = 'translateY(0) scale(1)';
-                      e.currentTarget.style.boxShadow = '0 4px 15px rgba(245, 158, 11, 0.3)';
-                      e.currentTarget.style.background = 'linear-gradient(135deg, #fde047 0%, #fbbf24 50%, #f59e0b 100%)';
-                    }}
-                  >
-                    Apply for Talentix!
-                  </a>
-                )}
                 <button 
                   onClick={() => router.push('/our-services/workshops')}
                   style={{
@@ -328,7 +288,7 @@ export default function Navigation() {
                 >
                   📚 Job Resources
                 </button>
-                <button 
+                <button
                   onClick={() => router.push('/events')}
                   style={{
                     background: 'linear-gradient(135deg, #fecaca 0%, #f87171 100%)',
@@ -355,6 +315,34 @@ export default function Navigation() {
                   }}
                 >
                   🎉 Events
+                </button>
+                <button
+                  onClick={() => router.push('/career-guidance')}
+                  style={{
+                    background: 'linear-gradient(135deg, #fef9c3 0%, #fbbf24 100%)',
+                    color: '#374151',
+                    padding: '10px 18px',
+                    borderRadius: '25px',
+                    border: 'none',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease',
+                    boxShadow: '0 4px 15px rgba(251, 191, 36, 0.3)',
+                    fontFamily: "'Fredoka', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-3px) scale(1.05)';
+                    e.currentTarget.style.boxShadow = '0 8px 25px rgba(251, 191, 36, 0.4)';
+                    e.currentTarget.style.background = 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                    e.currentTarget.style.boxShadow = '0 4px 15px rgba(251, 191, 36, 0.3)';
+                    e.currentTarget.style.background = 'linear-gradient(135deg, #fef9c3 0%, #fbbf24 100%)';
+                  }}
+                >
+                  🎓 Career Guidance
                 </button>
                 <button 
                   onClick={() => setShowSignInModal(true)}
