@@ -193,7 +193,7 @@ export default function WorkshopsDetailPage() {
             alt="Talentix Workshops"
             width={340}
             height={150}
-            style={{ width: 'min(340px, 75vw)', height: 'auto', margin: '0 auto 10px' }}
+            style={{ width: 'min(340px, 75vw)', height: 'auto', margin: '0 auto 10px', display: 'block' }}
             priority
           />
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', marginBottom: '8px', color: '#374151', fontWeight: 700 }}>
@@ -202,7 +202,7 @@ export default function WorkshopsDetailPage() {
           </div>
           <h1
             style={{
-              fontSize: 'clamp(2rem, 5vw, 3.8rem)',
+              fontSize: 'clamp(1.5rem, 3.2vw, 2.6rem)',
               fontWeight: 900,
               color: '#111827',
               margin: '6px 0',
@@ -210,12 +210,12 @@ export default function WorkshopsDetailPage() {
               lineHeight: 1.04,
             }}
           >
-            Interactive, youth-led workshops
+            Interactive, youth-led employability workshops
             <br />
             that students actually remember
           </h1>
           <p style={{ maxWidth: '860px', margin: '12px auto 0', color: '#4b5563', lineHeight: 1.7, fontSize: '1.05rem' }}>
-            Talentix runs in-school employability workshops for secondary students in Years 10 to 13. Sessions are youth-led, DBS-checked, and adapted for SEN and SEND cohorts. We work with mainstream schools and specialist settings.
+            Talentix runs in-school employability workshops for secondary students in Years 10 to 13. Sessions are youth-led, DBS-checked, and can be adapted for SEN and SEND cohorts. We work with mainstream schools and specialist settings.
           </p>
         </div>
 

@@ -16,18 +16,27 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const post = blogPosts.find((p) => p.slug === slug);
   if (!post) return {};
+  const desc = post.seoDescription;
   return {
-    title: `${post.title} | Talentix Blog`,
-    description: post.excerpt,
+    title: `${post.title} | Careers Advice for Teenagers | Talentix`,
+    description: desc,
     alternates: { canonical: `/blog/${post.slug}` },
     openGraph: {
       title: post.title,
-      description: post.excerpt,
+      description: desc,
       url: `https://talentix.co.uk/blog/${post.slug}`,
       siteName: 'Talentix',
       images: [{ url: '/og-image.jpg', width: 1200, height: 630, alt: post.title }],
       locale: 'en_GB',
       type: 'article',
+      publishedTime: post.isoDate,
+      modifiedTime: post.isoDate,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: post.title,
+      description: desc,
+      images: ['/og-image.jpg'],
     },
   };
 }
@@ -46,15 +55,29 @@ export default async function BlogPostPage({ params }: Props) {
   if (!post) notFound();
 
   const pill = pillColorMap[post.categoryColor] ?? pillColorMap.purple;
+  const postUrl = `https://talentix.co.uk/blog/${post.slug}`;
   const jsonLd = {
     '@context': 'https://schema.org',
-    '@type': 'BlogPosting',
+    '@type': 'Article',
     headline: post.title,
-    description: post.excerpt,
-    datePublished: post.date,
+    description: post.seoDescription,
+    datePublished: post.isoDate,
+    dateModified: post.isoDate,
     author: { '@type': 'Organization', name: 'Talentix' },
-    url: `https://talentix.co.uk/blog/${post.slug}`,
-    publisher: { '@id': 'https://talentix.co.uk/#organization' },
+    publisher: {
+      '@type': 'Organization',
+      name: 'Talentix',
+      '@id': 'https://talentix.co.uk/#organization',
+      logo: {
+        '@type': 'ImageObject',
+        url: 'https://talentix.co.uk/tixlogoupdated.png',
+      },
+    },
+    mainEntityOfPage: {
+      '@type': 'WebPage',
+      '@id': postUrl,
+    },
+    url: postUrl,
   };
 
   return (

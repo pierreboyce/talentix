@@ -9,7 +9,9 @@ export interface BlogPost {
   slug: string;
   title: string;
   excerpt: string;
+  seoDescription: string;
   date: string;
+  isoDate: string;
   category: string;
   categoryColor: 'yellow' | 'purple' | 'pink' | 'blue' | 'green';
   readTime: string;
@@ -23,7 +25,9 @@ export const blogPosts: BlogPost[] = [
     slug: 'cv-mistake-teenagers-make',
     title: 'The CV Mistake Almost Every Teenager Makes',
     excerpt: 'Padding your CV with soft skills like "good communicator" and "team player" doesn\'t help you. It signals that you have nothing real to say.',
+    seoDescription: 'Avoid the CV mistakes that cost teenagers jobs in the UK. Discover what hiring managers skip past and how to write a CV that gets you noticed. Read our guide on Talentix.',
     date: '3 June 2025',
+    isoDate: '2025-06-03',
     category: 'CV & Applications',
     categoryColor: 'purple',
     readTime: '3 min',
@@ -85,7 +89,9 @@ export const blogPosts: BlogPost[] = [
     slug: 'what-happens-first-five-minutes-interview',
     title: 'What Actually Happens in the First Five Minutes of a Job Interview',
     excerpt: 'The questions haven\'t started yet and the interviewer has already formed an opinion. Here\'s what they\'re noticing.',
+    seoDescription: 'Find out what hiring managers notice before your first job interview even starts. Essential interview tips for teenagers heading into their first role. Read the guide on Talentix.',
     date: '27 May 2025',
+    isoDate: '2025-05-27',
     category: 'Interviews',
     categoryColor: 'pink',
     readTime: '3 min',
@@ -147,7 +153,9 @@ export const blogPosts: BlogPost[] = [
     slug: 'why-not-hearing-back-job-applications',
     title: 'Why You\'re Not Hearing Back From Job Applications (And the Specific Fix)',
     excerpt: 'Sending more applications rarely solves the problem. The issue is almost always one of three things, and each one has a fix.',
+    seoDescription: 'Not getting replies to your job applications? Here are the three most common reasons and the specific fix for each. Practical first job advice for teenagers. Find out more on Talentix.',
     date: '20 May 2025',
+    isoDate: '2025-05-20',
     category: 'Job Hunting',
     categoryColor: 'yellow',
     readTime: '3 min',
