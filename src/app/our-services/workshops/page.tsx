@@ -171,6 +171,11 @@ export default function WorkshopsDetailPage() {
             animation: none !important;
           }
         }
+        @media (max-width: 600px) {
+          .bespoke-topics-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+          }
+        }
       `}} />
 
       <div style={{ maxWidth: '1200px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
@@ -198,7 +203,7 @@ export default function WorkshopsDetailPage() {
           />
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', marginBottom: '8px', color: '#374151', fontWeight: 700 }}>
             <span>🎨</span>
-            <span>Workshops for Schools & Youth Groups</span>
+            <span>SEN &amp; Employability School Workshops</span>
           </div>
           <h1
             style={{
@@ -215,7 +220,7 @@ export default function WorkshopsDetailPage() {
             that students actually remember
           </h1>
           <p style={{ maxWidth: '860px', margin: '12px auto 0', color: '#4b5563', lineHeight: 1.7, fontSize: '1.05rem' }}>
-            Talentix runs in-school employability workshops for secondary students in Years 10 to 13. Sessions are youth-led, DBS-checked, and can be adapted for SEN and SEND cohorts. We work with mainstream schools and specialist settings.
+            Talentix delivers employability school workshops for secondary students in Years 10 to 13. Our SEN school workshops are youth-led, DBS-checked, and fully adapted for SEN and SEND cohorts. We work with mainstream schools, specialist SEN settings, and sixth forms across the UK.
           </p>
         </div>
 
@@ -369,9 +374,55 @@ export default function WorkshopsDetailPage() {
         <section data-wp-animate style={{ marginBottom: '30px' }}>
           <article style={{ background: 'linear-gradient(135deg, #4ECDC4 0%, #4A90E2 100%)', borderRadius: '24px', border: '4px solid #ffffff', boxShadow: '0 16px 32px rgba(74, 144, 226, 0.3)', padding: '24px 22px', color: '#ffffff', textAlign: 'center' }}>
             <h3 style={{ margin: '0 0 8px', fontSize: 'clamp(1.4rem, 3vw, 2rem)', fontWeight: 900 }}>🧩 Bespoke sessions</h3>
-            <p style={{ margin: '0 auto', maxWidth: '720px', lineHeight: 1.65, fontWeight: 500 }}>
+            <p style={{ margin: '0 auto 20px', maxWidth: '720px', lineHeight: 1.65, fontWeight: 500 }}>
               We also offer bespoke sessions for every school. Tell us about your students and we will tailor a workshop to suit their needs. Every booking includes a scoping call.
             </p>
+            <p style={{ margin: '0 0 14px', fontWeight: 700, fontSize: '1rem', opacity: 0.92 }}>
+              Topics we can cover:
+            </p>
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
+              gap: '10px',
+              maxWidth: '860px',
+              margin: '0 auto',
+            }} className="bespoke-topics-grid">
+              {[
+                { n: 1,  label: 'CV building' },
+                { n: 2,  label: 'Cover letters' },
+                { n: 3,  label: 'Interview practice' },
+                { n: 4,  label: 'SMART goal setting' },
+                { n: 5,  label: 'Job search & applications' },
+                { n: 6,  label: 'Personal branding' },
+                { n: 7,  label: 'Communication skills' },
+                { n: 8,  label: 'Confidence building' },
+                { n: 9,  label: 'What jobs exist' },
+                { n: 10, label: 'Workplace expectations' },
+                { n: 11, label: 'LinkedIn & online presence' },
+                { n: 12, label: 'Networking basics' },
+                { n: 13, label: 'Teamwork & collaboration' },
+                { n: 14, label: 'Time management' },
+                { n: 15, label: 'Money & first payslip' },
+                { n: 16, label: 'Motivation & next steps' },
+              ].map(({ n, label }) => (
+                <div
+                  key={n}
+                  style={{
+                    background: 'rgba(255,255,255,0.18)',
+                    border: '1.5px solid rgba(255,255,255,0.45)',
+                    borderRadius: '14px',
+                    padding: '10px 12px',
+                    textAlign: 'left',
+                    backdropFilter: 'blur(4px)',
+                  }}
+                >
+                  <span style={{ fontSize: '0.72rem', fontWeight: 800, opacity: 0.7, display: 'block', marginBottom: '2px' }}>
+                    {String(n).padStart(2, '0')}
+                  </span>
+                  <span style={{ fontSize: '0.92rem', fontWeight: 700, lineHeight: 1.3 }}>{label}</span>
+                </div>
+              ))}
+            </div>
           </article>
         </section>
 
@@ -513,15 +564,15 @@ export default function WorkshopsDetailPage() {
         <section data-wp-animate style={{ marginBottom: '30px' }}>
           <div style={{ textAlign: 'center', marginBottom: '14px' }}>
             <h2 style={{ display: 'inline-block', margin: 0, fontSize: 'clamp(1.7rem, 3.6vw, 2.8rem)', fontWeight: 900, color: '#111827', border: '3px solid #4ECDC4', borderRadius: '16px', padding: '8px 22px', background: 'rgba(230,250,248,0.9)' }}>
-              💛 Our SEN Impact
+              💛 Our SEN School Workshop Impact
             </h2>
           </div>
           <div style={{ background: 'linear-gradient(135deg, #e6faf8 0%, #c7f0ec 100%)', borderRadius: '24px', border: '3px solid rgba(78,205,196,0.6)', boxShadow: '0 14px 30px rgba(20, 120, 110, 0.18)', padding: '24px' }}>
             <p style={{ margin: '0 0 14px', color: '#374151', lineHeight: 1.7 }}>
-              We run workshops in both mainstream and SEN settings. For SEN cohorts, most off-the-shelf careers content does not fit. It moves too fast and assumes confidence many SEN students have not built yet, so we rewrite those sessions so every student in the room can take part.
+              Our SEN school workshops run in both mainstream and specialist SEN settings. For SEN and SEND cohorts, most off-the-shelf careers content does not fit. It moves too fast and assumes confidence many SEN students have not built yet, so we redesign those sessions from the ground up so every student can take part.
             </p>
             <p style={{ margin: '0 0 18px', color: '#374151', lineHeight: 1.7 }}>
-              We also build bespoke workshops around each SEN cohort. Tell us how your students learn and what you want them to leave with, and we match the pace, language, and activities to them. We are proud of how flexible we can be.
+              We also build bespoke SEN employability workshops around each cohort. Tell us how your students learn and what you want them to leave with, and we match the pace, language, and activities to them. We are proud of how flexible our school workshops can be.
             </p>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '12px', marginBottom: '18px' }} className="stats-grid">
               <article style={{ background: '#ffffff', borderRadius: '16px', padding: '14px', border: '2px solid rgba(78,205,196,0.5)', textAlign: 'center' }}>
@@ -582,7 +633,7 @@ export default function WorkshopsDetailPage() {
           }}
         >
           <h3 style={{ margin: '0 0 8px', fontSize: 'clamp(1.5rem, 3.5vw, 2.4rem)', fontWeight: 900, color: '#111827' }}>
-            🎉 Bring Talentix Workshops to Your School
+            🎉 Book an Employability School Workshop
           </h3>
           <p style={{ maxWidth: '760px', margin: '0 auto 18px', color: '#1f2937', fontWeight: 500 }}>
             For a quote, tell us three things: the size of your cohort, the length of the workshop, and the workshop type. Email us and we will come back with options.
