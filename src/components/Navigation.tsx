@@ -19,12 +19,15 @@ interface JobResourceApp {
   name: string;
   emoji: string;
   href: string;
+  badge?: string;
+  tooltip?: string;
+  disabled?: boolean;
 }
 
 const jobResourcesApps: JobResourceApp[] = [
-  { id: 'job-vacancies', name: 'Job Vacancies', emoji: '💼', href: '/search?q=jobs' },
+  { id: 'job-vacancies', name: 'Job Vacancies', emoji: '💼', href: '/search?q=jobs', badge: '🚧', tooltip: 'Undergoing Improvements!' },
   { id: 'job-tracker', name: 'Job Tracker', emoji: '📊', href: '/job-tracker' },
-  { id: 'apprenticeship-tracker', name: 'Apprenticeship Tracker', emoji: '📋', href: '/apprenticeship-tracker' },
+  { id: 'apprenticeship-tracker', name: 'Apprenticeship Tracker', emoji: '📋', href: '/apprenticeship-tracker', badge: '🔒', tooltip: 'Revamping...', disabled: true },
   { id: 'cv-reviewer', name: 'CV Reviewer', emoji: '📄', href: '/cv-reviewer' },
   { id: 'cover-letter', name: 'Cover Letter', emoji: '✍️', href: '/cover-letter' },
   { id: 'interview-prep', name: 'Interview Prep', emoji: '🎭', href: '/interview-prep' },
@@ -206,7 +209,7 @@ export default function Navigation() {
         <div className="flex items-center">
           {/* App Launcher - Only show for authenticated users */}
           {user && <AppLauncher />}
-          
+
           {/* Logo */}
           <a
             onClick={(e) => {
@@ -463,25 +466,72 @@ export default function Navigation() {
 
                 <div className="px-8 pt-8 pb-4 flex items-center justify-center" style={{ minHeight: 'calc(100% - 120px)' }}>
                   <div className="grid grid-cols-4 gap-6 w-full max-w-[1200px]">
-                    {jobResourcesApps.map((app) => (
-                      <Link
-                        key={app.id}
-                        href={app.href}
-                        onClick={() => setShowJobResourcesMenu(false)}
-                        className="group flex flex-col items-center p-4 rounded-2xl hover:bg-white/30 transition-all duration-300 hover:scale-105 hover:shadow-xl"
-                        style={{ backdropFilter: 'blur(5px)' }}
-                      >
-                        <div className="w-24 h-24 bg-white/80 rounded-2xl flex items-center justify-center mb-3 group-hover:scale-110 group-hover:rotate-12 transition-all duration-300 shadow-lg group-hover:shadow-xl">
-                          <span className="text-[2.8rem] group-hover:animate-bounce">{app.emoji}</span>
-                        </div>
-                        <span
-                          className="text-[0.75rem] text-gray-800 text-center font-medium leading-tight max-w-[100px] group-hover:text-gray-900"
-                          style={{ fontWeight: '500', textShadow: '0 1px 2px rgba(0, 0, 0, 0.1)' }}
+                    {jobResourcesApps.map((app) => {
+                      const inner = (
+                        <>
+                          <div style={{ position: 'relative', display: 'inline-flex', marginBottom: '12px' }}>
+                            <div className="w-24 h-24 bg-white/80 rounded-2xl flex items-center justify-center group-hover:scale-110 group-hover:rotate-12 transition-all duration-300 shadow-lg group-hover:shadow-xl"
+                              style={{ opacity: app.disabled ? 0.6 : 1 }}>
+                              <span className="text-[2.8rem] group-hover:animate-bounce">{app.emoji}</span>
+                            </div>
+                            {app.badge && (
+                              <span style={{
+                                position: 'absolute', top: '-8px', right: '-8px',
+                                fontSize: '1.5rem', lineHeight: 1,
+                                zIndex: 20,
+                                filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))',
+                                pointerEvents: 'none',
+                              }}>{app.badge}</span>
+                            )}
+                          </div>
+                          <span
+                            className="text-[0.75rem] text-gray-800 text-center font-medium leading-tight max-w-[100px] group-hover:text-gray-900"
+                            style={{ fontWeight: '500', textShadow: '0 1px 2px rgba(0, 0, 0, 0.1)' }}
+                          >
+                            {app.name}
+                          </span>
+                          {app.tooltip && (
+                            <div
+                              className="absolute left-1/2 bottom-full mb-2 opacity-0 group-hover:opacity-100 transition-all duration-300 ease-out pointer-events-none"
+                              style={{
+                                transform: 'translateX(-50%) scale(0.9)',
+                                background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)',
+                                borderRadius: '12px',
+                                padding: '6px 12px',
+                                fontSize: '11px',
+                                fontWeight: '700',
+                                color: '#fbbf24',
+                                boxShadow: '0 4px 12px rgba(0,0,0,0.25)',
+                                border: '1.5px solid #fbbf24',
+                                whiteSpace: 'nowrap',
+                                fontFamily: 'Fredoka, sans-serif',
+                                zIndex: 50,
+                              }}
+                            >
+                              {app.tooltip}
+                            </div>
+                          )}
+                        </>
+                      );
+                      if (app.disabled) {
+                        return (
+                          <div key={app.id} className="group flex flex-col items-center p-4 rounded-2xl transition-all duration-300 relative" style={{ cursor: 'not-allowed' }}>
+                            {inner}
+                          </div>
+                        );
+                      }
+                      return (
+                        <Link
+                          key={app.id}
+                          href={app.href}
+                          onClick={() => setShowJobResourcesMenu(false)}
+                          className="group flex flex-col items-center p-4 rounded-2xl hover:bg-white/30 transition-all duration-300 hover:scale-105 hover:shadow-xl"
+                          style={{ backdropFilter: 'blur(5px)' }}
                         >
-                          {app.name}
-                        </span>
-                      </Link>
-                    ))}
+                          {inner}
+                        </Link>
+                      );
+                    })}
                   </div>
                 </div>
 

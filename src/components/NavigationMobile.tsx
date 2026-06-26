@@ -171,6 +171,22 @@ export default function NavigationMobile() {
     };
   }, [showSignInModal, showSignUpModal, showPricingModal, showHeaderPanel, showCommunityModal]);
 
+  // Blur the entire page (#app-root) when sign-in or sign-up modal is open.
+  // Portaled modals render outside #app-root on document.body, so they stay sharp.
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    const root = document.getElementById('app-root');
+    if (!root) return;
+    const isSignModalOpen = showSignInModal || showSignUpModal;
+    root.style.filter = isSignModalOpen ? 'blur(6px)' : '';
+    root.style.pointerEvents = isSignModalOpen ? 'none' : '';
+    root.style.transition = 'filter 0.25s ease';
+    return () => {
+      root.style.filter = '';
+      root.style.pointerEvents = '';
+    };
+  }, [showSignInModal, showSignUpModal]);
+
   // Modal close handlers
   const handleCloseSignIn = () => {
     setShowSignInModal(false);
@@ -745,9 +761,9 @@ export default function NavigationMobile() {
                             Job Features
                           </div>
 
-                          <button onClick={() => { toggleHeaderPanel(); router.push('/search?q=jobs'); }} style={{ background: 'linear-gradient(135deg, #dcfce7 0%, #22c55e 100%)', color: '#374151', padding: '12px 16px', borderRadius: '12px', border: 'none', fontSize: '14px', fontWeight: 600, cursor: 'pointer', boxShadow: '0 4px 12px rgba(34, 197, 94, 0.25)', fontFamily: 'Fredoka, sans-serif' }}>💼 Job Vacancies</button>
+                          <button onClick={() => { toggleHeaderPanel(); router.push('/search?q=jobs'); }} style={{ background: 'linear-gradient(135deg, #dcfce7 0%, #22c55e 100%)', color: '#374151', padding: '12px 16px', borderRadius: '12px', border: 'none', fontSize: '14px', fontWeight: 600, cursor: 'pointer', boxShadow: '0 4px 12px rgba(34, 197, 94, 0.25)', fontFamily: 'Fredoka, sans-serif', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}><span>💼 Job Vacancies</span><span style={{ background: '#fbbf24', color: '#1a1a2e', borderRadius: '999px', padding: '1px 8px', fontSize: '11px', fontWeight: 800, border: '1.5px solid rgba(255,255,255,0.7)' }}>🚧</span></button>
                           <button onClick={() => { toggleHeaderPanel(); router.push('/job-tracker'); }} style={{ background: 'linear-gradient(135deg, #ccfbf1 0%, #5eead4 100%)', color: '#374151', padding: '12px 16px', borderRadius: '12px', border: 'none', fontSize: '14px', fontWeight: 600, cursor: 'pointer', boxShadow: '0 4px 12px rgba(94, 234, 212, 0.25)', fontFamily: 'Fredoka, sans-serif' }}>📊 Job Tracker</button>
-                          <button onClick={() => { toggleHeaderPanel(); router.push('/apprenticeship-tracker'); }} style={{ background: 'linear-gradient(135deg, #bfdbfe 0%, #60a5fa 100%)', color: '#374151', padding: '12px 16px', borderRadius: '12px', border: 'none', fontSize: '14px', fontWeight: 600, cursor: 'pointer', boxShadow: '0 4px 12px rgba(96, 165, 250, 0.25)', fontFamily: 'Fredoka, sans-serif' }}>📋 Apprenticeship Tracker</button>
+                          <button onClick={() => { toggleHeaderPanel(); }} style={{ background: 'linear-gradient(135deg, #bfdbfe 0%, #60a5fa 100%)', color: '#374151', padding: '12px 16px', borderRadius: '12px', border: 'none', fontSize: '14px', fontWeight: 600, cursor: 'not-allowed', boxShadow: '0 4px 12px rgba(96, 165, 250, 0.25)', fontFamily: 'Fredoka, sans-serif', opacity: 0.7, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}><span>📋 Apprenticeship Tracker</span><span style={{ background: '#1a1a2e', color: '#fbbf24', borderRadius: '999px', padding: '1px 8px', fontSize: '11px', fontWeight: 800, border: '1.5px solid rgba(255,255,255,0.7)' }}>🔒</span></button>
                           <button onClick={() => { toggleHeaderPanel(); router.push('/cv-reviewer'); }} style={{ background: 'linear-gradient(135deg, #ddd6fe 0%, #a78bfa 100%)', color: '#374151', padding: '12px 16px', borderRadius: '12px', border: 'none', fontSize: '14px', fontWeight: 600, cursor: 'pointer', boxShadow: '0 4px 12px rgba(167, 139, 250, 0.25)', fontFamily: 'Fredoka, sans-serif' }}>📄 CV Reviewer</button>
                           <button onClick={() => { toggleHeaderPanel(); router.push('/cover-letter'); }} style={{ background: 'linear-gradient(135deg, #e0e7ff 0%, #a5b4fc 100%)', color: '#374151', padding: '12px 16px', borderRadius: '12px', border: 'none', fontSize: '14px', fontWeight: 600, cursor: 'pointer', boxShadow: '0 4px 12px rgba(165, 180, 252, 0.25)', fontFamily: 'Fredoka, sans-serif' }}>✍️ Cover Letter</button>
                           <button onClick={() => { toggleHeaderPanel(); router.push('/interview-prep'); }} style={{ background: 'linear-gradient(135deg, #fef3c7 0%, #fbbf24 100%)', color: '#374151', padding: '12px 16px', borderRadius: '12px', border: 'none', fontSize: '14px', fontWeight: 600, cursor: 'pointer', boxShadow: '0 4px 12px rgba(251, 191, 36, 0.25)', fontFamily: 'Fredoka, sans-serif' }}>🎭 Interview Prep</button>
@@ -777,10 +793,14 @@ export default function NavigationMobile() {
                           fontWeight: 600,
                           cursor: 'pointer',
                           boxShadow: '0 4px 12px rgba(34, 197, 94, 0.25)',
-                          fontFamily: 'Fredoka, sans-serif'
+                          fontFamily: 'Fredoka, sans-serif',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
                         }}
                       >
-                        💼 Job Vacancies
+                        <span>💼 Job Vacancies</span>
+                        <span style={{ background: '#fbbf24', color: '#1a1a2e', borderRadius: '999px', padding: '1px 8px', fontSize: '11px', fontWeight: 800, border: '1.5px solid rgba(255,255,255,0.7)' }}>🚧</span>
                       </button>
                       <button
                         onClick={() => { toggleHeaderPanel(); router.push('/job-tracker'); }}
@@ -800,7 +820,7 @@ export default function NavigationMobile() {
                         📊 Job Tracker
                       </button>
                       <button
-                        onClick={() => { toggleHeaderPanel(); router.push('/apprenticeship-tracker'); }}
+                        onClick={() => { toggleHeaderPanel(); }}
                         style={{
                           background: 'linear-gradient(135deg, #bfdbfe 0%, #60a5fa 100%)',
                           color: '#374151',
@@ -809,12 +829,17 @@ export default function NavigationMobile() {
                           border: 'none',
                           fontSize: '14px',
                           fontWeight: 600,
-                          cursor: 'pointer',
+                          cursor: 'not-allowed',
+                          opacity: 0.7,
                           boxShadow: '0 4px 12px rgba(96, 165, 250, 0.25)',
-                          fontFamily: 'Fredoka, sans-serif'
+                          fontFamily: 'Fredoka, sans-serif',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
                         }}
                       >
-                        📋 Apprenticeship Tracker
+                        <span>📋 Apprenticeship Tracker</span>
+                        <span style={{ background: '#1a1a2e', color: '#fbbf24', borderRadius: '999px', padding: '1px 8px', fontSize: '11px', fontWeight: 800, border: '1.5px solid rgba(255,255,255,0.7)' }}>🔒</span>
                       </button>
                       <button
                         onClick={() => { toggleHeaderPanel(); router.push('/cv-reviewer'); }}

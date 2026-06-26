@@ -782,11 +782,36 @@ function SearchPageContent() {
       )}
 
       {/* Main Content */}
-      <div className="job-mobile-content" style={{ 
-        marginLeft: isMobile ? '0' : '280px', 
-        flex: 1, 
-        padding: isMobile ? '16px' : '32px 48px' 
+      <div className="job-mobile-content" style={{
+        marginLeft: isMobile ? '0' : '280px',
+        flex: 1,
+        padding: isMobile ? '16px' : '32px 48px'
       }}>
+
+        {/* Caution Banner */}
+        <div style={{
+          background: '#1a1a2e',
+          border: '2px solid #fbbf24',
+          borderRadius: '12px',
+          padding: '10px 16px',
+          marginBottom: '24px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px',
+          flexWrap: 'wrap',
+        }}>
+          <span style={{ fontSize: '1.2rem', flexShrink: 0 }}>🚧</span>
+          <div style={{ flex: 1, minWidth: '200px' }}>
+            <p style={{ margin: 0, fontFamily: "'Fredoka', sans-serif", fontSize: '0.95rem', fontWeight: 700, color: '#fbbf24', lineHeight: 1.4 }}>
+              We&apos;re working on improving the Job Search tool so you can access every job vacancy in the UK from here — check back soon to see our progress!
+            </p>
+            <p style={{ margin: '3px 0 0', fontFamily: "'Fredoka', sans-serif", fontSize: '0.85rem', color: '#9ca3af', fontWeight: 500 }}>
+              For now, enjoy live listings from over 50 companies across the UK 🇬🇧
+            </p>
+          </div>
+          <span style={{ fontSize: '1.2rem', flexShrink: 0 }}>🚧</span>
+        </div>
+
         {/* Desktop Header */}
         {!isMobile && (
         <div style={{ marginBottom: '40px' }}>

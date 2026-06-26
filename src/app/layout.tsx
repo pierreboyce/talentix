@@ -220,6 +220,8 @@ export default function RootLayout({
         />
       </head>
       <body className={`${inter.className} ${fredoka.className}`}>
+        {/* app-root wraps everything so portaled modals (createPortal → document.body) land outside it and can't be blurred by filter:blur applied here */}
+        <div id="app-root">
         <ErrorBoundary>
           <ToastProvider>
             <SessionWrapper>
@@ -247,6 +249,7 @@ export default function RootLayout({
             </SessionWrapper>
           </ToastProvider>
         </ErrorBoundary>
+        </div>
       </body>
     </html>
   );

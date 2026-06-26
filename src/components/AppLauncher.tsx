@@ -22,9 +22,12 @@ interface AppItem {
   id: string;
   name: string;
   emoji: string;
+  badge?: string;   // small overlay badge emoji on the icon
   href: string;
   color: string;
-  restricted?: boolean; // For free tier limitations
+  restricted?: boolean;
+  tooltip?: string; // hover tooltip text
+  disabled?: boolean; // blocks navigation entirely
 }
 
 // Reorganized Categories as Requested
@@ -33,8 +36,10 @@ const jobFeaturesApps: AppItem[] = [
     id: 'job-vacancies',
     name: 'Job Vacancies',
     emoji: '💼',
+    badge: '🚧',
     href: '/search?q=jobs',
-    color: 'bg-gradient-to-br from-green-400 to-green-600'
+    color: 'bg-gradient-to-br from-green-400 to-green-600',
+    tooltip: 'Undergoing Improvements!',
   },
   {
     id: 'job-tracker',
@@ -47,8 +52,11 @@ const jobFeaturesApps: AppItem[] = [
     id: 'apprenticeship-tracker',
     name: 'Apprenticeship Tracker',
     emoji: '📋',
+    badge: '🔒',
     href: '/apprenticeship-tracker',
-    color: 'bg-gradient-to-br from-blue-400 to-blue-600'
+    color: 'bg-gradient-to-br from-blue-400 to-blue-600',
+    tooltip: 'Revamping...',
+    disabled: true,
   },
   {
     id: 'cv-reviewer',
@@ -297,43 +305,81 @@ export default function AppLauncher() {
     if (app.id === 'placeholder') {
       return <div key="placeholder" className="opacity-0"></div>;
     }
-    
-    return (
-        <Link
-          key={app.id}
-          href={app.href}
-          onClick={() => handleAppClick(app.href, app.id)}
-          className="group flex flex-col items-center p-4 rounded-2xl hover:bg-white/30 transition-all duration-300 hover:scale-105 hover:shadow-xl"
-          style={{ backdropFilter: 'blur(5px)' }}
-        >
-          <div className="w-24 h-24 bg-white/80 rounded-2xl flex items-center justify-center mb-3 group-hover:scale-110 group-hover:rotate-12 transition-all duration-300 shadow-lg group-hover:shadow-xl relative">
+
+    const tooltipText = app.tooltip ?? (app.restricted && subscription.tier === 'free' ? getProMessage(app.id) : null);
+
+    const inner = (
+      <>
+        {/* Wrapper gives us a reliable relative ancestor for the badge */}
+        <div style={{ position: 'relative', display: 'inline-flex', marginBottom: '12px' }}>
+          <div className="w-24 h-24 bg-white/80 rounded-2xl flex items-center justify-center group-hover:scale-110 group-hover:rotate-12 transition-all duration-300 shadow-lg group-hover:shadow-xl"
+            style={{ opacity: app.disabled ? 0.6 : 1 }}>
             <span className="text-[2.8rem] group-hover:animate-bounce">{app.emoji}</span>
           </div>
-          <span className="text-[0.75rem] text-gray-800 text-center font-medium leading-tight max-w-[100px] group-hover:text-gray-900" style={{ fontWeight: '500', textShadow: '0 1px 2px rgba(0, 0, 0, 0.1)' }}>
-            {app.name}
-          </span>
-          {app.restricted && subscription.tier === 'free' && (
-            <div className="absolute left-1/2 bottom-full mb-2 opacity-0 group-hover:opacity-100 transition-all duration-300 ease-out pointer-events-none"
-              style={{
-                zIndex: 2147483647,
-                transform: 'translateX(-50%) scale(0.9)',
-                background: 'linear-gradient(135deg, #fef3c7 0%, #fde047 50%, #facc15 100%)',
-                borderRadius: '12px',
-                padding: '6px 12px',
-                fontSize: '11px',
-                fontWeight: '700',
-                color: '#1f2937',
-                boxShadow: '0 4px 12px rgba(254, 243, 199, 0.6), 0 2px 4px rgba(0, 0, 0, 0.1)',
-                border: '1.5px solid rgba(255, 255, 255, 0.8)',
-                whiteSpace: 'nowrap',
-                fontFamily: 'Fredoka, sans-serif'
-              }}
-            >
-              {getProMessage(app.id)}
-            </div>
+          {/* Badge — sibling of icon, not child, so no clip from transforms */}
+          {app.badge && (
+            <span style={{
+              position: 'absolute', top: '-8px', right: '-8px',
+              fontSize: '1.5rem', lineHeight: 1,
+              zIndex: 20,
+              filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))',
+              pointerEvents: 'none',
+            }}>{app.badge}</span>
           )}
-        </Link>
+        </div>
+        <span className="text-[0.75rem] text-gray-800 text-center font-medium leading-tight max-w-[100px] group-hover:text-gray-900"
+          style={{ fontWeight: '500', textShadow: '0 1px 2px rgba(0, 0, 0, 0.1)' }}>
+          {app.name}
+        </span>
+        {/* Tooltip */}
+        {tooltipText && (
+          <div className="absolute left-1/2 bottom-full mb-2 opacity-0 group-hover:opacity-100 transition-all duration-300 ease-out pointer-events-none"
+            style={{
+              zIndex: 2147483647,
+              transform: 'translateX(-50%) scale(0.9)',
+              background: app.tooltip
+                ? 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)'
+                : 'linear-gradient(135deg, #fef3c7 0%, #fde047 50%, #facc15 100%)',
+              borderRadius: '12px',
+              padding: '6px 12px',
+              fontSize: '11px',
+              fontWeight: '700',
+              color: app.tooltip ? '#fbbf24' : '#1f2937',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.25)',
+              border: `1.5px solid ${app.tooltip ? '#fbbf24' : 'rgba(255,255,255,0.8)'}`,
+              whiteSpace: 'nowrap',
+              fontFamily: 'Fredoka, sans-serif',
+            }}
+          >
+            {tooltipText}
+          </div>
+        )}
+      </>
+    );
+
+    if (app.disabled) {
+      return (
+        <div
+          key={app.id}
+          className="group flex flex-col items-center p-4 rounded-2xl transition-all duration-300 relative"
+          style={{ backdropFilter: 'blur(5px)', cursor: 'not-allowed' }}
+        >
+          {inner}
+        </div>
       );
+    }
+
+    return (
+      <Link
+        key={app.id}
+        href={app.href}
+        onClick={() => handleAppClick(app.href, app.id)}
+        className="group flex flex-col items-center p-4 rounded-2xl hover:bg-white/30 transition-all duration-300 hover:scale-105 hover:shadow-xl relative"
+        style={{ backdropFilter: 'blur(5px)' }}
+      >
+        {inner}
+      </Link>
+    );
   };
 
   return (

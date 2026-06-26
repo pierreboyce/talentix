@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useRouter } from 'next/navigation';
@@ -165,7 +166,7 @@ export default function SignUpModal({ isOpen, onClose }: SignUpModalProps) {
     setFocusedInput(null);
   };
 
-  if (!isOpen && !isAnimating) return null;
+  if ((!isOpen && !isAnimating) || typeof document === 'undefined') return null;
 
   const FONT = "'Fredoka', 'Inter', sans-serif";
   const inputStyle = (field: string): React.CSSProperties => ({
@@ -184,7 +185,7 @@ export default function SignUpModal({ isOpen, onClose }: SignUpModalProps) {
   });
   const confirmBorder = passwordsMatch === true ? '#10b981' : passwordsMatch === false ? '#ef4444' : focusedInput === 'confirmPassword' ? '#fbbf24' : '#e5e7eb';
 
-  return (
+  return createPortal(
     <div
       style={{
         position: 'fixed', inset: 0,
@@ -322,6 +323,7 @@ export default function SignUpModal({ isOpen, onClose }: SignUpModalProps) {
           100% { opacity: 0.9; transform: scale(1) translateY(0); }
         }
       `}</style>
-    </div>
+    </div>,
+    document.body
   );
 }

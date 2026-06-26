@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'FREE CV Reviewer',
+  title: 'Free CV Reviewer for UK Teenagers – AI-Powered Feedback | Talentix',
   description: 'Get instant AI-powered CV feedback and reviews for your first job application. Free CV reviewer tool for UK students and teenagers. Improve your CV with personalized suggestions for better job opportunities.',
   keywords: [
     'CV reviewer UK',

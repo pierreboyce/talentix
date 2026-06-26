@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import ForgotPasswordModal from './ForgotPasswordModal';
@@ -176,7 +177,7 @@ export default function SignInModal({ isOpen, onClose, onForgotPassword }: SignI
     }
   };
 
-  if (!isAnimating) return null;
+  if (!isAnimating || typeof document === 'undefined') return null;
 
   const FONT = "'Fredoka', 'Inter', sans-serif";
 
@@ -228,7 +229,7 @@ export default function SignInModal({ isOpen, onClose, onForgotPassword }: SignI
   const confirmBorder =
     passwordsMatch === true ? '#10b981' : passwordsMatch === false ? '#ef4444' : undefined;
 
-  return (
+  return createPortal(
     <div
       style={{
         position: 'fixed', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -459,6 +460,7 @@ export default function SignInModal({ isOpen, onClose, onForgotPassword }: SignI
           100% { opacity: 0.9; transform: scale(1) translateY(0); }
         }
       `}</style>
-    </div>
+    </div>,
+    document.body
   );
 }
