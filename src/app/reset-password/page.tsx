@@ -75,7 +75,7 @@ function ResetPasswordContent() {
       if (data.success) {
         setSuccess(true);
         setTimeout(() => {
-          router.push('/home');
+          router.push('/');
         }, 3000);
       } else {
         setError(data.error || 'Failed to reset password');
@@ -125,7 +125,7 @@ function ResetPasswordContent() {
             This password reset link is invalid or has expired.
           </p>
           <Link
-            href="/home"
+            href="/"
             style={{
               display: 'inline-block',
               background: 'linear-gradient(135deg, #8b5cf6 0%, #3b82f6 100%)',
@@ -420,7 +420,7 @@ function ResetPasswordContent() {
         {/* Back to Sign In */}
         <div style={{ textAlign: 'center', marginTop: '24px' }}>
           <Link
-            href="/home"
+            href="/"
             style={{
               color: '#8b5cf6',
               textDecoration: 'none',

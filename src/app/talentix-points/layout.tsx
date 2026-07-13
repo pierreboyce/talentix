@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Talentix Points - Earn Rewards for Career Progress | Talentix',
+  title: 'Talentix Points - Earn Rewards for Career Progress',
   description: 'Earn Talentix Points by completing career tasks, CV reviews, interview practice, and more. Track your progress and unlock achievements as you prepare for your first job in the UK.',
   keywords: [
     'Talentix Points',

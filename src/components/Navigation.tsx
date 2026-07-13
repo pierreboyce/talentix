@@ -54,7 +54,6 @@ export default function Navigation() {
   });
   const [isDesktop, setIsDesktop] = useState(false); // Default to mobile-first
   const [isLoaded, setIsLoaded] = useState(false);
-  const [isMounted, setIsMounted] = useState(false);
 
   // MOBILE TEST - ALWAYS VISIBLE ON MOBILE
   const isMobileTest = typeof window !== 'undefined' && window.innerWidth < 768;
@@ -90,10 +89,6 @@ export default function Navigation() {
         window.removeEventListener('resize', checkScreenSize);
       }
     };
-  }, []);
-
-  useEffect(() => {
-    setIsMounted(true);
   }, []);
 
   // Listen for pricing modal events from PaywallGuard
@@ -196,7 +191,7 @@ export default function Navigation() {
   const isExcludedPage = (
     pathname === '/' || // Landing page header should NOT be sticky
     pathname === '/dashboard' ||
-    pathname.startsWith('/our-services')
+    pathname.startsWith('/workshops')
   );
   const isSticky = !isExcludedPage;
   const headerPositionClass = isSticky
@@ -214,9 +209,9 @@ export default function Navigation() {
           <a
             onClick={(e) => {
               e.preventDefault();
-              if (typeof window !== 'undefined') window.location.assign('/home');
+              if (typeof window !== 'undefined') window.location.assign('/');
             }}
-            href="/home"
+            href="/"
             className={`flex items-center ${user ? 'ml-6' : ''}`}
           >
             <Image
@@ -233,11 +228,12 @@ export default function Navigation() {
         {/* Right side navigation */}
         {!user && (
           <div style={{ position: 'relative' }}>
-            {isMounted && (
               <div className="flex items-center space-x-3">
-                <button 
-                  onClick={() => router.push('/our-services/workshops')}
+                <Link
+                  href="/workshops"
                   style={{
+                    display: 'inline-block',
+                    textDecoration: 'none',
                     background: 'linear-gradient(135deg, #ddd6fe 0%, #a78bfa 100%)',
                     color: '#374151',
                     padding: '10px 18px',
@@ -262,7 +258,7 @@ export default function Navigation() {
                   }}
                 >
                   🛠️ Talentix Workshops
-                </button>
+                </Link>
                 <button 
                   onClick={() => setShowJobResourcesMenu(true)}
                   style={{
@@ -291,9 +287,11 @@ export default function Navigation() {
                 >
                   📚 Job Resources
                 </button>
-                <button
-                  onClick={() => router.push('/events')}
+                <Link
+                  href="/events"
                   style={{
+                    display: 'inline-block',
+                    textDecoration: 'none',
                     background: 'linear-gradient(135deg, #fecaca 0%, #f87171 100%)',
                     color: '#374151',
                     padding: '10px 18px',
@@ -318,10 +316,12 @@ export default function Navigation() {
                   }}
                 >
                   🎉 Events
-                </button>
-                <button
-                  onClick={() => router.push('/career-guidance')}
+                </Link>
+                <Link
+                  href="/career-guidance"
                   style={{
+                    display: 'inline-block',
+                    textDecoration: 'none',
                     background: 'linear-gradient(135deg, #fef9c3 0%, #fbbf24 100%)',
                     color: '#374151',
                     padding: '10px 18px',
@@ -346,7 +346,7 @@ export default function Navigation() {
                   }}
                 >
                   🎓 Career Guidance
-                </button>
+                </Link>
                 <button 
                   onClick={() => setShowSignInModal(true)}
                   style={{
@@ -376,7 +376,6 @@ export default function Navigation() {
                   🔐 Sign In / Sign Up
                 </button>
               </div>
-            )}
           </div>
         )}
       </div>

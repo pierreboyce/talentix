@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Apprenticeship Finder UK | Talentix',
+  title: 'Apprenticeship Finder UK',
   description: 'Track and find apprenticeship opportunities in the UK. Free apprenticeship tracker for students and teenagers. Search apprenticeships by location, level, and industry.',
   keywords: [
     'apprenticeship tracker UK',

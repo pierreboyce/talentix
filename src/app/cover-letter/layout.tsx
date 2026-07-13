@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'FREE Cover Letter Builder | Talentix',
+  title: 'FREE Cover Letter Builder',
   description: 'Create professional cover letters for your job applications. Free AI-powered cover letter maker designed for UK students and teenagers applying for their first job.',
   keywords: [
     'cover letter maker UK',

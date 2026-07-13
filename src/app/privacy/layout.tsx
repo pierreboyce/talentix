@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Privacy Policy - How We Protect Your Data | Talentix',
+  title: 'Privacy Policy - How We Protect Your Data',
   description: 'Talentix privacy policy. Learn how we protect and use your personal data as a UK teenager or student using our career tools and job search platform.',
   keywords: [
     'Talentix privacy policy',

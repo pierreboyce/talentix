@@ -45,7 +45,7 @@ export default function SignUpPage() {
 
   const handleCloseModal = () => {
     setShowModal(false);
-    router.push('/home');
+    router.push('/');
   };
 
   return (

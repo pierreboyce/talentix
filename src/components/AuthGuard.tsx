@@ -141,7 +141,7 @@ export default function AuthGuard({ children }: AuthGuardProps) {
 
   const handleCloseModal = () => {
     setShowSignUpPrompt(false);
-    window.location.href = '/home';
+    window.location.href = '/';
   };
 
   const handleSignUpClick = () => {

@@ -9,7 +9,8 @@ const nextConfig = {
   // Redirects
   async redirects() {
     return [
-      { source: '/workshops', destination: '/our-services/workshops', permanent: true },
+      { source: '/our-services/workshops', destination: '/workshops', permanent: true },
+      { source: '/home', destination: '/', permanent: true },
     ];
   },
 

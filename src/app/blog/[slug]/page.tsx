@@ -18,7 +18,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!post) return {};
   const desc = post.seoDescription;
   return {
-    title: `${post.title} | Careers Advice for Teenagers | Talentix`,
+    title: `${post.title} | Careers Advice for Teenagers`,
     description: desc,
     alternates: { canonical: `/blog/${post.slug}` },
     openGraph: {

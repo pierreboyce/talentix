@@ -39,7 +39,7 @@ export default function MobileRedirect({
     if (isMobile && !isDesktopOS) {
       // Add a small delay to prevent flash
       const timer = setTimeout(() => {
-        router.replace('/home');
+        router.replace('/');
       }, 100);
 
       return () => clearTimeout(timer);

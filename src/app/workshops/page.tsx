@@ -68,6 +68,8 @@ export default function WorkshopsDetailPage() {
       emoji: '💡',
       text: 'Build confidence, resilience, communication, and self-awareness for life beyond school.',
       focus: 'Personal branding, interview readiness, goal setting, and negotiation skills.',
+      whatsIncluded:
+        'Delivered as an interactive group session combining discussion, personal branding exercises, a mock interview activity with peer or staff feedback, and guided SMART goal-setting. Session length and delivery style are agreed with your school during the scoping call so it fits your timetable.',
       outcomes: [
         'In-depth personal branding awareness',
         'Mock interviews with peer/staff feedback',
@@ -82,6 +84,8 @@ export default function WorkshopsDetailPage() {
       emoji: '💼',
       text: 'Equip students with practical tools for job search, applications, and interview success.',
       focus: 'Job applications, interview performance, and workplace professionalism.',
+      whatsIncluded:
+        'Delivered as an interactive group session covering CV writing, cover letters, job applications, and mock interview practice with feedback. Students leave with a physical job toolkit they can refer back to. Session length and delivery style are agreed with your school during the scoping call.',
       outcomes: [
         'Ready-to-send CV and cover letter',
         'Mock interview practice and confidence boost',
@@ -90,6 +94,44 @@ export default function WorkshopsDetailPage() {
       ],
       color: '#7c3aed',
       bg: 'linear-gradient(135deg, #ede9fe 0%, #c4b5fd 100%)',
+    },
+  ];
+
+  const faqs = [
+    {
+      question: 'How much does a workshop cost?',
+      answer:
+        "Pricing is bespoke and depends on three things: the size of your cohort, the length of the session, and which workshop format you choose (Future Ready Teens, Teens & Jobs, or a bespoke session built around your students). Email us those three details, or download our workshop proposal below, and we will come back with options and a written quote. If it's the first time we've worked with your school, you'll also get 15% off.",
+    },
+    {
+      question: 'How long is a workshop session?',
+      answer:
+        'Session length is flexible and agreed during your scoping call so it fits your school timetable. Tell us how much time you have and we will build the content to match, rather than asking you to fit around a fixed format.',
+    },
+    {
+      question: 'Do you cover SEN and SEND?',
+      answer:
+        'Yes. Every facilitator is DBS-checked and SEN-trained, and our sessions are fully adapted for SEN and SEND cohorts in both mainstream schools and specialist settings — plain-English language with visual prompts on every slide, and small-group activities so quieter students can contribute.',
+    },
+    {
+      question: 'How do we book a workshop?',
+      answer:
+        'Email enquiries@talentix.co.uk with your cohort size, preferred session length, and workshop type, or download our workshop proposal using the link below. Every booking includes a short scoping call so we understand your students before we finalise the session and send a tailored quote.',
+    },
+    {
+      question: 'What year groups do you work with?',
+      answer:
+        'Our workshops are designed for secondary students in Years 10 to 13, and we regularly deliver in sixth forms too. Content, pace, and language are adjusted to suit the age and stage of your specific cohort.',
+    },
+    {
+      question: 'Do you provide materials afterward?',
+      answer:
+        "Yes. Students leave each session with a tangible output, such as a draft CV, a cover letter, a set of SMART goals, or a completed job-search toolkit, so the learning doesn't stop when the session ends.",
+    },
+    {
+      question: "What's the difference between Future Ready Teens and Teens & Jobs?",
+      answer:
+        'Future Ready Teens focuses on confidence, communication, personal branding, and goal-setting. Teens & Jobs is more hands-on and application-focused: CVs, cover letters, job applications, and mock interview practice. Many schools book both across different year groups or as part of a bespoke session that blends the two.',
     },
   ];
 
@@ -109,18 +151,21 @@ export default function WorkshopsDetailPage() {
 
   const testimonials = [
     {
+      context: 'Endeavour Academy Bexley booked a Talentix employability workshop and shared this feedback afterwards:',
       quote:
         "I would definitely recommend Talentix to other schools, you're really inclusive, you really tailored it to our students [...] I haven't seen them more engaged!",
       name: 'Emma Seffens',
       role: 'Careers Officer at Endeavour Academy Bexley',
     },
     {
+      context: 'Ark St Albans Academy brought Talentix in to work with their Year 11 students:',
       quote:
         'The Talentix workshop was exactly what our Year 11s needed. They connected with the students in a way that felt real and relatable.',
       name: 'Charlene Steele',
       role: 'Careers Lead at Ark St Albans Academy',
     },
     {
+      context: 'Feedback direct from a Year 10 student after a Talentix workshop:',
       quote: "Probably the best workshop I've ever had!",
       name: 'Teddy',
       role: 'Year 10',
@@ -138,6 +183,24 @@ export default function WorkshopsDetailPage() {
         overflow: 'hidden',
       }}
     >
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'FAQPage',
+            mainEntity: faqs.map((faq) => ({
+              '@type': 'Question',
+              name: faq.question,
+              acceptedAnswer: {
+                '@type': 'Answer',
+                text: faq.answer,
+              },
+            })),
+          }),
+        }}
+      />
+
       {/* floating playful elements */}
       <div style={{ position: 'absolute', top: '4%', left: '6%', fontSize: '3.5rem', opacity: 0.16 }}>✨</div>
       <div style={{ position: 'absolute', top: '9%', right: '8%', fontSize: '4rem', opacity: 0.15 }}>🎉</div>
@@ -203,7 +266,7 @@ export default function WorkshopsDetailPage() {
           />
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', marginBottom: '8px', color: '#374151', fontWeight: 700 }}>
             <span>🎨</span>
-            <span>SEN &amp; Employability School Workshops</span>
+            <span>Employability Workshops for UK Secondary Schools</span>
           </div>
           <h1
             style={{
@@ -215,12 +278,13 @@ export default function WorkshopsDetailPage() {
               lineHeight: 1.04,
             }}
           >
-            Interactive, youth-led employability workshops
-            <br />
-            that students actually remember
+            Employability Workshops for UK Secondary Schools
           </h1>
+          <p style={{ maxWidth: '860px', margin: '4px auto 0', color: '#374151', fontWeight: 600, fontSize: '1.1rem' }}>
+            Interactive, youth-led sessions that students actually remember
+          </p>
           <p style={{ maxWidth: '860px', margin: '12px auto 0', color: '#4b5563', lineHeight: 1.7, fontSize: '1.05rem' }}>
-            Talentix delivers employability school workshops for secondary students in Years 10 to 13. Our SEN school workshops are youth-led, DBS-checked, and fully adapted for SEN and SEND cohorts. We work with mainstream schools, specialist SEN settings, and sixth forms across the UK.
+            Talentix delivers employability workshops for secondary students in Years 10 to 13 across UK schools. Sessions are youth-led, DBS-checked, and fully adapted for SEN and SEND cohorts. We work with mainstream schools, specialist SEN settings, and sixth forms across the UK.
           </p>
         </div>
 
@@ -360,6 +424,12 @@ export default function WorkshopsDetailPage() {
                 <p style={{ margin: '0 0 10px', color: '#374151', lineHeight: 1.55, fontSize: '0.95rem' }}>
                   <strong>Focus:</strong> {format.focus}
                 </p>
+                <p style={{ margin: '0 0 10px', color: '#374151', lineHeight: 1.55, fontSize: '0.92rem' }}>
+                  <strong>What's included:</strong> {format.whatsIncluded}
+                </p>
+                <p style={{ margin: '0 0 6px', color: '#111827', fontWeight: 800, fontSize: '0.88rem' }}>
+                  Students leave with:
+                </p>
                 <ul style={{ margin: 0, paddingLeft: '18px', color: '#374151', lineHeight: 1.5, fontSize: '0.92rem' }}>
                   {format.outcomes.map((item) => (
                     <li key={item}>{item}</li>
@@ -374,8 +444,11 @@ export default function WorkshopsDetailPage() {
         <section data-wp-animate style={{ marginBottom: '30px' }}>
           <article style={{ background: 'linear-gradient(135deg, #4ECDC4 0%, #4A90E2 100%)', borderRadius: '24px', border: '4px solid #ffffff', boxShadow: '0 16px 32px rgba(74, 144, 226, 0.3)', padding: '24px 22px', color: '#ffffff', textAlign: 'center' }}>
             <h3 style={{ margin: '0 0 8px', fontSize: 'clamp(1.4rem, 3vw, 2rem)', fontWeight: 900 }}>🧩 Bespoke sessions</h3>
-            <p style={{ margin: '0 auto 20px', maxWidth: '720px', lineHeight: 1.65, fontWeight: 500 }}>
+            <p style={{ margin: '0 auto 12px', maxWidth: '720px', lineHeight: 1.65, fontWeight: 500 }}>
               We also offer bespoke sessions for every school. Tell us about your students and we will tailor a workshop to suit their needs. Every booking includes a scoping call.
+            </p>
+            <p style={{ margin: '0 auto 20px', maxWidth: '720px', lineHeight: 1.65, fontWeight: 500, opacity: 0.95 }}>
+              The scoping call is a short conversation with your careers lead or pastoral team before we finalise anything. We ask about your cohort, what you want students to leave with, and any SEN or SEND needs we should design around, then build the session content and pick topics from the list below to match.
             </p>
             <p style={{ margin: '0 0 14px', fontWeight: 700, fontSize: '1rem', opacity: 0.92 }}>
               Topics we can cover:
@@ -489,29 +562,18 @@ export default function WorkshopsDetailPage() {
           </div>
         </section>
 
-        {/* Testimonials */}
+        {/* Case Studies / Testimonials */}
         <section data-wp-animate style={{ marginBottom: '30px' }}>
-          <h2
-            style={{
-              textAlign: 'center',
-              margin: '0 0 14px',
-              fontSize: 'clamp(1.7rem, 3.6vw, 2.8rem)',
-              fontWeight: 900,
-              color: '#111827',
-            }}
-          >
-            💬 What People Say
-          </h2>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '16px' }} className="testimonials-grid">
             {testimonials.map((item) => (
               <article
                 key={item.name}
                 style={{
-                  background: 'rgba(255,255,255,0.95)',
+                  background: 'rgba(196, 181, 253, 0.22)',
                   borderRadius: '20px',
                   padding: '18px',
-                  border: '2px solid rgba(255,255,255,0.9)',
-                  boxShadow: '0 12px 24px rgba(0,0,0,0.12)',
+                  border: '2px solid rgba(139, 92, 246, 0.3)',
+                  boxShadow: '0 10px 20px rgba(124, 58, 237, 0.1)',
                 }}
               >
                 <div
@@ -522,18 +584,19 @@ export default function WorkshopsDetailPage() {
                     marginBottom: '8px',
                     fontSize: '0.7rem',
                     fontWeight: 800,
-                    color: '#374151',
+                    color: '#6d5a8f',
                     textTransform: 'uppercase',
-                    background: '#fde68a',
+                    background: 'rgba(255,255,255,0.55)',
                     borderRadius: '999px',
                     padding: '5px 10px',
                   }}
                 >
                   ⭐ Verified feedback
                 </div>
-                <p style={{ margin: 0, color: '#1f2937', lineHeight: 1.6, fontWeight: 600 }}>"{item.quote}"</p>
-                <p style={{ margin: '12px 0 0', color: '#111827', fontWeight: 800 }}>{item.name}</p>
-                <p style={{ margin: '2px 0 0', color: '#6b7280', fontSize: '0.88rem' }}>{item.role}</p>
+                <p style={{ margin: '0 0 8px', color: '#7c7488', fontSize: '0.85rem', lineHeight: 1.5 }}>{item.context}</p>
+                <p style={{ margin: 0, color: '#4b4560', lineHeight: 1.6, fontWeight: 600 }}>"{item.quote}"</p>
+                <p style={{ margin: '12px 0 0', color: '#4b4560', fontWeight: 800 }}>{item.name}</p>
+                <p style={{ margin: '2px 0 0', color: '#7c7488', fontSize: '0.88rem' }}>{item.role}</p>
               </article>
             ))}
           </div>
@@ -544,6 +607,9 @@ export default function WorkshopsDetailPage() {
           <h2 style={{ textAlign: 'center', margin: '0 0 14px', fontSize: 'clamp(1.7rem, 3.6vw, 2.8rem)', fontWeight: 900, color: '#111827' }}>
             ✅ What schools see
           </h2>
+          <p style={{ maxWidth: '780px', margin: '0 auto 18px', textAlign: 'center', color: '#374151', lineHeight: 1.7 }}>
+            Careers leads and pastoral staff consistently tell us the same three things change after a Talentix workshop: students who usually disengage from careers content start participating, every student leaves with something concrete to show for the session, and staff notice a difference in confidence that carries beyond the workshop itself.
+          </p>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '16px' }} className="outcomes-grid">
             <article style={{ background: 'rgba(255,255,255,0.95)', borderRadius: '20px', padding: '20px', border: '2px solid rgba(255,255,255,0.9)', boxShadow: '0 12px 24px rgba(0,0,0,0.12)' }}>
               <h3 style={{ margin: '0 0 6px', fontSize: '1.15rem', fontWeight: 800, color: '#111827' }}>🙋 More engaged learners</h3>
@@ -560,63 +626,85 @@ export default function WorkshopsDetailPage() {
           </div>
         </section>
 
-        {/* SEN Impact */}
+        {/* SEN Impact + Youth-Led Approach, side by side and condensed */}
         <section data-wp-animate style={{ marginBottom: '30px' }}>
-          <div style={{ textAlign: 'center', marginBottom: '14px' }}>
-            <h2 style={{ display: 'inline-block', margin: 0, fontSize: 'clamp(1.7rem, 3.6vw, 2.8rem)', fontWeight: 900, color: '#111827', border: '3px solid #4ECDC4', borderRadius: '16px', padding: '8px 22px', background: 'rgba(230,250,248,0.9)' }}>
-              💛 Our SEN School Workshop Impact
-            </h2>
-          </div>
-          <div style={{ background: 'linear-gradient(135deg, #e6faf8 0%, #c7f0ec 100%)', borderRadius: '24px', border: '3px solid rgba(78,205,196,0.6)', boxShadow: '0 14px 30px rgba(20, 120, 110, 0.18)', padding: '24px' }}>
-            <p style={{ margin: '0 0 14px', color: '#374151', lineHeight: 1.7 }}>
-              Our SEN school workshops run in both mainstream and specialist SEN settings. For SEN and SEND cohorts, most off-the-shelf careers content does not fit. It moves too fast and assumes confidence many SEN students have not built yet, so we redesign those sessions from the ground up so every student can take part.
-            </p>
-            <p style={{ margin: '0 0 18px', color: '#374151', lineHeight: 1.7 }}>
-              We also build bespoke SEN employability workshops around each cohort. Tell us how your students learn and what you want them to leave with, and we match the pace, language, and activities to them. We are proud of how flexible our school workshops can be.
-            </p>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '12px', marginBottom: '18px' }} className="stats-grid">
-              <article style={{ background: '#ffffff', borderRadius: '16px', padding: '14px', border: '2px solid rgba(78,205,196,0.5)', textAlign: 'center' }}>
-                <p style={{ margin: 0, fontSize: '1.8rem', fontWeight: 900, color: '#111827' }}>500+</p>
-                <p style={{ margin: '4px 0 0', color: '#4b5563', fontSize: '0.88rem', lineHeight: 1.45 }}>students engaged</p>
-              </article>
-              <article style={{ background: '#ffffff', borderRadius: '16px', padding: '14px', border: '2px solid rgba(78,205,196,0.5)', textAlign: 'center' }}>
-                <p style={{ margin: 0, fontSize: '1.8rem', fontWeight: 900, color: '#111827' }}>94%</p>
-                <p style={{ margin: '4px 0 0', color: '#4b5563', fontSize: '0.88rem', lineHeight: 1.45 }}>would recommend us to other schools</p>
-              </article>
-              <article style={{ background: '#ffffff', borderRadius: '16px', padding: '14px', border: '2px solid rgba(78,205,196,0.5)', textAlign: 'center' }}>
-                <p style={{ margin: 0, fontSize: '1.8rem', fontWeight: 900, color: '#111827' }}>100%</p>
-                <p style={{ margin: '4px 0 0', color: '#4b5563', fontSize: '0.88rem', lineHeight: 1.45 }}>of facilitators DBS-checked and SEN-trained</p>
-              </article>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '16px' }} className="approach-impact-grid">
+            {/* SEN Impact */}
+            <div style={{ background: 'linear-gradient(135deg, #e6faf8 0%, #c7f0ec 100%)', borderRadius: '22px', border: '3px solid rgba(78,205,196,0.6)', boxShadow: '0 12px 26px rgba(20, 120, 110, 0.18)', padding: '18px 20px' }}>
+              <h2 style={{ margin: '0 0 8px', fontSize: 'clamp(1.15rem, 2.2vw, 1.5rem)', fontWeight: 900, color: '#111827' }}>
+                💛 Our SEN School Workshop Impact
+              </h2>
+              <p style={{ margin: '0 0 12px', color: '#374151', lineHeight: 1.55, fontSize: '0.92rem' }}>
+                Off-the-shelf careers content rarely fits SEN and SEND cohorts, so we redesign every session from the ground up — plain-English language, visual prompts, and small-group activities matched to how your students learn.
+              </p>
+              <div style={{ display: 'flex', gap: '8px', marginBottom: '12px', flexWrap: 'wrap' }}>
+                <div style={{ background: '#ffffff', borderRadius: '12px', padding: '8px 10px', border: '2px solid rgba(78,205,196,0.5)', textAlign: 'center', flex: '1 1 auto' }}>
+                  <p style={{ margin: 0, fontSize: '1.25rem', fontWeight: 900, color: '#111827' }}>500+</p>
+                  <p style={{ margin: 0, color: '#4b5563', fontSize: '0.72rem', lineHeight: 1.3 }}>students engaged</p>
+                </div>
+                <div style={{ background: '#ffffff', borderRadius: '12px', padding: '8px 10px', border: '2px solid rgba(78,205,196,0.5)', textAlign: 'center', flex: '1 1 auto' }}>
+                  <p style={{ margin: 0, fontSize: '1.25rem', fontWeight: 900, color: '#111827' }}>94%</p>
+                  <p style={{ margin: 0, color: '#4b5563', fontSize: '0.72rem', lineHeight: 1.3 }}>would recommend us</p>
+                </div>
+                <div style={{ background: '#ffffff', borderRadius: '12px', padding: '8px 10px', border: '2px solid rgba(78,205,196,0.5)', textAlign: 'center', flex: '1 1 auto' }}>
+                  <p style={{ margin: 0, fontSize: '1.25rem', fontWeight: 900, color: '#111827' }}>100%</p>
+                  <p style={{ margin: 0, color: '#4b5563', fontSize: '0.72rem', lineHeight: 1.3 }}>DBS &amp; SEN-trained</p>
+                </div>
+              </div>
+              <ul style={{ margin: 0, paddingLeft: '18px', color: '#374151', lineHeight: 1.5, fontSize: '0.88rem' }}>
+                <li>Small-group activities so quieter students can contribute</li>
+                <li>Youth-led facilitation removes the teacher/student power dynamic</li>
+                <li>Take-home outputs so progress does not end at the door</li>
+              </ul>
             </div>
-            <ul style={{ margin: 0, paddingLeft: '20px', color: '#374151', lineHeight: 1.8 }}>
-              <li>Plain-English language with visual prompts on every slide</li>
-              <li>Small-group activities so quieter students can contribute</li>
-              <li>Youth-led facilitation that removes the teacher and student power dynamic</li>
-              <li>Take-home outputs so progress does not end at the door</li>
-            </ul>
+
+            {/* Youth-Led Approach */}
+            <div style={{ background: 'linear-gradient(135deg, #eaf2fd 0%, #e7ecfb 100%)', borderRadius: '22px', border: '3px solid rgba(74,144,226,0.55)', boxShadow: '0 12px 26px rgba(29, 78, 216, 0.16)', padding: '18px 20px' }}>
+              <h2 style={{ margin: '0 0 8px', fontSize: 'clamp(1.15rem, 2.2vw, 1.5rem)', fontWeight: 900, color: '#111827' }}>
+                🙌 Our Youth-Led Approach
+              </h2>
+              <p style={{ margin: '0 0 12px', color: '#374151', lineHeight: 1.55, fontSize: '0.92rem' }}>
+                Our workshops are run by young people, not long out of school themselves. Being peer-led changes how the room feels — students drop their guard, ask the questions they actually have, and look up to a role model close to their own age.
+              </p>
+              <ul style={{ margin: 0, paddingLeft: '18px', color: '#374151', lineHeight: 1.5, fontSize: '0.88rem' }}>
+                <li>A relatable role model students can aspire to</li>
+                <li>Closeness in age means the message resonates and sticks</li>
+                <li>The teacher/student power dynamic disappears, so quieter students speak up</li>
+                <li>Sessions stay current and real, not a lecture from the front</li>
+              </ul>
+            </div>
           </div>
         </section>
 
-        {/* Youth-Led Approach */}
+        {/* FAQ */}
         <section data-wp-animate style={{ marginBottom: '30px' }}>
-          <div style={{ textAlign: 'center', marginBottom: '14px' }}>
-            <h2 style={{ display: 'inline-block', margin: 0, fontSize: 'clamp(1.7rem, 3.6vw, 2.8rem)', fontWeight: 900, color: '#111827', border: '3px solid #4A90E2', borderRadius: '16px', padding: '8px 22px', background: 'rgba(234,242,253,0.9)' }}>
-              🙌 Our Youth-Led Approach
-            </h2>
-          </div>
-          <div style={{ background: 'linear-gradient(135deg, #eaf2fd 0%, #e7ecfb 100%)', borderRadius: '24px', border: '3px solid rgba(74,144,226,0.55)', boxShadow: '0 14px 30px rgba(29, 78, 216, 0.16)', padding: '24px' }}>
-            <p style={{ margin: '0 0 14px', color: '#374151', lineHeight: 1.7 }}>
-              Our workshops are run by young people, not long out of school themselves. Being peer-led changes how the room feels. Students drop their guard, ask the questions they actually have, and stay in the session.
-            </p>
-            <p style={{ margin: '0 0 18px', color: '#374151', lineHeight: 1.7 }}>
-              A peer-led session gives students a role model close to their own age, someone they can look up to and want to be like. Because the person at the front is barely older than them, the content lands and they resonate with it far more than they would from a lecture.
-            </p>
-            <ul style={{ margin: 0, paddingLeft: '20px', color: '#374151', lineHeight: 1.8 }}>
-              <li>A relatable role model students can aspire to</li>
-              <li>Closeness in age means the message resonates and sticks</li>
-              <li>The teacher and student power dynamic disappears, so quieter students speak up</li>
-              <li>Sessions stay current and real, not a lecture from the front</li>
-            </ul>
+          <h2
+            style={{
+              textAlign: 'center',
+              margin: '0 0 14px',
+              fontSize: 'clamp(1.7rem, 3.6vw, 2.8rem)',
+              fontWeight: 900,
+              color: '#111827',
+            }}
+          >
+            ❓ Frequently Asked Questions
+          </h2>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '12px', maxWidth: '1160px', margin: '0 auto' }} className="faq-grid">
+            {faqs.map((faq) => (
+              <article
+                key={faq.question}
+                style={{
+                  background: 'rgba(255,255,255,0.93)',
+                  borderRadius: '18px',
+                  border: '2px solid rgba(255,255,255,0.9)',
+                  boxShadow: '0 10px 20px rgba(0,0,0,0.1)',
+                  padding: '16px 18px',
+                }}
+              >
+                <h3 style={{ margin: '0 0 6px', fontSize: '0.98rem', fontWeight: 800, color: '#111827' }}>{faq.question}</h3>
+                <p style={{ margin: 0, color: '#374151', lineHeight: 1.55, fontSize: '0.88rem' }}>{faq.answer}</p>
+              </article>
+            ))}
           </div>
         </section>
 
@@ -635,9 +723,21 @@ export default function WorkshopsDetailPage() {
           <h3 style={{ margin: '0 0 8px', fontSize: 'clamp(1.5rem, 3.5vw, 2.4rem)', fontWeight: 900, color: '#111827' }}>
             🎉 Book an Employability School Workshop
           </h3>
-          <p style={{ maxWidth: '760px', margin: '0 auto 18px', color: '#1f2937', fontWeight: 500 }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', margin: '0 0 12px', background: '#111827', color: '#facc15', fontWeight: 800, fontSize: '0.9rem', borderRadius: '999px', padding: '7px 16px' }}>
+            🏷️ New school? Get 15% off your first workshop
+          </div>
+          <p style={{ maxWidth: '760px', margin: '0 auto 10px', color: '#1f2937', fontWeight: 500 }}>
             For a quote, tell us three things: the size of your cohort, the length of the workshop, and the workshop type. Email us and we will come back with options.
           </p>
+          <div style={{ maxWidth: '760px', margin: '0 auto 18px', textAlign: 'left', background: 'rgba(255,255,255,0.55)', borderRadius: '16px', padding: '16px 20px' }}>
+            <p style={{ margin: '0 0 8px', color: '#111827', fontWeight: 800, fontSize: '0.95rem' }}>How booking works:</p>
+            <ol style={{ margin: 0, paddingLeft: '20px', color: '#1f2937', lineHeight: 1.7, fontSize: '0.92rem' }}>
+              <li>Email us or download the proposal below with your cohort size, session length, and workshop type.</li>
+              <li>We arrange a short scoping call to understand your students and what you want them to leave with.</li>
+              <li>We send a tailored proposal and quote based on that call.</li>
+              <li>Your facilitator delivers the workshop, and students leave with a take-home output.</li>
+            </ol>
+          </div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', justifyContent: 'center' }}>
             <a
               href="/Talentix%20Workshops%20Proposal.pdf"
@@ -679,7 +779,7 @@ export default function WorkshopsDetailPage() {
 
         <div style={{ textAlign: 'center', marginTop: '24px' }}>
           <button
-            onClick={() => router.push('/home')}
+            onClick={() => router.push('/')}
             style={{
               background: 'linear-gradient(135deg, #374151 0%, #1f2937 100%)',
               color: 'white',
@@ -719,6 +819,14 @@ export default function WorkshopsDetailPage() {
           .stats-grid {
             grid-template-columns: 1fr 1fr !important;
           }
+
+          .faq-grid {
+            grid-template-columns: 1fr 1fr !important;
+          }
+
+          .approach-impact-grid {
+            grid-template-columns: 1fr !important;
+          }
         }
 
         @media (max-width: 640px) {
@@ -731,6 +839,10 @@ export default function WorkshopsDetailPage() {
           }
 
           .stats-grid {
+            grid-template-columns: 1fr !important;
+          }
+
+          .faq-grid {
             grid-template-columns: 1fr !important;
           }
         }

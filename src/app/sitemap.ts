@@ -18,7 +18,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const mediumPriorityPages = [
     { path: '/cover-letter', priority: 0.7, changeFrequency: 'weekly' as const },
     { path: '/career-guidance', priority: 0.8, changeFrequency: 'weekly' as const },
-    { path: '/our-services/workshops', priority: 0.8, changeFrequency: 'monthly' as const },
+    { path: '/workshops', priority: 0.8, changeFrequency: 'monthly' as const },
     { path: '/events', priority: 0.6, changeFrequency: 'weekly' as const },
   ]
 

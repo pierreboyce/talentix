@@ -38,18 +38,18 @@ export default function NavigationMobile() {
   // Define pages where the header should not be sticky
   const excludedPages = [
     '/', // Landing page should NOT be sticky
-    '/our-services',
+    '/workshops',
     '/video-interview',
   ];
-  
+
   // Define pages where mobile navigation should be completely hidden
   const hiddenPages: string[] = [
     // '/video-interview', // Removed - we want to show header on video interview page
   ];
-  
-  const isExcludedPage = excludedPages.some(page => 
-    pathname === page || 
-    pathname.startsWith('/our-services')
+
+  const isExcludedPage = excludedPages.some(page =>
+    pathname === page ||
+    pathname.startsWith('/workshops')
   );
   const isHiddenPage = hiddenPages.some(page => 
     pathname === page || 
@@ -271,11 +271,11 @@ export default function NavigationMobile() {
           {/* Logo on the left */}
           <div className="flex items-center">
             <a
-              href="/home"
+              href="/"
               className="flex items-center"
               onClick={(e) => {
                 e.preventDefault();
-                if (typeof window !== 'undefined') window.location.assign('/home');
+                if (typeof window !== 'undefined') window.location.assign('/');
               }}
             >
               <Image
@@ -288,6 +288,16 @@ export default function NavigationMobile() {
               />
             </a>
           </div>
+
+          {/* Primary nav links, always present in the server-rendered HTML for crawlers.
+              Visually hidden here because the interactive menu (rendered via portal below)
+              provides the same destinations once client JS has hydrated. */}
+          <nav className="sr-only" aria-hidden="true">
+            <Link href="/">Home</Link>
+            <Link href="/workshops">Workshops</Link>
+            <Link href="/events">Events</Link>
+            <Link href="/career-guidance">Career Guidance</Link>
+          </nav>
 
           {/* Navigation buttons on the right - aligned horizontally with logo */}
           {!user ? (
@@ -651,7 +661,7 @@ export default function NavigationMobile() {
                       {!showJobResourcesSubmenu ? (
                         <>
                           <button
-                            onClick={() => { toggleHeaderPanel(); router.push('/our-services/workshops'); }}
+                            onClick={() => { toggleHeaderPanel(); router.push('/workshops'); }}
                             style={{
                               background: 'linear-gradient(135deg, #ddd6fe 0%, #a78bfa 100%)',
                               color: '#374151',
@@ -1035,7 +1045,7 @@ export default function NavigationMobile() {
                         🎓 Career Guidance
                       </button>
                       <button
-                        onClick={() => { toggleHeaderPanel(); router.push('/our-services/workshops'); }}
+                        onClick={() => { toggleHeaderPanel(); router.push('/workshops'); }}
                         style={{
                           background: 'linear-gradient(135deg, #ddd6fe 0%, #a78bfa 100%)',
                           color: '#374151',

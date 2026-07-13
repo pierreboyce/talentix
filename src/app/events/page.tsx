@@ -20,7 +20,7 @@ const jsonLdEvents = [
 ];
 
 export const metadata: Metadata = {
-  title: 'Events - Career Workshops & Webinars for UK Students | Talentix',
+  title: 'Events - Career Workshops & Webinars for UK Students',
   description: 'Upcoming Talentix events including career workshops, webinars, and sessions for UK teenagers. Learn about job searching, interview prep, and getting your first job.',
   keywords: [
     'Talentix events',

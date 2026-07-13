@@ -43,7 +43,7 @@ export default function Settings() {
   useEffect(() => {
     // Only redirect if we're mounted and have finished loading
     if (typeof window !== 'undefined' && !loading && !user) {
-      router.push('/home');
+      router.push('/');
       return;
     }
     
@@ -111,7 +111,7 @@ export default function Settings() {
           showMessage('success', 'Account deletion initiated. You will be signed out shortly.');
           setTimeout(() => {
             signOut();
-            router.push('/home');
+            router.push('/');
           }, 3000);
         } catch (error) {
           showMessage('error', 'Failed to delete account. Please contact support.');

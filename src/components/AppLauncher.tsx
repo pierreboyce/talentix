@@ -135,10 +135,10 @@ const accountCompanyApps: AppItem[] = [
     color: 'bg-gradient-to-br from-gray-400 to-gray-600'
   },
   {
-    id: 'our-services',
+    id: 'workshops',
     name: 'Talentix Workshops',
     emoji: '🛠️',
-    href: '/our-services/workshops',
+    href: '/workshops',
     color: 'bg-gradient-to-br from-purple-400 to-purple-600'
   }
 ];

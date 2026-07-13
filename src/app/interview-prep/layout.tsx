@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Interview Practice Tool | Talentix',
+  title: 'Interview Practice Tool',
   description: 'Practice interview questions tailored to your dream job. Free interview prep tool for UK teenagers preparing for their first job interview. Build confidence with AI-powered interview practice.',
   keywords: [
     'interview prep UK',

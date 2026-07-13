@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Terms of Service - User Agreement | Talentix',
+  title: 'Terms of Service - User Agreement',
   description: 'Read Talentix terms of service and user agreement. Understand the rules and guidelines for using our career tools and job search platform as a UK teenager or student.',
   keywords: [
     'Talentix terms of service',
