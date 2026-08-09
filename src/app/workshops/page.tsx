@@ -208,6 +208,25 @@ export default function WorkshopsDetailPage() {
       <div style={{ position: 'absolute', bottom: '8%', right: '6%', fontSize: '3.8rem', opacity: 0.15 }}>💼</div>
 
       <style dangerouslySetInnerHTML={{ __html: `
+        .workshops-hero-title-break {
+          display: none;
+        }
+        .workshops-hero-scroll-cta {
+          display: none;
+        }
+        .workshops-hero-title-accent {
+          background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 55%, #d97706 100%);
+          -webkit-background-clip: text;
+          background-clip: text;
+          -webkit-text-fill-color: transparent;
+        }
+        .workshops-hero-eyebrow {
+          background: #fff8ec;
+          border: 1.5px solid rgba(217, 119, 6, 0.3);
+          border-radius: 18px;
+          padding: 10px 16px;
+          box-shadow: 0 4px 14px rgba(217, 119, 6, 0.1);
+        }
         [data-wp-animate] {
           opacity: 0;
           transform: translateY(26px);
@@ -239,6 +258,60 @@ export default function WorkshopsDetailPage() {
             grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
           }
         }
+        @media (max-width: 640px) {
+          .workshops-hero-eyebrow {
+            display: flex !important;
+            font-size: 0.78rem !important;
+            font-weight: 700 !important;
+            color: #b45309 !important;
+            margin: 0 auto 14px !important;
+            gap: 6px !important;
+            line-height: 1.4 !important;
+            max-width: 88% !important;
+          }
+          .workshops-hero-eyebrow span:first-child {
+            font-size: 0.95rem !important;
+            line-height: 1.4 !important;
+          }
+          .workshops-hero-title {
+            font-size: clamp(1.6rem, 7.4vw, 2.05rem) !important;
+            line-height: 1.2 !important;
+            margin: 4px 0 10px !important;
+          }
+          .workshops-hero-title-break {
+            display: block !important;
+          }
+          .workshops-hero-subtitle {
+            display: none !important;
+          }
+          .workshops-hero-description {
+            font-size: 0.82rem !important;
+            line-height: 1.5 !important;
+            margin-top: 6px !important;
+          }
+          .workshops-hero-scroll-cta {
+            display: flex !important;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            margin: 16px auto 0;
+            padding: 8px 16px;
+            width: fit-content;
+            border-radius: 999px;
+            background: rgba(245, 158, 11, 0.12);
+            color: #b45309;
+            font-size: 0.85rem;
+            font-weight: 700;
+          }
+          .workshops-hero-scroll-cta-arrow {
+            display: inline-block;
+            animation: workshopsScrollBounce 1.6s ease-in-out infinite;
+          }
+          @keyframes workshopsScrollBounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(4px); }
+          }
+        }
       `}} />
 
       <div style={{ maxWidth: '1200px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
@@ -257,18 +330,19 @@ export default function WorkshopsDetailPage() {
           }}
         >
           <Image
-            src="/talentixworkshopslogo.png"
+            src="/talentixworkshopsupdatedlogo.png"
             alt="Talentix Workshops"
             width={340}
             height={150}
-            style={{ width: 'min(340px, 75vw)', height: 'auto', margin: '0 auto 10px', display: 'block' }}
+            style={{ width: 'min(230px, 55vw)', height: 'auto', margin: '0 auto 10px', display: 'block' }}
             priority
           />
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', marginBottom: '8px', color: '#374151', fontWeight: 700 }}>
+          <div className="workshops-hero-eyebrow" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', marginBottom: '8px', color: '#374151', fontWeight: 700 }}>
             <span>🎨</span>
-            <span>Employability Workshops for UK Secondary Schools</span>
+            <span>In-school employability workshops for mainstream, SEND and alternative provision students</span>
           </div>
           <h1
+            className="workshops-hero-title"
             style={{
               fontSize: 'clamp(1.5rem, 3.2vw, 2.6rem)',
               fontWeight: 900,
@@ -278,14 +352,18 @@ export default function WorkshopsDetailPage() {
               lineHeight: 1.04,
             }}
           >
-            Employability Workshops for UK Secondary Schools
+            Youth-Led Employability<br className="workshops-hero-title-break" /> Workshops for <span className="workshops-hero-title-accent">Schools & Colleges</span>
           </h1>
-          <p style={{ maxWidth: '860px', margin: '4px auto 0', color: '#374151', fontWeight: 600, fontSize: '1.1rem' }}>
-            Interactive, youth-led sessions that students actually remember
+          <p className="workshops-hero-subtitle" style={{ maxWidth: '860px', margin: '4px auto 0', color: '#374151', fontWeight: 600, fontSize: '1.1rem' }}>
+            Practical, interactive sessions that prepare students for jobs, apprenticeships and life beyond school
           </p>
-          <p style={{ maxWidth: '860px', margin: '12px auto 0', color: '#4b5563', lineHeight: 1.7, fontSize: '1.05rem' }}>
-            Talentix delivers employability workshops for secondary students in Years 10 to 13 across UK schools. Sessions are youth-led, DBS-checked, and fully adapted for SEN and SEND cohorts. We work with mainstream schools, specialist SEN settings, and sixth forms across the UK.
+          <p className="workshops-hero-description" style={{ maxWidth: '860px', margin: '12px auto 0', color: '#4b5563', lineHeight: 1.7, fontSize: '1.05rem' }}>
+            Talentix delivers employability workshops for students across UK schools. Sessions are youth-led, DBS-checked, and can be fully adapted for SEND and alternative provision cohorts. We work with mainstream schools, specialist SEN settings, colleges and sixth forms across the UK.
           </p>
+          <div className="workshops-hero-scroll-cta">
+            <span className="workshops-hero-scroll-cta-arrow">↓</span>
+            Scroll down for more information
+          </div>
         </div>
 
         {/* Hero grid — image + highlights */}

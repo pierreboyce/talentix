@@ -555,7 +555,7 @@ function HomeContent() {
         <div className="max-w-6xl mx-auto relative z-10">
           <div className="workshops-layout" data-hp-animate>
             <Image
-              src="/talentixworkshopslogo.png"
+              src="/talentixworkshopsupdatedlogo.png"
               alt="Talentix Workshops logo"
               width={260}
               height={120}
@@ -591,7 +591,7 @@ function HomeContent() {
 
             <div className="workshops-right">
               <Image
-                src="/talentixworkshopslogo.png"
+                src="/talentixworkshopsupdatedlogo.png"
                 alt="Talentix Workshops logo"
                 width={220}
                 height={102}
@@ -1139,7 +1139,7 @@ function HomeContent() {
           top: -2.6rem;
           left: 0;
           margin: 0;
-          width: clamp(290px, 42vw, 520px);
+          width: clamp(200px, 30vw, 360px);
           height: auto;
           z-index: 0;
         }
@@ -1396,18 +1396,9 @@ function HomeContent() {
         }
 
         @media (max-width: 768px) {
-          .hero-split-break {
-            display: block;
-          }
-
-          .hero-word-gold {
-            -webkit-text-stroke: 0;
-            text-shadow: 0 1px 2px rgba(255, 255, 255, 0.25);
-          }
-
-          .hero-word-black {
-            font-size: 1.22em;
-            line-height: 0.9;
+          .float {
+            font-size: 2.4rem !important;
+            opacity: 0.16 !important;
           }
 
           .hero-layout-wrap {
@@ -1432,7 +1423,7 @@ function HomeContent() {
           }
 
           .hero-main-heading {
-            font-size: clamp(3rem, 10.8vw, 4.15rem) !important;
+            font-size: clamp(2.2rem, 10.8vw, 4.15rem) !important;
             line-height: 0.84 !important;
             letter-spacing: -0.03em !important;
             text-shadow: 0 6px 18px rgba(17, 24, 39, 0.1);
@@ -1475,7 +1466,7 @@ function HomeContent() {
 
           .workshops-mobile-top-logo {
             display: block;
-            width: clamp(200px, 66vw, 330px);
+            width: clamp(140px, 46vw, 230px);
             height: auto;
             margin: 0 auto 0.6rem;
           }

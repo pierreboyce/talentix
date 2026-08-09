@@ -73,7 +73,7 @@ const jsonLd = {
 };
 
 export const metadata: Metadata = {
-  title: 'Employability Workshops for UK Secondary Schools',
+  title: 'Youth-Led Employability Workshops for Schools & Colleges',
   description:
     'Youth-led employability workshops for Years 10-13 in UK secondary schools. Interactive CVs, interviews, and confidence-building sessions — fully adapted for SEN and SEND cohorts. Book a workshop today.',
   keywords: [
