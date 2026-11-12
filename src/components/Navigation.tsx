@@ -288,36 +288,6 @@ export default function Navigation() {
                   📚 Job Resources
                 </button>
                 <Link
-                  href="/events"
-                  style={{
-                    display: 'inline-block',
-                    textDecoration: 'none',
-                    background: 'linear-gradient(135deg, #fecaca 0%, #f87171 100%)',
-                    color: '#374151',
-                    padding: '10px 18px',
-                    borderRadius: '25px',
-                    border: 'none',
-                    fontSize: '14px',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                    transition: 'all 0.3s ease',
-                    boxShadow: '0 4px 15px rgba(248, 113, 113, 0.3)',
-                    fontFamily: "'Fredoka', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = 'translateY(-3px) scale(1.05)';
-                    e.currentTarget.style.boxShadow = '0 8px 25px rgba(248, 113, 113, 0.4)';
-                    e.currentTarget.style.background = 'linear-gradient(135deg, #f87171 0%, #ef4444 100%)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = 'translateY(0) scale(1)';
-                    e.currentTarget.style.boxShadow = '0 4px 15px rgba(248, 113, 113, 0.3)';
-                    e.currentTarget.style.background = 'linear-gradient(135deg, #fecaca 0%, #f87171 100%)';
-                  }}
-                >
-                  🎉 Events
-                </Link>
-                <Link
                   href="/career-guidance"
                   style={{
                     display: 'inline-block',

@@ -35,11 +35,16 @@ const fredoka = Fredoka({
 export const metadata: Metadata = {
   metadataBase: new URL('https://talentix.co.uk'),
   title: {
-    default: 'Talentix | Jobs & Employability Support for Teenagers in the UK',
+    default: "Talentix | UK's Leading Youth-Led Employability Delivery Provider",
     template: '%s | Talentix',
   },
-  description: 'Talentix helps teenagers across the UK find their first job, develop employability skills, and build their careers. Browse jobs, workshops, and expert careers guidance.',
+  description: "Talentix is the UK's leading youth-led employability delivery provider. Talentix Workshops run in schools and colleges for Years 10 to 13, including SEN and SEND students, alongside free events, jobs and careers guidance for teenagers.",
   keywords: [
+    'youth-led employability workshops',
+    'employability workshops for schools UK',
+    'careers workshops for secondary schools',
+    'SEN employability workshops',
+    'Gatsby Benchmark workshop provider',
     'first jobs for teenagers UK',
     'jobs for teens UK',
     'teen jobs UK',
@@ -72,16 +77,16 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     url: 'https://talentix.co.uk/',
-    title: 'Talentix — Where UK Teenagers Start Their Career Journey',
-    description: 'Talentix helps teenagers across the UK find their first job, develop employability skills, and build their careers. Browse jobs, workshops, and expert careers guidance.',
+    title: "Talentix | UK's Leading Youth-Led Employability Delivery Provider",
+    description: "Talentix is the UK's leading youth-led employability delivery provider. Talentix Workshops run in schools and colleges for Years 10 to 13, including SEN and SEND students, alongside free events, jobs and careers guidance for teenagers.",
     siteName: 'Talentix',
-    images: [{ url: '/og-image.jpg', width: 1200, height: 630, alt: 'Talentix - Jobs & Employability Support for Teenagers in the UK' }],
+    images: [{ url: '/og-image.jpg', width: 1200, height: 630, alt: "Talentix, the UK's leading youth-led employability delivery provider" }],
     locale: 'en_GB',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Talentix — Where UK Teenagers Start Their Career Journey',
-    description: 'Talentix helps UK teenagers find their first job, develop employability skills, and access careers guidance. For teenagers by teenagers.',
+    title: "Talentix | UK's Leading Youth-Led Employability Delivery Provider",
+    description: "Talentix is the UK's leading youth-led employability delivery provider. Talentix Workshops run in schools and colleges for Years 10 to 13, including SEN and SEND students, alongside free events, jobs and careers guidance for teenagers.",
     images: ['/og-image.jpg'],
   },
   robots: {
@@ -160,7 +165,7 @@ export default function RootLayout({
                 height: 225
               },
               image: 'https://talentix.co.uk/og-image.jpg',
-              description: 'Talentix helps teenagers across the UK find their first job, develop employability skills, and build their careers. Browse jobs, workshops, and expert careers guidance.',
+              description: "Talentix is the UK's leading youth-led employability delivery provider. Talentix Workshops run in schools and colleges for Years 10 to 13, including SEN and SEND students, alongside free events, jobs and careers guidance for teenagers.",
               address: {
                 '@type': 'PostalAddress',
                 addressCountry: 'GB'

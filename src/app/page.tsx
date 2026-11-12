@@ -465,7 +465,7 @@ function HomeContent() {
       data-is-mobile={isMobile ? 'true' : 'false'}
     >
       {/* New Hero Section */}
-      <section className="relative min-h-screen lg:min-h-[calc(100vh-80px)] flex items-center justify-center px-8 md:px-12 lg:px-16 xl:px-20 py-20 md:py-28 lg:py-8 xl:py-10 overflow-hidden">
+      <section className="hero-section relative min-h-screen lg:min-h-[calc(100vh-80px)] flex items-center justify-center px-8 md:px-12 lg:px-16 xl:px-20 py-20 md:py-28 lg:py-8 xl:py-10 overflow-hidden">
         {/* Floating Emojis */}
         {floatingEmojis.map((item, index) => (
           <div
@@ -501,28 +501,38 @@ function HomeContent() {
             {/* Text Container - Centered but slightly left */}
             <div className="hero-text-container w-full lg:w-auto px-8 md:px-12 lg:px-0">
               <h1
-                className="hero-main-heading text-[3.2rem] md:text-[5rem] lg:text-[10rem] xl:text-[12rem] font-black leading-[0.9] tracking-[-0.02em] mb-0"
+                className="hero-main-heading font-black mb-0"
                 style={{
                   fontFamily: "'Fredoka', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-                  textShadow: "0 6px 18px rgba(17, 24, 39, 0.12)",
-                  letterSpacing: "-0.02em",
                 }}
               >
-                <span className="hero-word-black" style={{ display: 'inline-block', marginRight: '0.22em', ...(animReady && { animation: 'wordPop 380ms ease-out 0ms both' }) }}>FOR</span>
-                <br className="hero-split-break" />
-                <span className="hero-word-gold" style={{ display: 'inline-block', ...(animReady && { animation: 'wordPop 380ms ease-out 130ms both' }) }}>TEENAGERS</span>
-                <br />
-                <span className="hero-word-black" style={{ display: 'inline-block', marginRight: '0.22em', ...(animReady && { animation: 'wordPop 380ms ease-out 260ms both' }) }}>BY</span>
-                <br className="hero-split-break" />
-                <span className="hero-word-gold" style={{ display: 'inline-block', ...(animReady && { animation: 'wordPop 380ms ease-out 390ms both' }) }}>TEENAGERS</span>
+                <span className="hero-line hero-word-black" style={animReady ? { animation: 'wordPop 380ms ease-out 0ms both' } : undefined}>UK&apos;s Leading</span>{' '}
+                <span className="hero-line" style={animReady ? { animation: 'wordPop 380ms ease-out 130ms both' } : undefined}><span className="hero-highlight">Youth-Led</span></span>{' '}
+                <span className="hero-line hero-word-black" style={animReady ? { animation: 'wordPop 380ms ease-out 260ms both' } : undefined}>Employability</span>{' '}
+                <span className="hero-line hero-word-black" style={animReady ? { animation: 'wordPop 380ms ease-out 390ms both' } : undefined}>Delivery Provider</span>
               </h1>
-              <div className="hero-what-we-do-wrap mt-8 md:mt-10 lg:mt-16 xl:mt-20">
+              <p
+                className="hero-subline"
+                style={{ fontFamily: "'Fredoka', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}
+              >
+                In-school Talentix Workshops for Years 10 to 13, in mainstream, SEN and SEND settings.
+              </p>
+              <div className="hero-what-we-do-wrap">
                 <button
-                  onClick={() => setShowWhatWeDoModal(true)}
-                  className="hero-what-we-do-btn btn-primary-purple-small border-3 border-purple-400/80 rounded-lg text-base font-semibold relative z-10"
+                  type="button"
+                  onClick={() => router.push('/workshops')}
+                  className="hero-btn hero-btn-primary relative z-10"
                   style={{ fontFamily: "'Fredoka', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}
                 >
-                  What do we do? 🤔
+                  Explore Talentix Workshops
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowWhatWeDoModal(true)}
+                  className="hero-btn hero-btn-secondary relative z-10"
+                  style={{ fontFamily: "'Fredoka', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}
+                >
+                  What does this mean? 🤔
                 </button>
               </div>
           </div>
@@ -680,7 +690,7 @@ function HomeContent() {
             <div style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: '80px', background: 'linear-gradient(to left, #FFD700, transparent)', zIndex: 2, pointerEvents: 'none' }} />
             <div className="logos-marquee-track">
               {[...workedWithLogos, ...workedWithLogos].map((logo, i) => (
-                <div key={i} className="logo-mq-card">
+                <div key={i} className="logo-mq-tile">
                   <Image
                     src={logo.src}
                     alt={logo.alt}
@@ -727,13 +737,13 @@ function HomeContent() {
           <div style={{ textAlign: 'center' }}>
             <div style={{ background: 'linear-gradient(135deg, #FDE047 0%, #F97316 100%)', borderRadius: '24px', padding: '40px', maxWidth: '600px', margin: '0 auto', boxShadow: '0 20px 40px rgba(0, 0, 0, 0.2)' }}>
               <h3 style={{ fontSize: '1.8rem', fontWeight: 'bold', color: '#111827', marginBottom: '12px', fontFamily: 'Fredoka, sans-serif' }}>
-                Ready to get started? 🚀
+                Want Talentix in your school? 🚀
               </h3>
               <p style={{ color: '#374151', marginBottom: '24px', fontFamily: 'Fredoka, sans-serif', fontSize: '1.1rem' }}>
-                Join Talentix and take your next step today.
+                Book a Talentix Workshop for your Year 10 to 13, SEN or SEND students.
               </p>
-              <button onClick={() => setShowSignUpModal(true)} style={{ background: '#111827', color: 'white', fontWeight: 'bold', padding: '16px 32px', borderRadius: '16px', border: 'none', cursor: 'pointer', fontSize: '1.1rem', fontFamily: 'Fredoka, sans-serif', boxShadow: '0 8px 16px rgba(0, 0, 0, 0.3)' }}>
-                Get Started Free 💫
+              <button onClick={() => router.push('/workshops')} style={{ background: '#111827', color: 'white', fontWeight: 'bold', padding: '16px 32px', borderRadius: '16px', border: 'none', cursor: 'pointer', fontSize: '1.1rem', fontFamily: 'Fredoka, sans-serif', boxShadow: '0 8px 16px rgba(0, 0, 0, 0.3)' }}>
+                Explore Talentix Workshops 💫
               </button>
             </div>
           </div>
@@ -817,7 +827,7 @@ function HomeContent() {
         onClose={() => setShowSignInModal(false)}
       />
 
-      {/* What do we do? Modal - Simple Test */}
+      {/* What does this mean? Modal */}
       {showWhatWeDoModal ? (
         <div
           style={{
@@ -874,28 +884,28 @@ function HomeContent() {
             {/* Content */}
             <div style={{ textAlign: 'center' }}>
               <h2 className="modal-title" style={{ fontSize: '34px', fontWeight: 'bold', marginBottom: '14px', fontFamily: "'Fredoka', sans-serif" }}>
-                What we do 🎉
+                What does this mean? 🤔
               </h2>
               <p className="modal-description" style={{ fontSize: '17px', marginBottom: '24px', lineHeight: 1.6, color: '#374151' }}>
-                <strong>Talentix</strong> is a youth-led employment organisation. We help teenagers take their next step through in-school workshops, free online events, and a platform built for teens.
+                <strong>Talentix</strong> is the UK&apos;s leading youth-led employability delivery provider.
               </p>
               <div style={{ display: 'grid', gap: '14px', marginBottom: '26px', textAlign: 'left' }}>
                 <div style={{ background: '#f9fafb', borderLeft: '6px solid #FFD23F', borderRadius: '12px', padding: '16px 18px' }}>
-                  <h3 style={{ margin: '0 0 6px', fontSize: '18px', fontWeight: 800, color: '#1a1a2e', fontFamily: "'Fredoka', sans-serif" }}>🏫 Workshops</h3>
+                  <h3 style={{ margin: '0 0 6px', fontSize: '18px', fontWeight: 800, color: '#1a1a2e', fontFamily: "'Fredoka', sans-serif" }}>🙋 Youth-led</h3>
                   <p style={{ margin: 0, fontSize: '14.5px', lineHeight: 1.6, color: '#374151' }}>
-                    In-school employability workshops for Years 10 to 13. Two flagship formats: Teens and Jobs covers CVs, mock interviews, and job search. Future Ready Teens builds confidence, communication, goal-setting, and personal branding. We also build bespoke sessions around your cohort. Every facilitator is DBS-checked and SEN-trained, and sessions are adapted for SEN and SEND learners in mainstream and specialist settings. 94% of students recommend us to other schools.
+                    Talentix Workshops are peer-led. Our facilitators are close in age to the students, so the connection is real and sessions feel authentic and engaging. They act as role models, which bridges the gap that can sit between teachers and students in traditional education. That relatability drives the impact: students leave with practical employability skills and a clearer direction for their future.
+                  </p>
+                </div>
+                <div style={{ background: '#f9fafb', borderLeft: '6px solid #FF6B9D', borderRadius: '12px', padding: '16px 18px' }}>
+                  <h3 style={{ margin: '0 0 6px', fontSize: '18px', fontWeight: 800, color: '#1a1a2e', fontFamily: "'Fredoka', sans-serif" }}>💼 Employability</h3>
+                  <p style={{ margin: 0, fontSize: '14.5px', lineHeight: 1.6, color: '#374151' }}>
+                    The skills that get a young person hired and help them stay hired. We cover up to 16 employability topics, from CVs, mock interviews and job search to confidence, communication, goal-setting and personal branding.
                   </p>
                 </div>
                 <div style={{ background: '#f9fafb', borderLeft: '6px solid #4ECDC4', borderRadius: '12px', padding: '16px 18px' }}>
-                  <h3 style={{ margin: '0 0 6px', fontSize: '18px', fontWeight: 800, color: '#1a1a2e', fontFamily: "'Fredoka', sans-serif" }}>🎤 Events</h3>
+                  <h3 style={{ margin: '0 0 6px', fontSize: '18px', fontWeight: 800, color: '#1a1a2e', fontFamily: "'Fredoka', sans-serif" }}>🏫 UK&apos;s leading delivery provider</h3>
                   <p style={{ margin: 0, fontSize: '14.5px', lineHeight: 1.6, color: '#374151' }}>
-                    Free online career events open to teens across the UK. Past events include our Ultimate CV Workshop and an Assessment Centre and Interview Masterclass with RISE. Our Mock Interview Series puts students in front of real professionals by sector.
-                  </p>
-                </div>
-                <div style={{ background: '#f9fafb', borderLeft: '6px solid #4A90E2', borderRadius: '12px', padding: '16px 18px' }}>
-                  <h3 style={{ margin: '0 0 6px', fontSize: '18px', fontWeight: 800, color: '#1a1a2e', fontFamily: "'Fredoka', sans-serif" }}>💻 Platform</h3>
-                  <p style={{ margin: 0, fontSize: '14.5px', lineHeight: 1.6, color: '#374151' }}>
-                    talentix.co.uk gives teens job search, a CV reviewer, interview prep, and AI career guidance. Built for teens, by teens.
+                    We come into your school and run the sessions for you. We have worked with 500+ students in schools across the UK, through template workshops and bespoke workshops built from up to 16 employability topics.
                   </p>
                 </div>
               </div>
@@ -904,7 +914,7 @@ function HomeContent() {
               <button
                 onClick={() => {
                   setShowWhatWeDoModal(false);
-                  setShowSignUpModal(true);
+                  router.push('/workshops');
                 }}
                 style={{
                   backgroundColor: '#8b5cf6',
@@ -918,8 +928,21 @@ function HomeContent() {
                   fontFamily: "'Fredoka', sans-serif"
                 }}
               >
-                Get Started Now! 🎯
+                Explore Talentix Workshops 🎯
               </button>
+              <p style={{ margin: '14px 0 0', fontSize: '14px', color: '#6b7280' }}>
+                Are you a student?{' '}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowWhatWeDoModal(false);
+                    setShowSignUpModal(true);
+                  }}
+                  style={{ background: 'none', border: 'none', padding: 0, color: '#7c3aed', fontWeight: 700, cursor: 'pointer', textDecoration: 'underline', fontSize: '14px' }}
+                >
+                  Create a free account
+                </button>
+              </p>
             </div>
           </div>
         </div>
@@ -953,7 +976,7 @@ function HomeContent() {
         .logos-marquee-track:hover {
           animation-play-state: paused;
         }
-        .logo-mq-card {
+        .logo-mq-tile {
           flex-shrink: 0;
           width: 130px;
           height: 64px;
@@ -966,8 +989,10 @@ function HomeContent() {
           justify-content: center;
           padding: 10px;
         }
+        /* Named "tile", not "card": a global mobile rule forces anything with "card" in its class to full width */
         @media (max-width: 640px) {
-          .logo-mq-card { width: 96px; height: 52px; }
+          .logo-mq-tile { width: 104px; height: 56px; padding: 8px; }
+          .logos-marquee-track { gap: 12px; animation-duration: 18s; }
         }
         @media (prefers-reduced-motion: reduce) {
           .logos-marquee-track { animation: none; }
@@ -1095,8 +1120,78 @@ function HomeContent() {
           -webkit-text-fill-color: transparent;
         }
 
-        .hero-split-break {
-          display: none;
+        .hero-line {
+          display: block;
+        }
+
+        .hero-main-heading {
+          font-size: clamp(2.75rem, 4.6vw, 4.75rem);
+          line-height: 1.02;
+          letter-spacing: -0.02em;
+          text-transform: uppercase;
+          color: #1a1a2e;
+        }
+
+        .hero-highlight {
+          display: inline-block;
+          margin: 0.1em 0 0.14em;
+          padding: 0.02em 0.2em 0.04em;
+          background: #FFD23F;
+          color: #1a1a2e;
+          -webkit-text-fill-color: #1a1a2e;
+          border: 3px solid #1a1a2e;
+          border-radius: 0.8rem;
+          box-shadow: 5px 5px 0 #1a1a2e;
+          transform: rotate(-1.5deg);
+        }
+
+        .hero-subline {
+          margin-top: 1.4rem;
+          max-width: 34rem;
+          font-size: 1.3rem;
+          line-height: 1.45;
+          font-weight: 500;
+          color: #334155;
+        }
+
+        .hero-what-we-do-wrap {
+          display: flex;
+          flex-wrap: wrap;
+          align-items: center;
+          gap: 1rem;
+          margin-top: 1.8rem;
+        }
+
+        .hero-btn {
+          font-weight: 700;
+          font-size: 1rem;
+          line-height: 1.2;
+          padding: 0.7rem 1.3rem;
+          border: 3px solid #1a1a2e;
+          border-radius: 0.8rem;
+          box-shadow: 4px 4px 0 #1a1a2e;
+          cursor: pointer;
+          transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .hero-btn:hover {
+          transform: translate(-2px, -2px);
+          box-shadow: 6px 6px 0 #1a1a2e;
+        }
+
+        .hero-btn:active {
+          transform: translate(2px, 2px);
+          box-shadow: 2px 2px 0 #1a1a2e;
+        }
+
+        .hero-btn-primary {
+          background: #FFD23F;
+          color: #1a1a2e;
+        }
+
+        .hero-btn-secondary {
+          background: #8b5cf6;
+          color: #ffffff;
         }
 
         .workshops-section {
@@ -1333,25 +1428,39 @@ function HomeContent() {
         }
 
         @media (min-width: 1024px) {
-          .hero-main-heading {
-            transform: scale(2);
-            transform-origin: left top;
-            display: inline-block;
-            margin-bottom: 7rem;
+          .hero-btn {
+            font-size: 1.2rem;
+            padding: 0.85rem 1.6rem;
           }
 
-          .hero-what-we-do-btn {
-            font-size: 1.25rem;
-            padding: 0.9rem 1.8rem;
-            border-radius: 0.8rem;
+          .hero-section {
+            align-items: flex-start;
+            padding-top: 3.5rem;
+          }
+
+          .hero-layout-wrap {
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+            gap: 2.5rem;
+          }
+
+          .hero-left-content {
+            flex: 1 1 0;
+            width: auto;
+            min-width: 0;
           }
 
           .hero-workshop-circle-wrap {
-            margin-top: -5.25rem;
+            flex: 0 0 auto;
+            width: auto;
+            max-width: none;
+            margin: 0 3rem 0 0;
           }
 
           .hero-workshop-circle {
-            transform: translateX(40px) translateY(-90px);
+            width: clamp(340px, 34vw, 520px);
+            height: clamp(340px, 34vw, 520px);
           }
 
           /* Desktop logo container positioning - centered slightly left */
@@ -1368,21 +1477,9 @@ function HomeContent() {
           }
 
           @media (min-width: 1280px) {
-            .hero-main-heading {
-              margin-bottom: 8.5rem;
-            }
-
-            .hero-what-we-do-btn {
-              font-size: 1.35rem;
-              padding: 1rem 2rem;
-            }
-
-            .hero-workshop-circle-wrap {
-              margin-top: -6rem;
-            }
-
-            .hero-workshop-circle {
-              transform: translateX(40px) translateY(-90px);
+            .hero-btn {
+              font-size: 1.3rem;
+              padding: 0.95rem 1.8rem;
             }
 
             .hero-logo-container {
@@ -1423,18 +1520,27 @@ function HomeContent() {
           }
 
           .hero-main-heading {
-            font-size: clamp(2.2rem, 10.8vw, 4.15rem) !important;
-            line-height: 0.84 !important;
-            letter-spacing: -0.03em !important;
-            text-shadow: 0 6px 18px rgba(17, 24, 39, 0.1);
-            margin-bottom: 0.5rem;
+            font-size: clamp(1.45rem, 7.6vw, 3.4rem);
+            line-height: 1.02;
+            margin-bottom: 0;
+            text-align: center;
+          }
+
+          .hero-subline {
+            margin-top: 0.9rem;
+            font-size: 1.02rem;
             text-align: center;
           }
 
           .hero-what-we-do-wrap {
-            display: flex;
+            flex-direction: column;
             justify-content: center;
             width: 100%;
+            margin-top: 1.2rem;
+          }
+
+          .hero-btn {
+            width: min(100%, 17.5rem);
           }
 
           .hero-workshop-circle-wrap {

@@ -295,7 +295,6 @@ export default function NavigationMobile() {
           <nav className="sr-only" aria-hidden="true">
             <Link href="/">Home</Link>
             <Link href="/workshops">Workshops</Link>
-            <Link href="/events">Events</Link>
             <Link href="/career-guidance">Career Guidance</Link>
           </nav>
 
@@ -695,23 +694,6 @@ export default function NavigationMobile() {
                             📚 Job Resources
                           </button>
                           <button
-                            onClick={() => { toggleHeaderPanel(); router.push('/events'); }}
-                            style={{
-                              background: 'linear-gradient(135deg, #fecaca 0%, #f87171 100%)',
-                              color: '#374151',
-                              padding: '12px 16px',
-                              borderRadius: '12px',
-                              border: 'none',
-                              fontSize: '14px',
-                              fontWeight: 600,
-                              cursor: 'pointer',
-                              boxShadow: '0 4px 12px rgba(248, 113, 113, 0.25)',
-                              fontFamily: 'Fredoka, sans-serif'
-                            }}
-                          >
-                            🎉 Events
-                          </button>
-                          <button
                             onClick={() => { toggleHeaderPanel(); router.push('/career-guidance'); }}
                             style={{
                               background: 'linear-gradient(135deg, #fef9c3 0%, #fbbf24 100%)',
@@ -1009,23 +991,6 @@ export default function NavigationMobile() {
                         }}
                       >
                         ⚙️ Settings
-                      </button>
-                      <button
-                        onClick={() => { toggleHeaderPanel(); router.push('/events'); }}
-                        style={{
-                          background: 'linear-gradient(135deg, #fecaca 0%, #f87171 100%)',
-                          color: '#374151',
-                          padding: '12px 16px',
-                          borderRadius: '12px',
-                          border: 'none',
-                          fontSize: '14px',
-                          fontWeight: 600,
-                          cursor: 'pointer',
-                          boxShadow: '0 4px 12px rgba(248, 113, 113, 0.25)',
-                          fontFamily: 'Fredoka, sans-serif'
-                        }}
-                      >
-                        🎉 Events
                       </button>
                       <button
                         onClick={() => { toggleHeaderPanel(); router.push('/career-guidance'); }}

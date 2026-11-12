@@ -818,24 +818,6 @@ export default function WorkshopsDetailPage() {
           </div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', justifyContent: 'center' }}>
             <a
-              href="/Talentix%20Workshops%20Proposal.pdf"
-              download
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                padding: '13px 20px',
-                borderRadius: '14px',
-                background: 'white',
-                color: '#111827',
-                fontWeight: 800,
-                textDecoration: 'none',
-                boxShadow: '0 10px 22px rgba(255,255,255,0.35)',
-              }}
-            >
-              📄 Download our workshop proposal
-            </a>
-            <a
               href="mailto:enquiries@talentix.co.uk?subject=Workshop%20Booking%20Request"
               style={{
                 display: 'inline-flex',
